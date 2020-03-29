@@ -12,7 +12,7 @@ stages:
   variables:
     DOCKER_TLS_CERTDIR: ""
   tags:
-    - docker-compose
+    - dind
   dependencies: []
   cache: {}
   artifacts:
@@ -87,6 +87,20 @@ build-beta:
     VERSION: 2.0.0-beta
     SERVICE_NAME: beta
     CI_CONTAINER_INSTANCE_NAME: arsnova-click-frontend-beta
+  script:
+    - *staging-server-env
+    - *docker-push
+
+build-westermann:
+  <<: *build-template
+  only:
+    - westermann
+  environment:
+    name: Westermann
+  variables:
+    VERSION: 2.0.0-westermann
+    SERVICE_NAME: westermann
+    CI_CONTAINER_INSTANCE_NAME: arsnova-click-frontend-westermann
   script:
     - *staging-server-env
     - *docker-push
