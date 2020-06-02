@@ -49,12 +49,14 @@
         <div *ngIf="!isHtmlNickname(elem.groupName)">[{{elem.groupName}}]</div>
       </div>
       <p class="flex-grow-1 break-word" [class.text-center]="!elem.groupName">
-          <span *ngIf="isHtmlNickname(elem.name)"
+        <span *ngIf="isHtmlNickname(elem.name)"
                 [innerHTML]="parseNickname(elem.name)"></span>
         <span *ngIf="!isHtmlNickname(elem.name)">{{elem.name}}</span>
       </p>
     </div>
-    <div *ngIf="elem.name === attendeeService.lastJoined()?.name" class="recently-joined"></div>
+    <div *ngIf="elem.name === attendeeService.lastJoined()?.name" class="recently-joined">
+      Text is animated not the button
+    </div>
   </div>
 </div>
 
