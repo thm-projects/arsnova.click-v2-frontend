@@ -45,6 +45,7 @@
       <div *ngIf="elem.groupName" class="mr-2 flex-grow-1 flex-shrink-0">
         <div *ngIf="isHtmlNickname(elem.groupName)"
              [innerHTML]="parseNickname(elem.groupName)"></div>
+             
         <div *ngIf="!isHtmlNickname(elem.groupName)">[{{elem.groupName}}]</div>
       </div>
       <p class="flex-grow-1 break-word" [class.text-center]="!elem.groupName">
@@ -53,6 +54,7 @@
         <span *ngIf="!isHtmlNickname(elem.name)">{{elem.name}}</span>
       </p>
     </div>
+    <div *ngIf="elem.name === attendeeService.lastJoined()?.name" class="recently-joined"></div>
   </div>
 </div>
 

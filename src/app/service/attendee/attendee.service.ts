@@ -99,6 +99,10 @@ export class AttendeeService {
     });
   }
 
+  public lastJoined(): MemberEntity {
+    return this._attendees[this._attendees.length - 1];
+  }
+
   public isOwnNick(name: string): boolean {
     return name === this._ownNick;
   }

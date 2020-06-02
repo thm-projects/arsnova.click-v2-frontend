@@ -9,3 +9,22 @@
     width: 64px;
   }
 }
+
+.recently-joined {
+  animation: 3s alternate infinite enlargen; 
+}
+
+
+@keyframes enlargen {
+  from {
+    font-size: 100%; 
+  }
+
+  75% {
+    font-size: 200%; 
+  }
+
+  to {
+    font-size: 300%; 
+  }
+}
