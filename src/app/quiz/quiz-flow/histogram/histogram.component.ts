@@ -1,23 +1,23 @@
-import {Component, Inject, OnDestroy, OnInit, PLATFORM_ID} from "@angular/core";
-import {IHasTriggeredNavigation} from "../../../lib/interfaces/IHasTriggeredNavigation";
-import {distinctUntilChanged, map, takeUntil} from "rxjs/operators";
-import {QuizState} from "../../../lib/enums/QuizState";
-import {isPlatformBrowser} from "@angular/common";
-import {StorageKey} from "../../../lib/enums/enums";
-import {ServerUnavailableModalComponent} from "../../../modals/server-unavailable-modal/server-unavailable-modal.component";
-import {AttendeeService} from "../../../service/attendee/attendee.service";
-import {QuizService} from "../../../service/quiz/quiz.service";
-import {DomSanitizer} from "@angular/platform-browser";
-import {FooterBarService} from "../../../service/footer-bar/footer-bar.service";
-import {ActivatedRoute, Router} from "@angular/router";
-import {HeaderLabelService} from "../../../service/header-label/header-label.service";
-import {ConnectionService} from "../../../service/connection/connection.service";
-import {I18nService} from "../../../service/i18n/i18n.service";
-import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {SimpleMQ} from "ng2-simple-mq";
-import {Subject} from "rxjs";
-import {MessageProtocol} from "../../../lib/enums/Message";
-import {HistogramApiService} from "../../../service/api/histogram/histogram-api.service";
+import {Component, Inject, OnDestroy, OnInit, PLATFORM_ID} from '@angular/core';
+import {IHasTriggeredNavigation} from '../../../lib/interfaces/IHasTriggeredNavigation';
+import {distinctUntilChanged, map, takeUntil} from 'rxjs/operators';
+import {QuizState} from '../../../lib/enums/QuizState';
+import {isPlatformBrowser} from '@angular/common';
+import {StorageKey} from '../../../lib/enums/enums';
+import {ServerUnavailableModalComponent} from '../../../modals/server-unavailable-modal/server-unavailable-modal.component';
+import {AttendeeService} from '../../../service/attendee/attendee.service';
+import {QuizService} from '../../../service/quiz/quiz.service';
+import {DomSanitizer} from '@angular/platform-browser';
+import {FooterBarService} from '../../../service/footer-bar/footer-bar.service';
+import {ActivatedRoute, Router} from '@angular/router';
+import {HeaderLabelService} from '../../../service/header-label/header-label.service';
+import {ConnectionService} from '../../../service/connection/connection.service';
+import {I18nService} from '../../../service/i18n/i18n.service';
+import {NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
+import {SimpleMQ} from 'ng2-simple-mq';
+import {Subject} from 'rxjs';
+import {MessageProtocol} from '../../../lib/enums/Message';
+import {HistogramApiService} from '../../../service/api/histogram/histogram-api.service';
 
 @Component({
     selector: 'app-histogram',
@@ -36,15 +36,15 @@ export class HistogramComponent implements OnInit, OnDestroy, IHasTriggeredNavig
 
     public static readonly TYPE = 'HistogramComponent';
 
-    public isLoadingData = true;
-    public hasTriggeredNavigation: boolean;
-
     private _questionIndex: number;
     private _serverUnavailableModal: NgbModalRef;
     private _name: string;
 
     private readonly _destroy = new Subject();
     private readonly _messageSubscriptions: Array<string> = [];
+
+    public isLoadingData = true;
+    public hasTriggeredNavigation: boolean;
 
     constructor(
         @Inject(PLATFORM_ID) private platformId: Object,
@@ -57,14 +57,14 @@ export class HistogramComponent implements OnInit, OnDestroy, IHasTriggeredNavig
         private router: Router,
         private connectionService: ConnectionService,
         private i18nService: I18nService,
-        private HistogramApiService: HistogramApiService,
+        private histogramApiService: HistogramApiService,
         private ngbModal: NgbModal,
         private messageQueue: SimpleMQ,
     ) {
         this.footerBarService.TYPE_REFERENCE = HistogramComponent.TYPE;
     }
 
-    ngOnDestroy(): void {
+    public ngOnDestroy(): void {
         this.footerBarService.footerElemBack.restoreClickCallback();
 
         this._messageSubscriptions.forEach(id => this.messageQueue.unsubscribe(id));
@@ -72,7 +72,7 @@ export class HistogramComponent implements OnInit, OnDestroy, IHasTriggeredNavig
         this._destroy.complete();
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         this.quizService.quizUpdateEmitter.pipe(takeUntil(this._destroy)).subscribe(quiz => {
             if (!quiz) {
                 return;
@@ -120,7 +120,7 @@ export class HistogramComponent implements OnInit, OnDestroy, IHasTriggeredNavig
             .subscribe(questionIndex => {
                 this._questionIndex = questionIndex;
 
-                this.HistogramApiService.getHistogramData(this.name, this.questionIndex).subscribe(histogramData => {
+                this.histogramApiService.getHistogramData(this.name, this.questionIndex).subscribe(histogramData => {
                     this.isLoadingData = false;
                 });
             });
