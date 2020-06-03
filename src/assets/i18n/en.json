@@ -477,6 +477,7 @@
       "question": "Show question",
       "question_number": "Question",
       "ranking": "Ranking",
+      "distribution": "Show distribution",
       "reading_confirmation": "Reading confirmation",
       "show_question": "Show next question",
       "start_round": "Start countdown",

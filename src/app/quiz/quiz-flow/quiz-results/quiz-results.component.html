@@ -138,5 +138,16 @@
                       [hideProgressbarCssStyle]="hideProgressbarStyle"
                       [questionIndex]="selectedQuestionIndex"
                       [question]="quizService.quiz.questionList[selectedQuestionIndex]"></app-progress-bar>
+
+    <button (click)="hasTriggeredNavigation = true"
+            *ngIf="showHistogramButton(selectedQuestionIndex)"
+            [routerLink]="['/quiz', 'flow', 'histogram', selectedQuestionIndex]"
+            class="btn btn-light w-100"
+            type="button">
+      <fa-icon [icon]="'chart-bar'"
+               class="mr-2"></fa-icon>
+      <span>{{'component.liveResults.distribution' | translate}}</span>
+    </button>
+
   </div>
 </ng-container>

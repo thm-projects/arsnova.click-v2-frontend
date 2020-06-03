@@ -168,6 +168,27 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
     return ![QuestionType.ABCDSingleChoiceQuestion].includes(this.quizService.quiz.questionList[index].TYPE);
   }
 
+  public showHistogramButton(index: number): boolean {
+    if (this.countdown > 0 ||
+        !this.quizService.quiz ||
+        typeof index === 'undefined' ||
+        index < 0 ||
+        index > this.quizService.quiz.questionList.length
+    ) {
+      return false;
+    }
+
+    if (index === this.quizService.quiz.currentQuestionIndex && //
+        this.quizService.quiz.sessionConfig.readingConfirmationEnabled && //
+        (this.quizService.readingConfirmationRequested || this.countdown) //
+    ) {
+      return false;
+    }
+
+    this.cd.markForCheck();
+    return [QuestionType.RangedQuestion].includes(this.quizService.quiz.questionList[index].TYPE);
+  }
+
   public showConfidenceRate(questionIndex: number): boolean {
     this.cd.markForCheck();
     if (!environment.confidenceSliderEnabled || !this.quizService.quiz) {

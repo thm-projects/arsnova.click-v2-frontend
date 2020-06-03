@@ -21,6 +21,7 @@ import {
   faCaretSquareDown,
   faCaretSquareUp,
   faCaretUp,
+  faChartBar,
   faCheck,
   faCheckSquare,
   faCloudUploadAlt,
@@ -181,6 +182,7 @@ export class SharedModule {
     library.addIcons(faStrikethrough);
     library.addIcons(faItalic);
     library.addIcons(faTrophy);
+    library.addIcons(faChartBar);
     library.addIcons(faBan);
     library.addIcons(faSave);
     library.addIcons(faCopy);

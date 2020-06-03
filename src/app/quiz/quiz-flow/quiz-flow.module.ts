@@ -17,6 +17,7 @@ import { QuizResultsComponent } from './quiz-results/quiz-results.component';
 import { QuizResultsModule } from './quiz-results/quiz-results.module';
 import { ReadingConfirmationComponent } from './reading-confirmation/reading-confirmation.component';
 import { VotingComponent } from './voting/voting.component';
+import {HistogramComponent} from "./histogram/histogram.component";
 
 export const quizFlowRoutes: Routes = [
   {
@@ -69,6 +70,11 @@ export const quizFlowRoutes: Routes = [
     component: AnswerResultComponent,
     data: {},
     canDeactivate: [ShowUnloadWarningGuard],
+  }, {
+    path: 'histogram/:questionIndex',
+    component: HistogramComponent,
+    data: {},
+    canDeactivate: [ShowUnloadWarningGuard],
   },
 ];
 
@@ -86,6 +92,7 @@ export const quizFlowRoutes: Routes = [
     ConfidenceRateComponent,
     EditModeConfirmComponent,
     QrCodeContentComponent,
+    HistogramComponent,
   ],
 })
 export class QuizFlowModule {
