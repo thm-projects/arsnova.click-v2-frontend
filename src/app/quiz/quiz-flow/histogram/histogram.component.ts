@@ -45,6 +45,7 @@ export class HistogramComponent implements OnInit, OnDestroy, IHasTriggeredNavig
 
     public isLoadingData = true;
     public hasTriggeredNavigation: boolean;
+    public svg: string;
 
     constructor(
         @Inject(PLATFORM_ID) private platformId: Object,
@@ -55,7 +56,7 @@ export class HistogramComponent implements OnInit, OnDestroy, IHasTriggeredNavig
         private route: ActivatedRoute,
         private headerLabelService: HeaderLabelService,
         private router: Router,
-        private connectionService: ConnectionService,
+        public connectionService: ConnectionService,
         private i18nService: I18nService,
         private histogramApiService: HistogramApiService,
         private ngbModal: NgbModal,
@@ -122,6 +123,7 @@ export class HistogramComponent implements OnInit, OnDestroy, IHasTriggeredNavig
 
                 this.histogramApiService.getHistogramData(this.name, this.questionIndex).subscribe(histogramData => {
                     this.isLoadingData = false;
+                    this.svg = histogramData.payload.svg;
                 });
             });
     }

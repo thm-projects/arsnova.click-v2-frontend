@@ -1,1 +1,11 @@
 <h4 class="mt-5">Coming soon...</h4>
+<ng-container *ngIf="connectionService.serverAvailable;else notAvailableTmpl">
+  <svg [innerHTML]="svg">
+  </svg>
+</ng-container>
+
+<ng-template #notAvailableTmpl>
+  <h3 class="text-center d-flex align-items-center server-not-available-label mb-0">
+    {{'plugins.splashscreen.error.error_messages.no_preview_available' | translate}}
+  </h3>
+</ng-template>
