@@ -8,6 +8,7 @@ import { QuizAdminFilterPipe } from './quiz-admin-filter/quiz-admin-filter.pipe'
 import { SearchFilterPipe } from './search-filter/search-filter.pipe';
 import { SortPipe } from './sort/sort.pipe';
 import { UnusedKeyFilterPipe } from './unused-key-filter/unused-key-filter.pipe';
+import { RawHtmlPipe } from './raw-html/raw-html.pipe';
 
 @NgModule({
   imports: [CommonModule],
@@ -20,6 +21,7 @@ import { UnusedKeyFilterPipe } from './unused-key-filter/unused-key-filter.pipe'
     QuizAdminFilterPipe,
     GenericFilterPipe,
     LanguageFilterPipe,
+    RawHtmlPipe,
   ],
   declarations: [
     JustAFewPipe,
@@ -30,6 +32,7 @@ import { UnusedKeyFilterPipe } from './unused-key-filter/unused-key-filter.pipe'
     QuizAdminFilterPipe,
     GenericFilterPipe,
     LanguageFilterPipe,
+    RawHtmlPipe,
   ],
 })
 export class PipesModule {

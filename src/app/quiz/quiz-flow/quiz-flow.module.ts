@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { QRCodeModule } from 'angular2-qrcode';
 import { MarkdownModule } from 'ngx-markdown';
+import { PipesModule } from '../../pipes/pipes.module';
 import { CasLoginService } from '../../service/login/cas-login.service';
 import { ShowUnloadWarningGuard } from '../../service/show-unload-warning-guard/show-unload-warning.guard';
 import { SharedModule } from '../../shared/shared.module';
@@ -17,7 +18,7 @@ import { QuizResultsComponent } from './quiz-results/quiz-results.component';
 import { QuizResultsModule } from './quiz-results/quiz-results.module';
 import { ReadingConfirmationComponent } from './reading-confirmation/reading-confirmation.component';
 import { VotingComponent } from './voting/voting.component';
-import {HistogramComponent} from './histogram/histogram.component';
+import { HistogramComponent } from './histogram/histogram.component';
 
 export const quizFlowRoutes: Routes = [
   {
@@ -81,6 +82,7 @@ export const quizFlowRoutes: Routes = [
 @NgModule({
   imports: [
     SharedModule, RouterModule.forChild(quizFlowRoutes), QuizResultsModule, QRCodeModule, QuizFlowSharedModule, MarkdownModule.forChild(),
+    PipesModule,
   ],
   bootstrap: [EditModeConfirmComponent, QrCodeContentComponent],
   declarations: [

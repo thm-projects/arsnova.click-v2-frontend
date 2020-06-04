@@ -1,7 +1,7 @@
 <h4 class="mt-5">Coming soon...</h4>
 <ng-container *ngIf="connectionService.serverAvailable;else notAvailableTmpl">
-  <svg [innerHTML]="svg">
-  </svg>
+  <div [innerHTML]="svg | rawHtml">
+  </div>
 </ng-container>
 
 <ng-template #notAvailableTmpl>

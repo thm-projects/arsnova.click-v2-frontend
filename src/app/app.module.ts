@@ -55,7 +55,13 @@ function svgLoaderFactory(http: HttpClient, transferState: TransferState): SvgBr
 
 @NgModule({
   declarations: [
-    HomeComponent, RootComponent, LanguageSwitcherComponent, ThemeSwitcherComponent, LoginComponent, TwitterCardsComponent, StatisticsComponent,
+    HomeComponent,
+    RootComponent,
+    LanguageSwitcherComponent,
+    ThemeSwitcherComponent,
+    LoginComponent,
+    TwitterCardsComponent,
+    StatisticsComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'arsnova-click' }),
