@@ -145,7 +145,7 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
     }
 
     this.cd.markForCheck();
-    return ![QuestionType.SurveyQuestion, QuestionType.ABCDSingleChoiceQuestion].includes(this.quizService.quiz.questionList[index].TYPE);
+    return ![QuestionType.SurveyQuestion, QuestionType.ABCDSurveyQuestion].includes(this.quizService.quiz.questionList[index].TYPE);
   }
 
   public showQuestionButton(index: number): boolean {
@@ -158,14 +158,14 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
       return false;
     }
     if (index === this.quizService.quiz.currentQuestionIndex && //
-        this.quizService.quiz.sessionConfig.readingConfirmationEnabled && //
+        (environment.readingConfirmationEnabled && this.quizService.quiz.sessionConfig.readingConfirmationEnabled) && //
         (this.quizService.readingConfirmationRequested || this.countdown) //
     ) {
       return false;
     }
 
     this.cd.markForCheck();
-    return ![QuestionType.ABCDSingleChoiceQuestion].includes(this.quizService.quiz.questionList[index].TYPE);
+    return ![QuestionType.ABCDSurveyQuestion].includes(this.quizService.quiz.questionList[index].TYPE);
   }
 
   public showHistogramButton(index: number): boolean {
@@ -255,7 +255,7 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
     const matchCount = this.attendeeService.attendees.filter(value => {
       return value.responses[questionIndex] ? value.responses[questionIndex].readingConfirmation : false;
     }).length;
-    const readingConfirmationStatus = this.quizService.quiz.sessionConfig.readingConfirmationEnabled;
+    const readingConfirmationStatus = environment.readingConfirmationEnabled && this.quizService.quiz.sessionConfig.readingConfirmationEnabled;
     this.cd.markForCheck();
     return matchCount > 0 || (readingConfirmationStatus && this.selectedQuestionIndex === this.quizService.quiz.currentQuestionIndex);
   }
@@ -294,6 +294,10 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
     });
 
     this.quizService.quizUpdateEmitter.pipe(filter(quiz => Boolean(quiz)), takeUntil(this._destroy)).subscribe(async quiz => {
+      if (this.hasTriggeredNavigation) {
+        return;
+      }
+
       if (this.quizService.quiz.state === QuizState.Inactive) {
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
@@ -428,7 +432,10 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
 
       this.loadProgressbars(currentStateData);
 
-      if (!this.quizService.isOwner && this.quizService.quiz.questionList.length - 1 === this.quizService.quiz.currentQuestionIndex) {
+      if (environment.enableBonusToken &&
+          !this.quizService.isOwner &&
+          this.quizService.quiz.questionList.length - 1 === this.quizService.quiz.currentQuestionIndex
+      ) {
         this.quizApiService.getCanUseBonusToken().pipe(filter(canUseBonusToken => Boolean(canUseBonusToken))).subscribe(() => {
           this.footerElems = [this.footerBarService.footerElemShowToken].concat(this._footerElems);
           this.cd.markForCheck();
@@ -570,12 +577,20 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
         this.hideProgressbarStyle = false;
         this.cd.markForCheck();
       }), this.messageQueue.subscribe(MessageProtocol.Reset, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.attendeeService.clearResponses();
         this.quizService.quiz.currentQuestionIndex = -1;
         this.hasTriggeredNavigation = true;
         this.ngbModal.dismissAll();
         this.router.navigate(['/quiz', 'flow', 'lobby']);
       }), this.messageQueue.subscribe(MessageProtocol.Closed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
       }),
@@ -652,12 +667,20 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
   private handleMessagesForAttendee(): void {
     this._messageSubscriptions.push(...[
       this.messageQueue.subscribe(MessageProtocol.Start, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'voting']);
       }), this.messageQueue.subscribe(MessageProtocol.UpdatedSettings, payload => {
         this.quizService.quiz.sessionConfig = payload.sessionConfig;
         this.cd.markForCheck();
       }), this.messageQueue.subscribe(MessageProtocol.ReadingConfirmationRequested, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         if (environment.readingConfirmationEnabled) {
           this.router.navigate(['/quiz', 'flow', 'reading-confirmation']);
@@ -665,12 +688,43 @@ export class QuizResultsComponent implements OnInit, OnDestroy, IHasTriggeredNav
           this.router.navigate(['/quiz', 'flow', 'voting']);
         }
       }), this.messageQueue.subscribe(MessageProtocol.Removed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         const existingNickname = sessionStorage.getItem(StorageKey.CurrentNickName);
         if (existingNickname === payload.name) {
           this.hasTriggeredNavigation = true;
           this.router.navigate(['/']);
         }
-      }),
+      }), this.messageQueue.subscribe(MessageProtocol.Stop, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
+        if (!this.attendeeService.hasResponse() ||
+            [QuestionType.ABCDSurveyQuestion, QuestionType.SurveyQuestion].includes(this.quizService.currentQuestion().TYPE)
+        ) {
+          return;
+        }
+
+        this.hasTriggeredNavigation = true;
+        this.router.navigate(['/quiz', 'flow', 'answer-result']);
+      }), this.messageQueue.subscribe(MessageProtocol.Countdown, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
+        if (payload.value ||
+            !this.attendeeService.hasResponse() ||
+            [QuestionType.ABCDSurveyQuestion, QuestionType.SurveyQuestion].includes(this.quizService.currentQuestion().TYPE)
+        ) {
+          return;
+        }
+
+        this.hasTriggeredNavigation = true;
+        this.router.navigate(['/quiz', 'flow', 'answer-result']);
+      })
     ]);
   }
 

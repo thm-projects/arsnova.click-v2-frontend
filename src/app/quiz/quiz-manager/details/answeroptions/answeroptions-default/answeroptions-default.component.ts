@@ -12,6 +12,7 @@ import { QuestionType } from '../../../../../lib/enums/QuestionType';
 import { QuizPoolApiService } from '../../../../../service/api/quiz-pool/quiz-pool-api.service';
 import { FooterBarService } from '../../../../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../../../../service/header-label/header-label.service';
+import { I18nService } from '../../../../../service/i18n/i18n.service';
 import { QuestionTextService } from '../../../../../service/question-text/question-text.service';
 import { QuizService } from '../../../../../service/quiz/quiz.service';
 import { AbstractQuizManagerDetailsComponent } from '../../abstract-quiz-manager-details.component';
@@ -49,10 +50,11 @@ export class AnsweroptionsDefaultComponent extends AbstractQuizManagerDetailsCom
     router: Router,
     hotkeysService: HotkeysService,
     translate: TranslateService,
+    i18nService: I18nService,
     private cd: ChangeDetectorRef,
     private questionTextService: QuestionTextService,
   ) {
-    super(platformId, quizService, headerLabelService, footerBarService, quizPoolApiService, router, route, hotkeysService, translate);
+    super(platformId, quizService, headerLabelService, footerBarService, quizPoolApiService, router, route, hotkeysService, translate, i18nService);
   }
 
   public addAnswer(): void {
@@ -94,7 +96,8 @@ export class AnsweroptionsDefaultComponent extends AbstractQuizManagerDetailsCom
   public ngOnInit(): void {
     super.ngOnInit();
 
-    this.footerBarService.footerElemBack.onClickCallback = () => this.router.navigate(['/quiz', 'manager', this._questionIndex, 'overview']);
+    const target = ['/quiz', 'manager', this._isQuizPool ? 'quiz-pool' : this._questionIndex, 'overview'];
+    this.footerBarService.footerElemBack.onClickCallback = () => this.router.navigate(target);
 
     this.initialized$.pipe(switchMapTo(this.quizService.quizUpdateEmitter), takeUntil(this.destroy)).subscribe(() => {
       if (!this.quizService.quiz) {
@@ -103,9 +106,9 @@ export class AnsweroptionsDefaultComponent extends AbstractQuizManagerDetailsCom
 
       this.canAddAnsweroptions = ![QuestionType.TrueFalseSingleChoiceQuestion, QuestionType.YesNoSingleChoiceQuestion].includes(this._question.TYPE);
       this.canDeleteAnswer = this.canAddAnsweroptions;
-      this.canEditAnswer = ![QuestionType.ABCDSingleChoiceQuestion].includes(this._question.TYPE);
-      this.canShowAnswerContentOnButtons = ![QuestionType.ABCDSingleChoiceQuestion].includes(this._question.TYPE);
-      this.canInjectEmojis = ![QuestionType.ABCDSingleChoiceQuestion].includes(this._question.TYPE);
+      this.canEditAnswer = ![QuestionType.ABCDSurveyQuestion].includes(this._question.TYPE);
+      this.canShowAnswerContentOnButtons = ![QuestionType.ABCDSurveyQuestion].includes(this._question.TYPE);
+      this.canInjectEmojis = ![QuestionType.ABCDSurveyQuestion].includes(this._question.TYPE);
 
       this.questionTextService.changeMultiple(this._question.answerOptionList.map(answer => answer.answerText)).subscribe();
     });

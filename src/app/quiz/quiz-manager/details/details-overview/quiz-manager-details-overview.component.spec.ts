@@ -12,6 +12,8 @@ import { of } from 'rxjs';
 import { jwtOptionsFactory } from '../../../../lib/jwt.factory';
 import { ConnectionMockService } from '../../../../service/connection/connection.mock.service';
 import { ConnectionService } from '../../../../service/connection/connection.service';
+import { CustomMarkdownService } from '../../../../service/custom-markdown/custom-markdown.service';
+import { CustomMarkdownServiceMock } from '../../../../service/custom-markdown/CustomMarkdownServiceMock';
 import { FooterBarService } from '../../../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../../../service/header-label/header-label.service';
 import { QuizMockService } from '../../../../service/quiz/quiz-mock.service';
@@ -80,8 +82,12 @@ describe('QuizManagerDetailsOverviewComponent', () => {
           }, {
             provide: HotkeysService,
             useValue: {
-              add: () => {}
+              add: () => {},
+              reset: () => {},
             }
+          }, {
+            provide: CustomMarkdownService,
+            useClass: CustomMarkdownServiceMock,
           },
         ],
         declarations: [QuizManagerDetailsOverviewComponent],

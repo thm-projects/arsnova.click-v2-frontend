@@ -36,7 +36,10 @@
 
 .nickStyle {
   user-select: none;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
+}
+
+.trim-nick-elements {
+  ::ng-deep p {
+    display: inline;
+  }
 }

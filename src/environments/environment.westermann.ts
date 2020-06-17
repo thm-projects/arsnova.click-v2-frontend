@@ -5,8 +5,8 @@ import { IEnvironment } from '../app/lib/interfaces/IEnvironment';
 export const environment: IEnvironment = {
   production: true,
   title: Title.Westermann,
+  version: '__VERSION__',
   enableCasLogin: false,
-  version: 'VERSION',
   ssrEndpoint: 'https://test01.ars.sbzo.de',
   serverEndpoint: 'https://test01.ars.sbzo.de/backend/',
   httpApiEndpoint: 'https://test01.ars.sbzo.de/backend/api/v1/',
@@ -18,6 +18,7 @@ export const environment: IEnvironment = {
     vhost: '/',
   },
   leaderboardAmount: 5,
+  enableBonusToken: false,
   readingConfirmationEnabled: false,
   confidenceSliderEnabled: false,
   infoAboutTabEnabled: false,
@@ -26,6 +27,7 @@ export const environment: IEnvironment = {
   requireLoginToCreateQuiz: true,
   forceQuizTheme: true,
   loginMechanism: [LoginMechanism.UsernamePassword, LoginMechanism.Token],
+  showLoginButton: true,
   showJoinableQuizzes: false,
   showPublicQuizzes: false,
   persistQuizzes: false,
@@ -34,5 +36,6 @@ export const environment: IEnvironment = {
   darkModeCheckEnabled: false,
   enableTwitter: false,
   enableQuizPool: false,
+  showInfoButtonsInFooter: true,
   vapidPublicKey: 'BFy8kQxiV2p43Z8Xqs6isn7QRVDEvkqreDH3wH0QlDLDn8cZkbM41iOWwxUBsw_R0Y4Bv8AkI9sKj82P18q41z0',
 };

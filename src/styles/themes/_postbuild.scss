@@ -71,9 +71,21 @@ code[class*="language-"], pre[class*="language-"] {
 }
 
 .navbar-footer {
-  background-color: $bg-footer;
-  color: $footer-color;
   @include transitionEffect();
+  background-color: $bg-footer;
+
+  .footerElement {
+    color: $footer-color;
+    border-bottom: 1px solid transparent;
+
+    &:active,
+    &:focus,
+    &:hover {
+      color: $footer-color;
+      text-decoration: none;
+      border-bottom: 1px solid $footer-color;
+    }
+  }
 }
 
 #logo-image,
@@ -101,14 +113,17 @@ fa-icon {
 
 .answer-result-correct {
   background-color: $bg-answer-result-correct;
+  color: $fg-answer-result-correct;
 }
 
 .answer-result-partially-correct {
   background-color: $bg-answer-result-partially-correct;
+  color: $fg-answer-result-partially-correct;
 }
 
 .answer-result-wrong {
   background-color: $bg-answer-result-wrong;
+  color: $fg-answer-result-wrong;
 }
 
 .bg-body {

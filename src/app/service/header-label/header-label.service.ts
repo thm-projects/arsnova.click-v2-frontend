@@ -10,6 +10,7 @@ import { Title } from '../../lib/enums/enums';
 export class HeaderLabelService {
   private _headerLabelParams = {};
   private _headerLabel = 'default';
+  private _subHeader: string;
 
   public isUnavailableModalOpen: boolean;
 
@@ -31,6 +32,15 @@ export class HeaderLabelService {
     this.regenerateTitle();
   }
 
+  get subHeader(): string {
+    return this._subHeader;
+  }
+
+  set subHeader(value: string) {
+    this._subHeader = value;
+    this.regenerateTitle();
+  }
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object, private translateService: TranslateService, private titleService: BrowserTitle) {
     this.translateService.onLangChange.subscribe(() => {
       this.headerLabel = this._headerLabel;
@@ -38,7 +48,13 @@ export class HeaderLabelService {
   }
 
   public hasHeaderLabelParams(): boolean {
-    return Object.keys(this.headerLabelParams).length > 0;
+    return Object.keys(this.headerLabelParams || {}).length > 0;
+  }
+
+  public reset(): void {
+    this.headerLabel = 'default';
+    this.headerLabelParams = {};
+    this.subHeader = null;
   }
 
   private regenerateTitle(): void {

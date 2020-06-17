@@ -2,6 +2,7 @@ import { LoginMechanism, Title } from '../enums/enums';
 import { QuizTheme } from '../enums/QuizTheme';
 
 export interface IEnvironment {
+  enableBonusToken: boolean;
   vapidPublicKey: string;
   title: Title;
   enableCasLogin: boolean;
@@ -26,10 +27,12 @@ export interface IEnvironment {
   showPublicQuizzes: boolean;
   forceQuizTheme: boolean;
   loginMechanism: Array<LoginMechanism>;
+  showLoginButton: boolean;
   persistQuizzes: boolean;
   availableQuizThemes: Array<QuizTheme>;
   defaultTheme: QuizTheme;
   darkModeCheckEnabled: boolean;
   enableTwitter: boolean;
   enableQuizPool: boolean;
+  showInfoButtonsInFooter: boolean;
 }

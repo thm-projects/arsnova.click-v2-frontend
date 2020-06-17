@@ -12,6 +12,7 @@ import { IAnswerResult } from '../../../lib/interfaces/IAnswerResult';
 import { IHasTriggeredNavigation } from '../../../lib/interfaces/IHasTriggeredNavigation';
 import { QuizApiService } from '../../../service/api/quiz/quiz-api.service';
 import { AttendeeService } from '../../../service/attendee/attendee.service';
+import { FooterBarService } from '../../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../../service/header-label/header-label.service';
 import { QuizService } from '../../../service/quiz/quiz.service';
 
@@ -36,6 +37,7 @@ export class AnswerResultComponent implements OnInit, OnDestroy, IHasTriggeredNa
   public data: IAnswerResult;
   public isTeam: boolean;
   public onlyOneAvailableCorrectAnswer: boolean;
+  public isLastQuestion: boolean;
   public readonly AnswerState = AnswerState;
 
   constructor(
@@ -46,10 +48,12 @@ export class AnswerResultComponent implements OnInit, OnDestroy, IHasTriggeredNa
     private quizApiService: QuizApiService,
     private messageQueue: SimpleMQ,
     private attendeeService: AttendeeService,
+    private footerBarService: FooterBarService,
     private router: Router,
     private cd: ChangeDetectorRef,
   ) {
     headerLabelService.headerLabel = 'component.liveResults.title';
+    this.footerBarService.replaceFooterElements([]);
     this.cd.markForCheck();
   }
 
@@ -65,6 +69,7 @@ export class AnswerResultComponent implements OnInit, OnDestroy, IHasTriggeredNa
         QUESTION_INDEX: (this.quizService.quiz.currentQuestionIndex + 1),
       };
       this.isTeam = this.quizService.quiz.sessionConfig.nicks.memberGroups.length > 0;
+      this.isLastQuestion = this.quizService.quiz.currentQuestionIndex === this.quizService.quiz.questionList.length - 1;
       this.cd.markForCheck();
       this.handleMessages();
     }).catch(() => this.hasTriggeredNavigation = true);
@@ -79,7 +84,7 @@ export class AnswerResultComponent implements OnInit, OnDestroy, IHasTriggeredNa
     this._loadedConfetti.complete();
     this.document.body.classList.remove(this._statusCssClass);
     if (this._confettiScriptRef) {
-      (window as any).confetti.stop();
+      (window as any).confetti?.stop();
       this.document.body.removeChild(this._confettiScriptRef);
     }
     const confettiElement = this.document.getElementById('confetti-canvas');
@@ -114,6 +119,10 @@ export class AnswerResultComponent implements OnInit, OnDestroy, IHasTriggeredNa
         this.quizService.quiz.currentQuestionIndex = payload.nextQuestionIndex;
         sessionStorage.removeItem(StorageKey.CurrentQuestionIndex);
       }), this.messageQueue.subscribe(MessageProtocol.Start, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.quizService.quiz.currentStartTimestamp = payload.currentStartTimestamp;
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'voting']);
@@ -124,6 +133,10 @@ export class AnswerResultComponent implements OnInit, OnDestroy, IHasTriggeredNa
       }), this.messageQueue.subscribe(MessageProtocol.UpdatedSettings, payload => {
         this.quizService.quiz.sessionConfig = payload.sessionConfig;
       }), this.messageQueue.subscribe(MessageProtocol.ReadingConfirmationRequested, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         if (environment.readingConfirmationEnabled) {
           this.router.navigate(['/quiz', 'flow', 'reading-confirmation']);
@@ -131,11 +144,19 @@ export class AnswerResultComponent implements OnInit, OnDestroy, IHasTriggeredNa
           this.router.navigate(['/quiz', 'flow', 'voting']);
         }
       }), this.messageQueue.subscribe(MessageProtocol.Reset, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.attendeeService.clearResponses();
         this.quizService.quiz.currentQuestionIndex = -1;
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'lobby']);
       }), this.messageQueue.subscribe(MessageProtocol.Closed, () => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
       }),

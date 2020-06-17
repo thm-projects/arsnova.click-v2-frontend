@@ -45,10 +45,10 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
   private readonly _messageSubscriptions: Array<string> = [];
 
   public isSendingResponse: boolean;
-  public hasTriggeredNavigation: boolean;
   public countdown: number;
 
   public musicConfig: IAudioPlayerConfig;
+  public hasTriggeredNavigation: boolean;
 
   get answers(): Array<string> {
     return this._answers;
@@ -144,9 +144,7 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
 
   public sendResponses(route?: string): void {
     this.isSendingResponse = true;
-
     this.hasTriggeredNavigation = true;
-    this.router.navigate(this.getNextRoute(route));
 
     let result: Array<number> | number | string;
     if (Array.isArray(this._selectedAnswers)) {
@@ -159,7 +157,11 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
       if (data.status !== StatusProtocol.Success) {
         console.log('VotingComponent: PutResponse failed', data);
       }
-    }, () => {});
+      this.router.navigate(this.getNextRoute(route));
+    }, err => {
+      console.log('VotingComponent: PutResponse failed', err);
+      this.router.navigate(this.getNextRoute(route));
+    });
   }
 
   public initData(): void {
@@ -178,6 +180,10 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
   public ngOnInit(): void {
     this.quizService.quizUpdateEmitter.pipe(takeUntil(this._destroy)).subscribe(quiz => {
       if (!quiz) {
+        return;
+      }
+
+      if (this.hasTriggeredNavigation) {
         return;
       }
 
@@ -205,7 +211,7 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
 
       if ( //
         (this.quizService.quiz.currentQuestionIndex > -1 && this.quizService.quiz.currentStartTimestamp === -1) || //
-        this.attendeeService.hasReponse() //
+        this.attendeeService.hasResponse() //
       ) {
         this.hasTriggeredNavigation = true;
         this.router.navigate(this.getNextRoute());
@@ -276,6 +282,10 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
       }), this.messageQueue.subscribe(MessageProtocol.UpdatedSettings, payload => {
         this.quizService.quiz.sessionConfig = payload.sessionConfig;
       }), this.messageQueue.subscribe(MessageProtocol.Countdown, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.countdown = payload.value;
         if (!this.countdown) {
           this.hasTriggeredNavigation = true;
@@ -283,20 +293,36 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
         }
         this.cd.markForCheck();
       }), this.messageQueue.subscribe(MessageProtocol.Reset, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.attendeeService.clearResponses();
         this.quizService.quiz.currentQuestionIndex = -1;
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'lobby']);
       }), this.messageQueue.subscribe(MessageProtocol.Closed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
       }), this.messageQueue.subscribe(MessageProtocol.Removed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         const existingNickname = sessionStorage.getItem(StorageKey.CurrentNickName);
         if (existingNickname === payload.name) {
           this.hasTriggeredNavigation = true;
           this.router.navigate(['/']);
         }
       }), this.messageQueue.subscribe(MessageProtocol.Stop, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.sendResponses('results');
       }),
@@ -304,27 +330,23 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
   }
 
   private toggleSelectedAnswers(): boolean {
-    if (this._currentQuestion.TYPE === QuestionType.SurveyQuestion && !(
-      this._currentQuestion as SurveyQuestionEntity
-    ).multipleSelectionEnabled) {
+    if ([QuestionType.SurveyQuestion, QuestionType.ABCDSurveyQuestion].includes(this._currentQuestion.TYPE) &&
+        !(this._currentQuestion as SurveyQuestionEntity).multipleSelectionEnabled) {
       return true;
     }
 
     return [
       QuestionType.SingleChoiceQuestion,
       QuestionType.TrueFalseSingleChoiceQuestion,
-      QuestionType.ABCDSingleChoiceQuestion,
       QuestionType.YesNoSingleChoiceQuestion,
     ].includes(this._currentQuestion.TYPE);
   }
 
   private getNextRoute(route?: string): Array<string> {
-    const isRankableQuestion = ![QuestionType.SurveyQuestion, QuestionType.ABCDSingleChoiceQuestion].includes(this._currentQuestion.TYPE);
+    const hasConfidenceEnabled = environment.confidenceSliderEnabled && this.quizService.quiz.sessionConfig.confidenceSliderEnabled;
 
     return [
-      '/quiz', 'flow', route ? route : environment.confidenceSliderEnabled && //
-                                       this.quizService.quiz.sessionConfig.confidenceSliderEnabled ? 'confidence-rate' :
-                                       isRankableQuestion ? 'answer-result' : 'results',
+      '/quiz', 'flow', route ? route : (hasConfidenceEnabled ? 'confidence-rate' : 'results'),
     ];
   }
 }
