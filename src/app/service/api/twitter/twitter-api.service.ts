@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { ITweetEntry } from '../../../lib/interfaces/ITweetEntry';
 
 @Injectable({
@@ -27,7 +27,7 @@ export class TwitterApiService {
   }
 
   private initUrls(): void {
-    this._getTweetUrl = `${DefaultSettings.httpApiEndpoint}/twitter/recentTweets`;
-    this._getQuestionDigestUrl = `${DefaultSettings.httpLibEndpoint}/image/quiz`;
+    this._getTweetUrl = `${environment.apiUrl}/twitter/recentTweets`;
+    this._getQuestionDigestUrl = `${environment.apiUrl}/image/quiz`;
   }
 }

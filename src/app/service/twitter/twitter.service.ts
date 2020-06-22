@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { CookieService } from 'ngx-cookie-service';
 import { Observable, of, ReplaySubject, Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
-import { DefaultSettings } from '../../lib/default.settings';
+import { environment } from '../../../environments/environment';
 import { StorageKey } from '../../lib/enums/enums';
 import { ITweetEntry } from '../../lib/interfaces/ITweetEntry';
 import { TwitterApiService } from '../api/twitter/twitter-api.service';
@@ -106,7 +106,7 @@ export class TwitterService {
   }
 
   private getUrl(): string {
-    const url = `${DefaultSettings.httpLibEndpoint}/quiz/twitterPost/${this._digest}/${encodeURIComponent(this._quizName)}`;
+    const url = `${environment.libUrl}/quiz/twitterPost/${this._digest}/${encodeURIComponent(this._quizName)}`;
     return encodeURI(url);
   }
 }

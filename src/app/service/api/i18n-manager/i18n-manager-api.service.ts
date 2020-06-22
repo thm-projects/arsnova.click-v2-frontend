@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { Project } from '../../../lib/enums/enums';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
 import { UserService } from '../../user/user.service';
@@ -17,11 +17,11 @@ export class I18nManagerApiService {
   constructor(private http: HttpClient, private userService: UserService) { }
 
   public GET_FE_PROJECT_URL(): string {
-    return `${DefaultSettings.httpApiEndpoint}/plugin/i18nator/${this.FE_BASE_URL}`;
+    return `${environment.apiUrl}/plugin/i18nator/${this.FE_BASE_URL}`;
   }
 
   public GET_BE_PROJECT_URL(): string {
-    return `${DefaultSettings.httpApiEndpoint}/plugin/i18nator/${this.BE_BASE_URL}`;
+    return `${environment.apiUrl}/plugin/i18nator/${this.BE_BASE_URL}`;
   }
 
   public GET_LANG_FILE_URL(baseUrl): string {

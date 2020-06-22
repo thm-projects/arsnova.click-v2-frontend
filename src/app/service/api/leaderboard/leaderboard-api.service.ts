@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { StorageKey } from '../../../lib/enums/enums';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
 
@@ -13,7 +13,7 @@ export class LeaderboardApiService {
   constructor(private http: HttpClient) { }
 
   public LEADERBOARD_GET_DATA_URL(quizName: string, amount: number, questionIndex?: number): string {
-    return `${DefaultSettings.httpApiEndpoint}/quiz/leaderboard/${encodeURIComponent(quizName)}/${encodeURIComponent(amount)}/${encodeURIComponent(
+    return `${environment.apiUrl}/quiz/leaderboard/${encodeURIComponent(quizName)}/${encodeURIComponent(amount)}/${encodeURIComponent(
       questionIndex)}`;
   }
 

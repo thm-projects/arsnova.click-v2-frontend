@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { AbstractQuestionEntity } from '../../../lib/entities/question/AbstractQuestionEntity';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
 import { UserService } from '../../user/user.service';
@@ -80,14 +80,14 @@ export class QuizPoolApiService {
   }
 
   private loadUrls(): void {
-    this._getQuizpoolUrl = `${DefaultSettings.httpApiEndpoint}/quizpool/generate`;
-    this._getQuizpoolQuestionsUrl = `${DefaultSettings.httpApiEndpoint}/quizpool/all`;
-    this._getQuizpoolTagsUrl = `${DefaultSettings.httpApiEndpoint}/quizpool/tags`;
-    this._getPendingQuizpoolUrl = `${DefaultSettings.httpApiEndpoint}/quizpool/pending`;
-    this._getQuizpoolQuestionUrl = `${DefaultSettings.httpApiEndpoint}/quizpool/all`;
-    this._postNewQuestionUrl = `${DefaultSettings.httpApiEndpoint}/quizpool`;
-    this._putApproveQuestionUrl = `${DefaultSettings.httpApiEndpoint}/quizpool/pending`;
-    this._deletePoolQuestionUrl = `${DefaultSettings.httpApiEndpoint}/quizpool`;
-    this._postInitiateImportUrl = `${DefaultSettings.httpApiEndpoint}/quizpool/import`;
+    this._getQuizpoolUrl = `${environment.apiUrl}/quizpool/generate`;
+    this._getQuizpoolQuestionsUrl = `${environment.apiUrl}/quizpool/all`;
+    this._getQuizpoolTagsUrl = `${environment.apiUrl}/quizpool/tags`;
+    this._getPendingQuizpoolUrl = `${environment.apiUrl}/quizpool/pending`;
+    this._getQuizpoolQuestionUrl = `${environment.apiUrl}/quizpool/all`;
+    this._postNewQuestionUrl = `${environment.apiUrl}/quizpool`;
+    this._putApproveQuestionUrl = `${environment.apiUrl}/quizpool/pending`;
+    this._deletePoolQuestionUrl = `${environment.apiUrl}/quizpool`;
+    this._postInitiateImportUrl = `${environment.apiUrl}/quizpool/import`;
   }
 }

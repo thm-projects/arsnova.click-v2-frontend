@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { DefaultSettings } from '../../lib/default.settings';
 import { FooterBarService } from '../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../service/header-label/header-label.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
@@ -86,7 +85,7 @@ export class InfoComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public openApiDocsWindow(): void {
-    window.open(`${DefaultSettings.httpApiEndpoint}/api-docs/`, '_blank', 'noopener noreferrer');
+    window.open(`${environment.apiUrl}/api-docs/`, '_blank', 'noopener noreferrer');
   }
 
   public isExternalLinkEnabled(linkName: string): boolean {

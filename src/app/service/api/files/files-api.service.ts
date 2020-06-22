@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { AudioPlayerConfigTarget } from '../../../lib/enums/AudioPlayerConfigTarget';
 
 @Injectable({
@@ -10,6 +10,6 @@ export class FilesApiService {
   constructor() { }
 
   public SOUND_FILE_GET_URL(target: AudioPlayerConfigTarget, fileName: string): string {
-    return `${DefaultSettings.httpApiEndpoint}/files/sound/${encodeURIComponent(target)}/${encodeURIComponent(fileName)}.mp3`;
+    return `${environment.apiUrl}/files/sound/${encodeURIComponent(target)}/${encodeURIComponent(fileName)}.mp3`;
   }
 }

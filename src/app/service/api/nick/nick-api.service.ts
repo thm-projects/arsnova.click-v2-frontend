@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { IAvailableNicks } from '../../../lib/interfaces/IAvailableNicks';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class NickApiService {
   constructor(private http: HttpClient) { }
 
   public GET_PREDEFINED_NICKS_URL(): string {
-    return `${DefaultSettings.httpApiEndpoint}/nicks/predefined`;
+    return `${environment.apiUrl}/nicks/predefined`;
   }
 
   public getPredefinedNicks(): Observable<IAvailableNicks> {

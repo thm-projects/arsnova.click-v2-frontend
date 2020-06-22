@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { UserService } from '../../user/user.service';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class NotificationApiService {
   constructor(private http: HttpClient, private userService: UserService) { }
 
   public BASE_URL(): string {
-    return `${DefaultSettings.httpApiEndpoint}/notification`;
+    return `${environment.apiUrl}/notification`;
   }
 
   public addPushSubscriber(sub: PushSubscription): Observable<void> {

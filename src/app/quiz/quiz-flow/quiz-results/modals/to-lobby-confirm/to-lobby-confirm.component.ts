@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import {DefaultSettings} from '../../../../../lib/default.settings';
-import {StorageKey} from '../../../../../lib/enums/enums';
-import {ThemesService} from '../../../../../service/themes/themes.service';
-import {QuizService} from '../../../../../service/quiz/quiz.service';
-import {TranslateService} from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
+import { environment } from '../../../../../../environments/environment';
+import { StorageKey } from '../../../../../lib/enums/enums';
+import { QuizService } from '../../../../../service/quiz/quiz.service';
+import { ThemesService } from '../../../../../service/themes/themes.service';
 
 @Component({
   selector: 'app-to-lobby-confirm',
@@ -29,7 +29,7 @@ export class ToLobbyConfirmComponent {
   }
 
   public export(): void {
-      const link = `${DefaultSettings.httpApiEndpoint}/quiz/export/${this.quizService.quiz.name}/${sessionStorage.getItem(
+      const link = `${environment.apiUrl}/quiz/export/${this.quizService.quiz.name}/${sessionStorage.getItem(
           StorageKey.PrivateKey)}/${this.themesService.currentTheme}/${this.translateService.currentLang}`;
       window.open(link);
   }

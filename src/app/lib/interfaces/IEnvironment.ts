@@ -5,14 +5,11 @@ export interface IEnvironment {
   enableBonusToken: boolean;
   vapidPublicKey: string;
   title: Title;
-  enableCasLogin: boolean;
   sentryDSN?: string;
   version: string;
   production: boolean;
-  ssrEndpoint: string;
-  serverEndpoint: string;
-  httpApiEndpoint: string;
-  httpLibEndpoint: string;
+  apiUrl: string;
+  libUrl: string;
   stompConfig: {
     endpoint: string, user: string, password: string, vhost: string,
   };

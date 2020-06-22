@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { QuizEntity } from '../../../lib/entities/QuizEntity';
 import { UserEntity } from '../../../lib/entities/UserEntity';
 import { IAdminQuiz } from '../../../lib/interfaces/quizzes/IAdminQuiz';
@@ -53,12 +53,12 @@ export class AdminApiService {
   }
 
   private initUrls(): void {
-    this._getAvailableUsersUrl = `${DefaultSettings.httpApiEndpoint}/admin/users`;
-    this._deleteUserUrl = `${DefaultSettings.httpApiEndpoint}/admin/user`;
-    this._putUserUrl = `${DefaultSettings.httpApiEndpoint}/admin/user`;
-    this._getAvailableQuizzesUrl = `${DefaultSettings.httpApiEndpoint}/admin/quizzes`;
-    this._getQuizUrl = `${DefaultSettings.httpApiEndpoint}/admin/quiz`;
-    this._deleteQuizUrl = `${DefaultSettings.httpApiEndpoint}/admin/quiz`;
-    this._postQuizDeactivateUrl = `${DefaultSettings.httpApiEndpoint}/admin/quiz`;
+    this._getAvailableUsersUrl = `${environment.apiUrl}/admin/users`;
+    this._deleteUserUrl = `${environment.apiUrl}/admin/user`;
+    this._putUserUrl = `${environment.apiUrl}/admin/user`;
+    this._getAvailableQuizzesUrl = `${environment.apiUrl}/admin/quizzes`;
+    this._getQuizUrl = `${environment.apiUrl}/admin/quiz`;
+    this._deleteQuizUrl = `${environment.apiUrl}/admin/quiz`;
+    this._postQuizDeactivateUrl = `${environment.apiUrl}/admin/quiz`;
   }
 }

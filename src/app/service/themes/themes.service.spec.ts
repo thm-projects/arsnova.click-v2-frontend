@@ -3,7 +3,7 @@ import { async, inject, TestBed } from '@angular/core/testing';
 import { TransferState } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { DefaultSettings } from '../../lib/default.settings';
+import { environment } from '../../../environments/environment';
 import { MessageProtocol, StatusProtocol } from '../../lib/enums/Message';
 import { I18nTestingModule } from '../../shared/testing/i18n-testing/i18n-testing.module';
 import { ConnectionMockService } from '../connection/connection.mock.service';
@@ -19,7 +19,7 @@ import { StorageServiceMock } from '../storage/storage.service.mock';
 import { ThemesService } from './themes.service';
 
 describe('ThemesService', () => {
-  const themeUrl = `${DefaultSettings.httpApiEndpoint}/themes`;
+  const themeUrl = `${environment.apiUrl}/themes`;
   const themeData = {
     'status': StatusProtocol.Success,
     'step': MessageProtocol.GetThemes,

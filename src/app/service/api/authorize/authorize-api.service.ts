@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
 
 @Injectable({
@@ -12,15 +12,15 @@ export class AuthorizeApiService {
   constructor(private http: HttpClient) { }
 
   public AUTHORIZE_TOKEN_GET_URL(token: string): string {
-    return `${DefaultSettings.httpLibEndpoint}/authorize/${encodeURIComponent(token)}`;
+    return `${environment.libUrl}/authorize/${encodeURIComponent(token)}`;
   }
 
   public AUTHORIZE_STATIC_POST_URL(): string {
-    return `${DefaultSettings.httpLibEndpoint}/authorize/static`;
+    return `${environment.libUrl}/authorize/static`;
   }
 
   public AUTHORIZE_VALIDATE_TOKEN_GET_URL(username, token: string): string {
-    return `${DefaultSettings.httpLibEndpoint}/authorize/validate/${encodeURIComponent(username)}/${encodeURIComponent(token)}`;
+    return `${environment.libUrl}/authorize/validate/${encodeURIComponent(username)}/${encodeURIComponent(token)}`;
   }
 
   public getAuthorizationForToken(token: string): Observable<IMessage> {

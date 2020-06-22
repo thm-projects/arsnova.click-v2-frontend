@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { of } from 'rxjs/internal/observable/of';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 import { MemberEntity } from '../../../lib/entities/member/MemberEntity';
 import { StorageKey } from '../../../lib/enums/enums';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
@@ -98,13 +98,13 @@ export class MemberApiService {
   }
 
   private loadUrls(): void {
-    this._putMemberUrl = `${DefaultSettings.httpApiEndpoint}/member`;
-    this._deleteMemberUrl = `${DefaultSettings.httpApiEndpoint}/member`;
-    this._getMembersUrl = `${DefaultSettings.httpApiEndpoint}/member`;
-    this._getAvailableMemberNamesUrl = `${DefaultSettings.httpApiEndpoint}/member/available`;
-    this._putResponseUrl = `${DefaultSettings.httpApiEndpoint}/member/response`;
-    this._putConfidenceValueUrl = `${DefaultSettings.httpApiEndpoint}/member/confidence-value`;
-    this._putReadingConfirmationValueUrl = `${DefaultSettings.httpApiEndpoint}/member/reading-confirmation`;
-    this._postMemberTokenUrl = `${DefaultSettings.httpApiEndpoint}/member/token`;
+    this._putMemberUrl = `${environment.apiUrl}/member`;
+    this._deleteMemberUrl = `${environment.apiUrl}/member`;
+    this._getMembersUrl = `${environment.apiUrl}/member`;
+    this._getAvailableMemberNamesUrl = `${environment.apiUrl}/member/available`;
+    this._putResponseUrl = `${environment.apiUrl}/member/response`;
+    this._putConfidenceValueUrl = `${environment.apiUrl}/member/confidence-value`;
+    this._putReadingConfirmationValueUrl = `${environment.apiUrl}/member/reading-confirmation`;
+    this._postMemberTokenUrl = `${environment.apiUrl}/member/token`;
   }
 }

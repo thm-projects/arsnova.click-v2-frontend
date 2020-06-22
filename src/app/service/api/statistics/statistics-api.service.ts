@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DefaultSettings } from '../../../lib/default.settings';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +13,7 @@ export class StatisticsApiService {
   ) { }
 
   public BASE_STATISTICS_GET_URL(): string {
-    return `${DefaultSettings.httpApiEndpoint}`;
+    return `${environment.apiUrl}`;
   }
 
   public BASE_STATISTICS_OPTIONS_URL(): string {
@@ -25,7 +25,7 @@ export class StatisticsApiService {
   }
 
   public getBaseAppStatistics(): Observable<any> {
-    return this.http.get(`${DefaultSettings.serverEndpoint}/statistics`);
+    return this.http.get(`${environment.libUrl}/statistics`);
   }
 
   public optionsBaseStatistics(): Observable<void> {

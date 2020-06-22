@@ -2,7 +2,6 @@ import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { DefaultSettings } from '../../../lib/default.settings';
 import { QuizEntity } from '../../../lib/entities/QuizEntity';
 import { StorageKey } from '../../../lib/enums/enums';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
@@ -243,32 +242,32 @@ export class QuizApiService {
   }
 
   private loadUrls(): void {
-    this._putQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz`;
-    this._putSaveQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz/save`;
-    this._postNextStepUrl = `${DefaultSettings.httpApiEndpoint}/quiz/next`;
-    this._deleteQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz`;
-    this._postResetQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz/reset`;
-    this._postStopQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz/stop`;
-    this._postQuizSettingsUpdateUrl = `${DefaultSettings.httpApiEndpoint}/quiz/settings`;
-    this._getQuizSettingsUrl = `${DefaultSettings.httpApiEndpoint}/quiz/settings`;
-    this._postQuizUploadUrl = `${DefaultSettings.httpApiEndpoint}/quiz/upload`;
-    this._getQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz/quiz`;
-    this._getQuizStatusUrl = `${DefaultSettings.httpApiEndpoint}/quiz/status`;
-    this._getFullQuizStatusDataUrl = `${DefaultSettings.httpApiEndpoint}/quiz/full-status`;
-    this._getQuizStartTimeUrl = `${DefaultSettings.httpApiEndpoint}/quiz/start-time`;
-    this._getFreeMemberGroupUrl = `${DefaultSettings.httpApiEndpoint}/quiz/member-group`;
-    this._getAbcdQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz/generate/abcd`;
-    this._getDemoQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz/generate/demo`;
-    this._setQuizAsPrivateUrl = `${DefaultSettings.httpApiEndpoint}/quiz/private`;
-    this._getPublicQuizzesUrl = `${DefaultSettings.httpApiEndpoint}/quiz/public`;
-    this._getPublicQuizAmountUrl = `${DefaultSettings.httpApiEndpoint}/quiz/public/amount`;
-    this._getOwnPublicQuizzesUrl = `${DefaultSettings.httpApiEndpoint}/quiz/public/own`;
-    this._getOwnPublicQuizAmountUrl = `${DefaultSettings.httpApiEndpoint}/quiz/public/amount/own`;
-    this._deleteActiveQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz/active`;
-    this._initQuizInstanceUrl = `${DefaultSettings.httpApiEndpoint}/quiz/public/init`;
-    this._getActiveQuizzesUrl = `${DefaultSettings.httpApiEndpoint}/quiz/active`;
-    this._getCanUseBonusTokenUrl = `${DefaultSettings.httpApiEndpoint}/quiz/bonus-token`;
-    this._getAnswerResultUrl = `${DefaultSettings.httpApiEndpoint}/quiz/answer-result`;
-    this._getExportFileUrl = `${DefaultSettings.httpApiEndpoint}/quiz/export`;
+    this._putQuizUrl = `${environment.apiUrl}/quiz`;
+    this._putSaveQuizUrl = `${environment.apiUrl}/quiz/save`;
+    this._postNextStepUrl = `${environment.apiUrl}/quiz/next`;
+    this._deleteQuizUrl = `${environment.apiUrl}/quiz`;
+    this._postResetQuizUrl = `${environment.apiUrl}/quiz/reset`;
+    this._postStopQuizUrl = `${environment.apiUrl}/quiz/stop`;
+    this._postQuizSettingsUpdateUrl = `${environment.apiUrl}/quiz/settings`;
+    this._getQuizSettingsUrl = `${environment.apiUrl}/quiz/settings`;
+    this._postQuizUploadUrl = `${environment.apiUrl}/quiz/upload`;
+    this._getQuizUrl = `${environment.apiUrl}/quiz/quiz`;
+    this._getQuizStatusUrl = `${environment.apiUrl}/quiz/status`;
+    this._getFullQuizStatusDataUrl = `${environment.apiUrl}/quiz/full-status`;
+    this._getQuizStartTimeUrl = `${environment.apiUrl}/quiz/start-time`;
+    this._getFreeMemberGroupUrl = `${environment.apiUrl}/quiz/member-group`;
+    this._getAbcdQuizUrl = `${environment.apiUrl}/quiz/generate/abcd`;
+    this._getDemoQuizUrl = `${environment.apiUrl}/quiz/generate/demo`;
+    this._setQuizAsPrivateUrl = `${environment.apiUrl}/quiz/private`;
+    this._getPublicQuizzesUrl = `${environment.apiUrl}/quiz/public`;
+    this._getPublicQuizAmountUrl = `${environment.apiUrl}/quiz/public/amount`;
+    this._getOwnPublicQuizzesUrl = `${environment.apiUrl}/quiz/public/own`;
+    this._getOwnPublicQuizAmountUrl = `${environment.apiUrl}/quiz/public/amount/own`;
+    this._deleteActiveQuizUrl = `${environment.apiUrl}/quiz/active`;
+    this._initQuizInstanceUrl = `${environment.apiUrl}/quiz/public/init`;
+    this._getActiveQuizzesUrl = `${environment.apiUrl}/quiz/active`;
+    this._getCanUseBonusTokenUrl = `${environment.apiUrl}/quiz/bonus-token`;
+    this._getAnswerResultUrl = `${environment.apiUrl}/quiz/answer-result`;
+    this._getExportFileUrl = `${environment.apiUrl}/quiz/export`;
   }
 }

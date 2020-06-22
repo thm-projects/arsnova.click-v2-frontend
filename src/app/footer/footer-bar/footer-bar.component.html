@@ -1,12 +1,12 @@
 <nav *ngIf="footerBarService.footerElements.length"
      [class.collapsed]="footerBarService.collapsedNavbar"
-     class="nav navbar-footer d-md-inline-block flex-nowrap flex-sm-column justify-content-sm-start p-1 mb-2 mb-sm-0"
-     role="navigation">
+     class="nav navbar-footer d-md-inline-block flex-nowrap flex-sm-column justify-content-sm-start p-1 mb-2 mb-sm-0">
   <input (change)="fileChange($event)"
          accept="application/json"
          class="d-none"
          id="upload-session"
          aria-hidden="true"
+         aria-label="file-upload"
          multiple="multiple"
          type="file"/>
   <a href="#"

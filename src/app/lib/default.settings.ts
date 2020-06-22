@@ -2,10 +2,6 @@ import { environment } from '../../environments/environment';
 
 export const DefaultSettings = {
   siteId: 'arsnova.click-v2',
-  ssrEndpoint: environment.ssrEndpoint,
-  httpApiEndpoint: environment.httpApiEndpoint,
-  httpLibEndpoint: environment.httpLibEndpoint,
-  serverEndpoint: environment.serverEndpoint,
   defaultQuizSettings: {
     answers: {
       answerText: '',
@@ -59,7 +55,6 @@ export const DefaultSettings = {
         maxMembersPerGroup: 10,
         autoJoinToGroup: false,
         blockIllegalNicks: true,
-        restrictToCasLogin: false,
         selectedNicks: [],
       },
       theme: environment.defaultTheme,
