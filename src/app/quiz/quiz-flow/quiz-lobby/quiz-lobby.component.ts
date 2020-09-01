@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID, SecurityContext, TemplateRef } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID, SecurityContext, TemplateRef, ViewChild, ElementRef } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { NgbActiveModal, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -33,6 +33,7 @@ import { TrackingService } from '../../../service/tracking/tracking.service';
 import { UserService } from '../../../service/user/user.service';
 import { EditModeConfirmComponent } from './modals/edit-mode-confirm/edit-mode-confirm.component';
 import { QrCodeContentComponent } from './modals/qr-code-content/qr-code-content.component';
+import { ThreejsService } from '../../../service/threejs/threejs.service';
 
 @Component({
   selector: 'app-quiz-lobby',
@@ -50,6 +51,9 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
   private readonly _messageSubscriptions: Array<string> = [];
   public hasTriggeredNavigation: boolean;
   public musicConfig: IAudioPlayerConfig;
+
+  @ViewChild('rendererCanvas', {static: true})
+  public rendererCanvas: ElementRef<HTMLCanvasElement>;
 
   get nickToRemove(): string {
     return this._nickToRemove;
@@ -74,6 +78,7 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
     private userService: UserService,
     private messageQueue: SimpleMQ,
     private customMarkdownService: CustomMarkdownService,
+    private threejsService: ThreejsService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.removeItem(StorageKey.CurrentQuestionIndex);
@@ -82,6 +87,10 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
   }
 
   public ngOnInit(): void {
+    
+    this.threejsService.createScene(this.rendererCanvas)
+    this.threejsService.animate()
+
     this.quizService.quizUpdateEmitter.pipe(takeUntil(this._destroy)).subscribe(quiz => {
       console.log('QuizLobbyComponent: quizUpdateEmitter fired', quiz);
       this.attendeeService.reloadData();
@@ -198,6 +207,10 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
 
   public isHtmlNickname(value: string): boolean {
     return Boolean(value.match(/:[\w\+\-]+:/g));
+  }
+
+  public allNicks(): Array<MemberEntity> {
+    return this.quizService.allNicks(); 
   }
 
   public ngOnDestroy(): void {

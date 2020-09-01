@@ -15,6 +15,7 @@ import { NoDataErrorComponent } from '../../shared/no-data-error/no-data-error.c
 import { QuizApiService } from '../api/quiz/quiz-api.service';
 import { SettingsService } from '../settings/settings.service';
 import { StorageService } from '../storage/storage.service';
+import { MemberEntity } from 'src/app/lib/entities/member/MemberEntity';
 
 @Injectable({
   providedIn: 'root',
@@ -170,6 +171,10 @@ export class QuizService {
 
   public hasSelectedNick(nickname: string): boolean {
     return this.quiz.sessionConfig.nicks.selectedNicks.indexOf(nickname) !== -1;
+  }
+
+  public allNicks(): Array<MemberEntity> {
+    return this.quiz.allNicks();
   }
 
   public toggleSelectedNick(nickname: string): void {

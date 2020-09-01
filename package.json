@@ -109,6 +109,7 @@
     "prism-themes": "^1.4.0",
     "rxjs": "~6.5.5",
     "source-map-support": "^0.5.19",
+    "three": "^0.120.1",
     "ts-loader": "^6.2.2",
     "tslib": "^2.0.0",
     "web-animations-js": "^2.3.2",

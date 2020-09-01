@@ -4,6 +4,7 @@ import { getQuestionForType } from '../QuizValidator';
 import { MemberGroupEntity } from './member/MemberGroupEntity';
 import { AbstractQuestionEntity } from './question/AbstractQuestionEntity';
 import { SessionConfigurationEntity } from './session-configuration/SessionConfigurationEntity';
+import { MemberEntity } from './member/MemberEntity';
 
 export class QuizEntity {
   public name: string;
@@ -70,5 +71,12 @@ export class QuizEntity {
       return allQuestionsEqual;
     }
     return false;
+  }
+
+  //TODO: Fix this
+  public allNicks(): Array<MemberEntity> {
+    var members: Array<MemberEntity>
+    
+    return members
   }
 }
