@@ -173,10 +173,6 @@ export class QuizService {
     return this.quiz.sessionConfig.nicks.selectedNicks.indexOf(nickname) !== -1;
   }
 
-  public allNicks(): Array<MemberEntity> {
-    return this.quiz.allNicks();
-  }
-
   public toggleSelectedNick(nickname: string): void {
     if (this.hasSelectedNick(nickname)) {
       this.removeSelectedNickByName(nickname);

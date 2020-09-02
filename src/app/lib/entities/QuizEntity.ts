@@ -72,11 +72,4 @@ export class QuizEntity {
     }
     return false;
   }
-
-  //TODO: Fix this
-  public allNicks(): Array<MemberEntity> {
-    var members: Array<MemberEntity>
-    
-    return members
-  }
 }

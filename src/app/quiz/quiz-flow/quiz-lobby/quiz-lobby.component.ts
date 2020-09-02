@@ -88,7 +88,7 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
 
   public ngOnInit(): void {
     
-    this.threejsService.createScene(this.rendererCanvas)
+    this.threejsService.createScene(this.rendererCanvas, this.attendeeService.attendees)
     this.threejsService.animate()
 
     this.quizService.quizUpdateEmitter.pipe(takeUntil(this._destroy)).subscribe(quiz => {
@@ -207,10 +207,6 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
 
   public isHtmlNickname(value: string): boolean {
     return Boolean(value.match(/:[\w\+\-]+:/g));
-  }
-
-  public allNicks(): Array<MemberEntity> {
-    return this.quizService.allNicks(); 
   }
 
   public ngOnDestroy(): void {
