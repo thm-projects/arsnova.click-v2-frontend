@@ -10,8 +10,8 @@ export const environment: IEnvironment = {
   serverEndpoint: '',
   stompConfig: {
     endpoint: 'ws://localhost:15674/ws',
-    user: 'arsnova-click',
-    password: 'K3BHZQMHsxh6XQ5a',
+    user: 'myUser',
+    password: 'myPassword',
     vhost: '/',
   },
   leaderboardAmount: 5,

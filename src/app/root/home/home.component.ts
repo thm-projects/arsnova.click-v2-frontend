@@ -33,6 +33,8 @@ import { ThemesService } from '../../service/themes/themes.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
 import { TwitterService } from '../../service/twitter/twitter.service';
 import { UserService } from '../../service/user/user.service';
+import { MessageOfTheDayService } from '../../service/motd/message-of-the-day.service'
+import { IMessageOfTheDay } from 'src/app/lib/interfaces/motd/IMessageOfTheDay';
 
 @Component({
   selector: 'app-home',
@@ -72,6 +74,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   public disableStatistics: boolean;
   public readonly selectedTitle = environment.title;
   public readonly isServer = isPlatformServer(this.platformId);
+  public messageOfTheDay: IMessageOfTheDay;
 
   get serverPassword(): string {
     return this._serverPassword;
@@ -122,6 +125,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     public sharedService: SharedService,
     public memberApiService: MemberApiService,
     public twitterService: TwitterService,
+    public messageOfTheDayService: MessageOfTheDayService
   ) {
 
     if (isPlatformBrowser(this.platformId)) {
@@ -226,6 +230,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       switchMapTo(this.connectionService.connectToGlobalChannel()),
       takeUntil(this._destroy),
     ).subscribe();
+
+    this.messageOfTheDay = this.messageOfTheDayService.getMessageOfTheDay()
   }
 
   public ngOnDestroy(): void {
