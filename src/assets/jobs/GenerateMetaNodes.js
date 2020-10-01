@@ -142,7 +142,7 @@ class GenerateMetaNodes {
           orientation: 'any',
           icons: imageDerivates.logo.map(derivate => {
             return {
-              src: `/assets/images/theme/${theme}/logo_s${derivate}.png`,
+              src: `/assets/images/logo_transparent.png`,
               sizes: derivate,
               type: 'image/png',
             }
