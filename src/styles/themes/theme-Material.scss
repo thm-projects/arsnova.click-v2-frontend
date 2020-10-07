@@ -118,8 +118,8 @@ $logo-fg: (".arsnova-logo-ars": #00796b, ".arsnova-logo-nova": #00796b, ".arsnov
 
 $popover-body-color: initial;
 
-$bg-pre: white;
-$code-color: $secondary_text_color;
+$bg-pre: $warning;
+$pre-color: white;
 
 @import "postbuild";
 
