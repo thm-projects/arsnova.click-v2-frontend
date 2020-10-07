@@ -20,8 +20,6 @@ $body-color: $primary_text_color;
 
 $text-muted: $secondary_text_color;
 
-$pre-color: $secondary;
-
 $border-loader_wrapper-outer_spin: #00796b;
 $border-loader_wrapper-middle_spin: #e74c3c;
 $border-loader_wrapper-inner_spin: #f9c922;
@@ -128,7 +126,7 @@ $logo-fg: (".arsnova-logo-ars": white, ".arsnova-logo-nova": white, ".arsnova-lo
 $popover-body-color: black;
 
 $bg-pre: $warning;
-$code-color: white !important;
+$pre-color: white;
 
 @import "postbuild";
 
