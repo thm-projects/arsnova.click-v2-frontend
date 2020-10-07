@@ -5,7 +5,7 @@ $light: #acacac;
 $dark: #212121;
 $info: yellow;
 $success: green;
-$warning: #FF8C00;
+$warning: #f68105;
 $danger: red;
 
 $primary_text_color: white;
@@ -128,7 +128,8 @@ $logo-fg: (".arsnova-logo-ars": white, ".arsnova-logo-nova": white, ".arsnova-lo
 
 $popover-body-color: black;
 
-$code-color: $primary_text_color;
+$bg-pre: $warning;
+$code-color: white;
 
 @import "postbuild";
 
