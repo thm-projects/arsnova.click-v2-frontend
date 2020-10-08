@@ -16,7 +16,7 @@ $modal-content-color: white;
 $modal-header-border-color: transparent;
 
 $body-bg: $primary;
-$body-color: black !important;
+$body-color: white;
 
 $text-muted: $light;
 
@@ -83,7 +83,7 @@ $colorChangingOwnNick: (
 
 $colorChangingArs: (
         0: (fg: orange, bg: transparent),
-        25: (fg: #00796b, bg: transparent),
+        25: (fg: #white, bg: transparent),
         50: (fg: orange, bg: transparent),
         75: (fg: orange, bg: transparent),
         100: (fg: orange, bg: transparent)
@@ -92,7 +92,7 @@ $colorChangingArs: (
 $colorChangingNova: (
         0: (fg: orange, bg: transparent),
         25: (fg: orange, bg: transparent),
-        50: (fg: #00796b, bg: transparent),
+        50: (fg: white, bg: transparent),
         75: (fg: orange, bg: transparent),
         100: (fg: orange, bg: transparent)
 );
@@ -101,20 +101,20 @@ $colorChangingDot: (
         0: (fg: orange, bg: transparent),
         25: (fg: orange, bg: transparent),
         50: (fg: orange, bg: transparent),
-        75: (fg: #00796b, bg: transparent),
+        75: (fg: white, bg: transparent),
         100: (fg: orange, bg: transparent)
 );
 
 $colorChangingClick: (
-        0: (fg: #00796b, bg: transparent),
+        0: (fg: white, bg: transparent),
         25: (fg: orange, bg: transparent),
         50: (fg: orange, bg: transparent),
         75: (fg: orange, bg: transparent),
-        100: (fg: #00796b, bg: transparent)
+        100: (fg: white, bg: transparent)
 );
 
 $logo-bg: transparent;
-$logo-fg: (".arsnova-logo-ars": #00796b, ".arsnova-logo-nova": #00796b, ".arsnova-logo-click": orange);
+$logo-fg: (".arsnova-logo-ars": white, ".arsnova-logo-nova": white, ".arsnova-logo-click": orange);
 
 $popover-body-color: initial;
 
