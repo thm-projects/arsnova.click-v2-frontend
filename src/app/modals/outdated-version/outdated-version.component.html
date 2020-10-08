@@ -14,7 +14,8 @@
   <div class="buttonContainer">
     <button (click)="checkForUpdates()"
             [disabled]="isCheckingForUpdates"
-            class="btn btn-primary d-block my-3">
+            class="btn btn-primary d-block my-3"
+            id="btnCheckUpdates">
       <span *ngIf="!isCheckingForUpdates">{{'region.header.connection_status.check-for-updates' | translate}}</span>
       <span *ngIf="isCheckingForUpdates">
         <span class="mr-2">{{'region.header.connection_status.checking-for-updates' | translate}}</span>
@@ -25,7 +26,8 @@
     <button (click)="abort()"
             class="btn btn-danger d-block mt-2 mx-auto"
             data-dismiss="modal"
-            type="button">{{'component.outdated-version.cancel' | translate}}
+            type="button"
+            id="btnCancelUpdates">{{'component.outdated-version.cancel' | translate}}
     </button>
   </div>
   <a href="#" (click)="reload()" class="text-underline text-reset">{{'component.outdated-version.funnel.1.solution.2' | translate}}</a>
