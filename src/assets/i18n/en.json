@@ -38,13 +38,13 @@
     "footer": {
       "footer_bar": {
         "about": "About",
-        "home": "Homepage",
+        "home": "Home",
         "tos": "Terms of Use",
         "imprint": "Imprint",
         "blog": "Blog",
         "languages": "Language",
         "style": "Style",
-        "import": "Import",
+        "import": "Quiz import",
         "info": "Info",
         "reading-confirmation": "Reading confirmation",
         "fullscreen": "Fullscreen",
@@ -184,22 +184,22 @@
       "connection_status": {
         "title": "Connection status",
         "websocket_status": {
-          "connected": "Connected",
-          "not_connected": "Disconnected"
+          "connected": "connected",
+          "not_connected": "disconnected"
         },
         "estimated-storage-quota": {
           "label": "Estimated storage quota",
-          "not_available": "Not available - Manual update check required!",
-          "currently-used": "Currently {USAGE}MiB of {QUOTA}MiB used"
+          "not_available": "Not available, manual update check required.",
+          "currently-used": "Currently {USAGE} MB of {QUOTA} MB used."
         },
-        "disconnected": "You are offline right now. You can only participate in a quiz or create a new quiz with an internet connection.",
+        "disconnected": "You are offline right now.",
         "server_status": {
-          "not_available": "Not available",
-          "available": "Available"
+          "not_available": "not available",
+          "available": "available"
         },
         "indexedDb_status": {
-          "writable": "Writable",
-          "non_writable": "Not writable"
+          "writable": "writable",
+          "non_writable": "not writable"
         },
         "check-for-updates": "Check for Updates",
         "checking-for-updates": "Checking for Updates",

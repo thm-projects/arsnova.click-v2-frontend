@@ -38,7 +38,7 @@
     "footer": {
       "footer_bar": {
         "about": "Über",
-        "home": "Startseite",
+        "home": "Start",
         "tos": "Nutzung",
         "imprint": "Impressum",
         "blog": "Blog",
@@ -184,22 +184,22 @@
       "connection_status": {
         "title": "Verbindung",
         "websocket_status": {
-          "connected": "Verbunden",
-          "not_connected": "Nicht verbunden"
+          "connected": "verbunden",
+          "not_connected": "nicht verbunden"
         },
         "estimated-storage-quota": {
           "label": "Geschätzter Speicherplatz",
-          "not_available": "Nicht verfügbar - Aktualisierungen müssen manuell gesucht werden!",
-          "currently-used": "Aktuell werden {USAGE}MiB von {QUOTA}MiB verwendet."
+          "not_available": "Nicht verfügbar, Aktualisierungen müssen manuell gesucht werden.",
+          "currently-used": "Aktuell werden {USAGE} MB von {QUOTA} MB verwendet."
         },
-        "disconnected": "Du bist gerade offline. Du kannst nur mit einer Internetverbindung an einem Quiz teilnehmen oder ein neues Quiz erstellen.",
+        "disconnected": "Du bist gerade offline.",
         "server_status": {
-          "not_available": "Nicht verfügbar",
-          "available": "Verfügbar"
+          "not_available": "nicht verfügbar",
+          "available": "verfügbar"
         },
         "indexedDb_status": {
-          "writable": "Beschreibbar",
-          "non_writable": "Nicht beschreibbar"
+          "writable": "beschreibbar",
+          "non_writable": "nicht beschreibbar"
         },
         "check-for-updates": "Auf Aktualisierungen prüfen",
         "checking-for-updates": "Prüfe auf Aktualisierungen",
@@ -261,8 +261,8 @@
         }
       },
       "tag-question-amount": {
-        "label": "Anzahl der Quizfragen",
-        "placeholder": "Anzahl der Quizfragen",
+        "label": "Wie viele Fragen mit dem ausgewählten Tag willst du importierten?",
+        "placeholder": "Anzahl Quizfragen",
         "validation-error": {
           "required": "Gib die Anzahl der gewünschten Quizfragen ein.",
           "min": "Bitte verwende mindestens eine Quizfrage für diesen Tag.",
