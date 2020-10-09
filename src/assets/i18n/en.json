@@ -38,13 +38,13 @@
     "footer": {
       "footer_bar": {
         "about": "About",
-        "home": "Homepage",
+        "home": "Home",
         "tos": "Terms of Use",
         "imprint": "Imprint",
         "blog": "Blog",
         "languages": "Language",
         "style": "Style",
-        "import": "Import",
+        "import": "Quiz import",
         "info": "Info",
         "reading-confirmation": "Reading confirmation",
         "fullscreen": "Fullscreen",
@@ -184,22 +184,22 @@
       "connection_status": {
         "title": "Connection status",
         "websocket_status": {
-          "connected": "Connected",
-          "not_connected": "Disconnected"
+          "connected": "connected",
+          "not_connected": "disconnected"
         },
         "estimated-storage-quota": {
           "label": "Estimated storage quota",
-          "not_available": "Not available - Manual update check required!",
-          "currently-used": "Currently {USAGE}MiB of {QUOTA}MiB used"
+          "not_available": "Not available, manual update check required.",
+          "currently-used": "Currently {USAGE} MB of {QUOTA} GB used."
         },
-        "disconnected": "You are offline right now. You can only participate in a quiz or create a new quiz with an internet connection.",
+        "disconnected": "You are offline right now.",
         "server_status": {
-          "not_available": "Not available",
-          "available": "Available"
+          "not_available": "not available",
+          "available": "available"
         },
         "indexedDb_status": {
-          "writable": "Writable",
-          "non_writable": "Not writable"
+          "writable": "writable",
+          "non_writable": "not writable"
         },
         "check-for-updates": "Check for Updates",
         "checking-for-updates": "Checking for Updates",
@@ -815,22 +815,22 @@
       }
     },
     "outdated-version": {
-      "title": "Your version of arsnova✦click is outdated",
+      "title": "Your version of arsnova✦click is outdated.",
       "cancel": "Cancel",
       "funnel": {
         "1": {
-          "header": "Please update your version of arsnova✦click. This is important to ensure that you receive the latest features and bug fixes.",
+          "header": "Please update arsnova✦click. This is important to ensure that you receive the latest features and bug fixes.",
           "solution": {
             "1": "Press the button to check for updates. The page will reload after a few seconds.",
-            "2": "If that does not happen click here to follow to the next step"
+            "2": "If that does not happen click here to follow to the next step."
           }
         },
         "2": {
-          "header": "Alright, that didn't work. Try a »Hard-Reload« now",
+          "header": "Alright, that didn't work. Try a »Hard-Reload« now.",
           "solution": {
-            "windows": "Hold down the »Ctrl« key and press »F5«",
-            "linux": "Hold down the »Ctrl« key and press »F5«",
-            "mac": "Hold down both »⌘« and »⇧« and press then the key »R«"
+            "windows": "Hold down the »Ctrl« key and press »F5«.",
+            "linux": "Hold down the »Ctrl« key and press »F5«.",
+            "mac": "Hold down both »⌘« and »⇧« and press then the key »R«."
           }
         },
         "3": {
@@ -838,16 +838,16 @@
           "solution": {
             "chrome": "Click in the top right on the symbol with the three dots. Look for »More Tools« and select the option »Clear browsing data«.<br/><br/><strong>Important!</strong> To prevent data loss make sure that you have <strong>only</strong> ticked the box with »Cached images and files«.<br/><br/>Click on »Clear Data« and reload the page.",
             "firefox": "Click in the top right on the symbol with the hamburger bars and select »Library« and then »History«. Now click on »Clear Recent History…«.<br/><br/><strong>Important!</strong> To prevent data loss make sure that you have <strong>only</strong> ticked the boxes with »Cache« and »Offline Website Data«.<br/><br/>Click on »OK« and reload the page.",
-            "safari": "You'll find at the <a href=\"https://support.apple.com/en-en/guide/safari/sfri47acf5d6/mac\">Apple Support</a> a manual how to reset the cache",
-            "ios": "Please check individually for your browser vendor how to reset the cache. You'll find at the <a href=\"https://support.apple.com/en-us/HT201265\">Apple Support</a> a manual how to reset the cache",
-            "android": "Please check individually for your browser vendor how to reset the cache. You'll find at the <a href=\"https://support.google.com/accounts/answer/32050?co=GENIE.Platform%3DAndroid&hl=en\">Google Support</a> a manual how to reset the cache"
+            "safari": "You'll find at the <a href=\"https://support.apple.com/en-en/guide/safari/sfri47acf5d6/mac\">Apple Support</a> a manual how to reset the cache.",
+            "ios": "Please check individually for your browser vendor how to reset the cache. You'll find at the <a href=\"https://support.apple.com/en-us/HT201265\">Apple Support</a> a manual how to reset the cache.",
+            "android": "Please check individually for your browser vendor how to reset the cache. You'll find at the <a href=\"https://support.google.com/accounts/answer/32050?co=GENIE.Platform%3DAndroid&hl=en\">Google Support</a> a manual how to reset the cache."
           }
         },
         "4": {
           "header": "Unfortunately nothing has worked.",
           "solution": {
-            "1": "Please write an E-Mail to the support",
-            "2": "You can close this window but it is possible that the App does not work properly for you."
+            "1": "Please write an E-Mail to the support.",
+            "2": "You can close this window but it is possible that the app does not work properly for you."
           }
         }
       }

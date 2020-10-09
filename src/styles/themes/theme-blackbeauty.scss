@@ -5,7 +5,7 @@ $light: #acacac;
 $dark: #212121;
 $info: yellow;
 $success: green;
-$warning: #FF8C00;
+$warning: #f68105;
 $danger: red;
 
 $primary_text_color: white;
@@ -18,10 +18,7 @@ $modal-header-border-color: transparent;
 $body-bg: #212121;
 $body-color: $primary_text_color;
 
-$text-muted: $secondary_text_color;
-
-$bg-pre: $dark;
-$pre-color: $secondary;
+$text-muted: #f1ada0;
 
 $border-loader_wrapper-outer_spin: #00796b;
 $border-loader_wrapper-middle_spin: #e74c3c;
@@ -128,7 +125,8 @@ $logo-fg: (".arsnova-logo-ars": white, ".arsnova-logo-nova": white, ".arsnova-lo
 
 $popover-body-color: black;
 
-$code-color: $primary_text_color;
+$bg-pre: $warning;
+$pre-color: white;
 
 @import "postbuild";
 
