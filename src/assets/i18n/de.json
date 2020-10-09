@@ -190,7 +190,7 @@
         "estimated-storage-quota": {
           "label": "Geschätzter Speicherplatz",
           "not_available": "Nicht verfügbar, Aktualisierungen müssen manuell gesucht werden.",
-          "currently-used": "Aktuell werden {USAGE} MB von {QUOTA} MB verwendet."
+          "currently-used": "Aktuell werden {USAGE} MB von {QUOTA} GB verwendet."
         },
         "disconnected": "Du bist gerade offline.",
         "server_status": {

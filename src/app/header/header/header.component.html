@@ -113,7 +113,7 @@
         <p class="mb-3">
             <span *ngIf="!storage.quota">{{'region.header.connection_status.estimated-storage-quota.not_available' | translate}}</span>
             <span *ngIf="storage.quota">{{'region.header.connection_status.estimated-storage-quota.currently-used' | translate:{
-				QUOTA: i18nService.formatNumber(round(storage.quota / 1024 / 1024)),
+				QUOTA: i18nService.formatNumber(round(storage.quota / 1024 / 1024 / 1024)),
 				USAGE: i18nService.formatNumber(round(storage.usage / 1024 / 1024))
 			} }}</span>
         </p>

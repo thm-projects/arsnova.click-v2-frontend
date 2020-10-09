@@ -190,7 +190,7 @@
         "estimated-storage-quota": {
           "label": "Estimated storage quota",
           "not_available": "Not available, manual update check required.",
-          "currently-used": "Currently {USAGE} MB of {QUOTA} MB used."
+          "currently-used": "Currently {USAGE} MB of {QUOTA} GB used."
         },
         "disconnected": "You are offline right now.",
         "server_status": {
