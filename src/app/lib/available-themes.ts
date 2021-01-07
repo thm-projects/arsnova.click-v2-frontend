@@ -18,4 +18,10 @@ export const themes: Array<ITheme> = [
     description: 'component.theme_switcher.themes.westermann-blue.description',
     id: QuizTheme.WestermannBlue,
   },
+  {
+    name: 'component.theme_switcher.themes.wdarksouls.name',
+    preview: 'component.theme_switcher.themes.darksouls.preview',
+    description: 'component.theme_switcher.themes.darksouls.description',
+    id: QuizTheme.DarkSouls,
+  }
 ];

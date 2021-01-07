@@ -32,6 +32,7 @@ export const environment: IEnvironment = {
   availableQuizThemes: [
     QuizTheme.Material,
     QuizTheme.Blackbeauty,
+    QuizTheme.DarkSouls
   ],
   defaultTheme: QuizTheme.Material,
   darkModeCheckEnabled: true,

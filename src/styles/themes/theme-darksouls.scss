@@ -1,0 +1,221 @@
+$primary: #2c2c54;
+$secondary: #f7f1e3;
+$invers: #b33939;
+$light: #d1ccc0;
+$dark: #000;
+$info: #34ace0;
+$success: #33d9b2;
+$warning: #ffb142;
+$danger: #b33939;
+
+$primary_text_color: #ffffff;
+$secondary_text_color: #84817a;
+
+$modal-content-bg: white;
+$modal-content-color: #000c19;
+$modal-header-border-color: transparent;
+
+$body-bg: #ffffff;
+$body-color: $primary_text_color;
+
+$text-muted: $secondary_text_color;
+
+$bg-pre: $secondary;
+
+$border-loader_wrapper-outer_spin: #34ace0;
+$border-loader_wrapper-middle_spin: #ff5252;
+$border-loader_wrapper-inner_spin: #ffb142;
+
+$bg-answer-result-correct: #218c74;
+$fg-answer-result-correct: $primary_text_color;
+$bg-answer-result-partially-correct: $invers;
+$fg-answer-result-partially-correct: $primary_text_color;
+$bg-answer-result-wrong: #b33939;
+$fg-answer-result-wrong: $primary_text_color;
+
+$progress-bg: transparent;
+
+$link-color: #474787;
+$link-decoration: none;
+$link-hover-color: #706fd3;
+$link-hover-decoration: underline;
+
+$corner-radius: 10px;
+$splash-screen-corner-radius: 10px;
+
+$font-size-base: 1rem;
+$small-font-size: 80%;
+
+$statistics-icon-opacity: 0.2;
+
+$paragraph-margin-bottom: 0;
+
+$input-focus-border-color: none;
+
+@import "prebuild";
+
+$modal-footer-border-color: $border-color;
+
+$theme-colors: map-merge(
+	$theme-colors,
+	(
+		invers: $invers,
+	)
+);
+
+$colors: map-merge($colors, ());
+
+$bg-footer: $light;
+$footer-color: $dark;
+
+$colorChangingBg: (
+	0: (
+		fg: white,
+		bg: black,
+	),
+	50: (
+		fg: white,
+		bg: black,
+	),
+	100: (
+		fg: white,
+		bg: black,
+	),
+);
+
+$colorChangingOwnNick: (
+	0: (
+		fg: white,
+		bg: #a50101,
+	),
+	100: (
+		fg: white,
+		bg: $danger,
+	),
+);
+
+$colorChangingArs: (
+	0: (
+		fg: white,
+		bg: transparent,
+	),
+	25: (
+		fg: #ff9800,
+		bg: transparent,
+	),
+	50: (
+		fg: white,
+		bg: transparent,
+	),
+	75: (
+		fg: white,
+		bg: transparent,
+	),
+	100: (
+		fg: white,
+		bg: transparent,
+	),
+);
+
+$colorChangingNova: (
+	0: (
+		fg: white,
+		bg: transparent,
+	),
+	25: (
+		fg: white,
+		bg: transparent,
+	),
+	50: (
+		fg: #ff9800,
+		bg: transparent,
+	),
+	75: (
+		fg: white,
+		bg: transparent,
+	),
+	100: (
+		fg: white,
+		bg: transparent,
+	),
+);
+
+$colorChangingDot: (
+	0: (
+		fg: white,
+		bg: transparent,
+	),
+	25: (
+		fg: white,
+		bg: transparent,
+	),
+	50: (
+		fg: white,
+		bg: transparent,
+	),
+	75: (
+		fg: #ff9800,
+		bg: transparent,
+	),
+	100: (
+		fg: white,
+		bg: transparent,
+	),
+);
+
+$colorChangingClick: (
+	0: (
+		fg: #ff9800,
+		bg: transparent,
+	),
+	25: (
+		fg: white,
+		bg: transparent,
+	),
+	50: (
+		fg: white,
+		bg: transparent,
+	),
+	75: (
+		fg: white,
+		bg: transparent,
+	),
+	100: (
+		fg: #ff9800,
+		bg: transparent,
+	),
+);
+
+$logo-bg: transparent;
+$logo-fg: (
+	".arsnova-logo-ars": white,
+	".arsnova-logo-nova": $warning,
+	".arsnova-logo-click": white,
+);
+
+$popover-body-color: initial;
+
+$code-color: $primary_text_color;
+
+@import "postbuild";
+
+.btn-secondary {
+	border-color: #d3d3d3;
+}
+
+.card {
+	color: $secondary_text_color;
+}
+
+universal-cookie-consent {
+	--ucc-color-primary: rebeccapurple;
+	--ucc-color-primary-contrast: white;
+	--ucc-color-secondary: #00796b;
+	--ucc-color-secondary-contrast: white;
+	--ucc-text-color: black;
+	--ucc-link-color: #026533;
+	--ucc-backdrop-color: rgba(0, 0, 0, 0.6);
+	--ucc-modal-background: white;
+	--ucc-switch-background: #bbbbbb;
+	--ucc-consent-type-description-color: rgba(0, 0, 0, 0.8);
+}

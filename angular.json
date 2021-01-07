@@ -1,517 +1,510 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1,
-  "newProjectRoot": "projects",
-  "projects": {
-    "frontend": {
-      "root": "",
-      "sourceRoot": "src",
-      "projectType": "application",
-      "prefix": "app",
-      "schematics": {},
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:browser",
-          "options": {
-            "aot": true,
-            "outputPath": "dist/frontend/browser",
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "tsConfig": "src/tsconfig.app.json",
-            "polyfills": "src/polyfills.ts",
-            "assets": [
-              "src/assets/fonts",
-              "src/assets/js",
-              "src/assets/i18n",
-              "src/assets/images",
-              "src/assets/jobs",
-              "src/assets/static",
-              "src/assets/serverEndpoint.json",
-              "src/assets/imageDerivates.json",
-              "src/assets/themeData.json",
-              "src/assets/piwik/piwik.js",
-              "src/assets/theme-hashes.json",
-              "src/assets/version.txt",
-              {
-                "glob": "click-service-worker.js",
-                "input": "src",
-                "output": "/"
-              },
-              {
-                "glob": "robots.txt",
-                "input": "src/assets",
-                "output": "/"
-              },
-              {
-                "glob": "noscript.css",
-                "input": "src/styles",
-                "output": "/"
-              }
-            ],
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/styles/themes"
-              ]
-            },
-            "fileReplacements": [],
-            "styles": [
-              "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
-              "node_modules/prism-themes/themes/prism-ghcolors.css",
-              "src/styles/styles.scss",
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-blackbeauty.scss",
-                "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-Material.scss",
-                "bundleName": "theme-Material-__CSS_FILE_HASH__"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-Material.scss",
-                "bundleName": "theme-default"
-              }
-            ],
-            "scripts": [
-              "node_modules/marked/lib/marked.js",
-              "node_modules/prismjs/prism.js",
-              "node_modules/prismjs/components.js"
-            ]
-          },
-          "configurations": {
-            "production": {
-              "budgets": [
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
-                }
-              ],
-              "optimization": {
-                "scripts": true,
-                "styles": true
-              },
-              "outputHashing": "all",
-              "sourceMap": {
-                "hidden": false,
-                "styles": false,
-                "scripts": true
-              },
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": true,
-              "commonChunk": true,
-              "buildOptimizer": true,
-              "serviceWorker": true,
-              "ngswConfigPath": "src/ngsw-config.json",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ],
-              "styles": [
-                "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
-                "node_modules/prism-themes/themes/prism-ghcolors.css",
-                "src/styles/styles.scss",
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-blackbeauty.scss",
-                  "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-Material.scss",
-                  "bundleName": "theme-Material-__CSS_FILE_HASH__"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-Material.scss",
-                  "bundleName": "theme-default"
-                }
-              ]
-            },
-            "thmStaging": {
-              "budgets": [
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
-                }
-              ],
-              "optimization": {
-                "scripts": true,
-                "styles": true
-              },
-              "outputHashing": "all",
-              "sourceMap": {
-                "hidden": false,
-                "styles": false,
-                "scripts": true
-              },
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": true,
-              "commonChunk": true,
-              "buildOptimizer": true,
-              "serviceWorker": true,
-              "ngswConfigPath": "src/ngsw-config.json",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.thm.staging.ts"
-                }
-              ],
-              "styles": [
-                "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
-                "node_modules/prism-themes/themes/prism-ghcolors.css",
-                "src/styles/styles.scss",
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-blackbeauty.scss",
-                  "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-Material.scss",
-                  "bundleName": "theme-Material-__CSS_FILE_HASH__"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-Material.scss",
-                  "bundleName": "theme-default"
-                }
-              ]
-            },
-            "thmBeta": {
-              "budgets": [
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
-                }
-              ],
-              "optimization": {
-                "scripts": true,
-                "styles": true
-              },
-              "outputHashing": "all",
-              "sourceMap": {
-                "hidden": false,
-                "styles": false,
-                "scripts": true
-              },
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": true,
-              "commonChunk": true,
-              "buildOptimizer": true,
-              "serviceWorker": true,
-              "ngswConfigPath": "src/ngsw-config.json",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.thm.beta.ts"
-                }
-              ],
-              "styles": [
-                "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
-                "node_modules/prism-themes/themes/prism-ghcolors.css",
-                "src/styles/styles.scss",
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-blackbeauty.scss",
-                  "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-westermann-blue.scss",
-                  "bundleName": "theme-westermann-blue-__CSS_FILE_HASH__"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-westermann-blue.scss",
-                  "bundleName": "theme-default"
-                }
-              ]
-            },
-            "westermann": {
-              "budgets": [
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
-                }
-              ],
-              "optimization": {
-                "scripts": true,
-                "styles": true
-              },
-              "outputHashing": "all",
-              "sourceMap": {
-                "hidden": false,
-                "styles": false,
-                "scripts": true
-              },
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": true,
-              "commonChunk": true,
-              "buildOptimizer": true,
-              "serviceWorker": true,
-              "ngswConfigPath": "src/ngsw-config.json",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.westermann.ts"
-                }
-              ],
-              "styles": [
-                "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
-                "node_modules/prism-themes/themes/prism-ghcolors.css",
-                "src/styles/styles.scss",
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-blackbeauty.scss",
-                  "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-westermann-blue.scss",
-                  "bundleName": "theme-westermann-blue-__CSS_FILE_HASH__"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-westermann-blue.scss",
-                  "bundleName": "theme-default"
-                }
-              ]
-            }
-          }
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "frontend:build",
-            "proxyConfig": "src/proxy.conf.json"
-          },
-          "configurations": {
-            "production": {
-              "browserTarget": "frontend:build:production"
-            },
-            "thmStaging": {
-              "browserTarget": "frontend:build:thmStaging"
-            },
-            "thmBeta": {
-              "browserTarget": "frontend:build:thmBeta"
-            },
-            "westermann": {
-              "browserTarget": "frontend:build:westermann"
-            }
-          }
-        },
-        "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "frontend:build"
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "src/tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
-            "styles": [
-              "src/styles/styles.scss"
-            ],
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/styles/themes"
-              ]
-            },
-            "scripts": [
-              "node_modules/marked/lib/marked.js",
-              "node_modules/prismjs/prism.js",
-              "node_modules/prismjs/components.js"
-            ],
-            "assets": [
-              "src/assets/fonts",
-              "src/assets/js",
-              "src/assets/i18n",
-              "src/assets/images",
-              "src/assets/styles",
-              "src/assets/jobs",
-              "src/assets/static",
-              "src/assets/serverEndpoint.json",
-              "src/assets/imageDerivates.json",
-              "src/assets/themeData.json",
-              "src/assets/version.txt",
-              {
-                "glob": "click-service-worker.js",
-                "input": "src",
-                "output": "/"
-              }
-            ],
-            "codeCoverageExclude": [
-              "/**/*mock*.ts"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "src/tsconfig.app.json",
-              "src/tsconfig.spec.json"
-            ],
-            "exclude": []
-          }
-        },
-        "server": {
-          "builder": "@angular-devkit/build-angular:server",
-          "options": {
-            "outputPath": "dist/frontend/server",
-            "main": "src/server.ts",
-            "tsConfig": "src/tsconfig.server.json",
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/styles/themes"
-              ]
-            }
-          },
-          "configurations": {
-            "production": {
-              "optimization": {
-                "scripts": true,
-                "styles": true
-              },
-              "outputHashing": "media",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ],
-              "sourceMap": false
-            },
-            "thmStaging": {
-              "optimization": {
-                "scripts": true,
-                "styles": true
-              },
-              "outputHashing": "media",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.thm.staging.ts"
-                }
-              ],
-              "sourceMap": false
-            },
-            "thmBeta": {
-              "optimization": {
-                "scripts": true,
-                "styles": true
-              },
-              "outputHashing": "media",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.thm.beta.ts"
-                }
-              ],
-              "sourceMap": false
-            },
-            "westermann": {
-              "optimization": {
-                "scripts": true,
-                "styles": true
-              },
-              "outputHashing": "media",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.westermann.ts"
-                }
-              ],
-              "sourceMap": false
-            }
-          }
-        },
-        "serve-ssr": {
-          "builder": "@nguniversal/builders:ssr-dev-server",
-          "options": {
-            "browserTarget": "frontend:build",
-            "serverTarget": "frontend:server"
-          },
-          "configurations": {
-            "production": {
-              "browserTarget": "frontend:build:production",
-              "serverTarget": "frontend:server:production"
-            },
-            "thmStaging": {
-              "browserTarget": "frontend:build:thmStaging",
-              "serverTarget": "frontend:server:thmStaging"
-            },
-            "thmBeta": {
-              "browserTarget": "frontend:build:thmBeta",
-              "serverTarget": "frontend:server:thmBeta"
-            },
-            "westermann": {
-              "browserTarget": "frontend:build:westermann",
-              "serverTarget": "frontend:server:westermann"
-            }
-          }
-        },
-        "prerender": {
-          "builder": "@nguniversal/builders:prerender",
-          "options": {
-            "browserTarget": "frontend:build",
-            "serverTarget": "frontend:server",
-            "routes": [
-              "info/about",
-              "info/tos",
-              "info/imprint",
-              "info/dataprivacy",
-              "languages",
-              "themes",
-              "login",
-              "/"
-            ]
-          },
-          "configurations": {
-            "production": {
-              "browserTarget": "frontend:build:production",
-              "serverTarget": "frontend:server:production"
-            },
-            "thmStaging": {
-              "browserTarget": "frontend:build:thmStaging",
-              "serverTarget": "frontend:server:thmStaging"
-            },
-            "thmBeta": {
-              "browserTarget": "frontend:build:thmBeta",
-              "serverTarget": "frontend:server:thmBeta"
-            },
-            "westermann": {
-              "browserTarget": "frontend:build:westermann",
-              "serverTarget": "frontend:server:westermann"
-            }
-          }
-        }
-      }
-    }
-  },
-  "defaultProject": "frontend",
-  "schematics": {
-    "@schematics/angular:component": {
-      "style": "scss"
-    }
-  },
-  "cli": {
-    "analytics": false
-  }
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"version": 1,
+	"newProjectRoot": "projects",
+	"projects": {
+		"frontend": {
+			"root": "",
+			"sourceRoot": "src",
+			"projectType": "application",
+			"prefix": "app",
+			"schematics": {},
+			"architect": {
+				"build": {
+					"builder": "@angular-devkit/build-angular:browser",
+					"options": {
+						"aot": true,
+						"outputPath": "dist/frontend/browser",
+						"index": "src/index.html",
+						"main": "src/main.ts",
+						"tsConfig": "src/tsconfig.app.json",
+						"polyfills": "src/polyfills.ts",
+						"assets": [
+							"src/assets/fonts",
+							"src/assets/js",
+							"src/assets/i18n",
+							"src/assets/images",
+							"src/assets/jobs",
+							"src/assets/static",
+							"src/assets/serverEndpoint.json",
+							"src/assets/imageDerivates.json",
+							"src/assets/themeData.json",
+							"src/assets/piwik/piwik.js",
+							"src/assets/theme-hashes.json",
+							"src/assets/version.txt",
+							{
+								"glob": "click-service-worker.js",
+								"input": "src",
+								"output": "/"
+							},
+							{
+								"glob": "robots.txt",
+								"input": "src/assets",
+								"output": "/"
+							},
+							{
+								"glob": "noscript.css",
+								"input": "src/styles",
+								"output": "/"
+							}
+						],
+						"stylePreprocessorOptions": {
+							"includePaths": ["src/styles/themes"]
+						},
+						"fileReplacements": [],
+						"styles": [
+							"node_modules/@fortawesome/fontawesome-svg-core/styles.css",
+							"node_modules/prism-themes/themes/prism-ghcolors.css",
+							"src/styles/styles.scss",
+							{
+								"inject": false,
+								"input": "src/styles/themes/theme-darksouls.scss",
+								"bundleName": "theme-darksouls-__CSS_FILE_HASH__"
+							},
+							{
+								"inject": false,
+								"input": "src/styles/themes/theme-blackbeauty.scss",
+								"bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
+							},
+							{
+								"inject": false,
+								"input": "src/styles/themes/theme-Material.scss",
+								"bundleName": "theme-Material-__CSS_FILE_HASH__"
+							},
+							{
+								"inject": false,
+								"input": "src/styles/themes/theme-Material.scss",
+								"bundleName": "theme-default"
+							}
+						],
+						"scripts": [
+							"node_modules/marked/lib/marked.js",
+							"node_modules/prismjs/prism.js",
+							"node_modules/prismjs/components.js"
+						]
+					},
+					"configurations": {
+						"production": {
+							"budgets": [
+								{
+									"type": "anyComponentStyle",
+									"maximumWarning": "6kb"
+								}
+							],
+							"optimization": {
+								"scripts": true,
+								"styles": true
+							},
+							"outputHashing": "all",
+							"sourceMap": {
+								"hidden": false,
+								"styles": false,
+								"scripts": true
+							},
+							"namedChunks": false,
+							"aot": true,
+							"extractLicenses": true,
+							"vendorChunk": true,
+							"commonChunk": true,
+							"buildOptimizer": true,
+							"serviceWorker": true,
+							"ngswConfigPath": "src/ngsw-config.json",
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.prod.ts"
+								}
+							],
+							"styles": [
+								"node_modules/@fortawesome/fontawesome-svg-core/styles.css",
+								"node_modules/prism-themes/themes/prism-ghcolors.css",
+								"src/styles/styles.scss",
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-darksouls.scss",
+									"bundleName": "theme-darksouls-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-blackbeauty.scss",
+									"bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-Material.scss",
+									"bundleName": "theme-Material-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-Material.scss",
+									"bundleName": "theme-default"
+								}
+							]
+						},
+						"thmStaging": {
+							"budgets": [
+								{
+									"type": "anyComponentStyle",
+									"maximumWarning": "6kb"
+								}
+							],
+							"optimization": {
+								"scripts": true,
+								"styles": true
+							},
+							"outputHashing": "all",
+							"sourceMap": {
+								"hidden": false,
+								"styles": false,
+								"scripts": true
+							},
+							"namedChunks": false,
+							"aot": true,
+							"extractLicenses": true,
+							"vendorChunk": true,
+							"commonChunk": true,
+							"buildOptimizer": true,
+							"serviceWorker": true,
+							"ngswConfigPath": "src/ngsw-config.json",
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.thm.staging.ts"
+								}
+							],
+							"styles": [
+								"node_modules/@fortawesome/fontawesome-svg-core/styles.css",
+								"node_modules/prism-themes/themes/prism-ghcolors.css",
+								"src/styles/styles.scss",
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-darksouls.scss",
+									"bundleName": "theme-darksouls-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-blackbeauty.scss",
+									"bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-Material.scss",
+									"bundleName": "theme-Material-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-Material.scss",
+									"bundleName": "theme-default"
+								}
+							]
+						},
+						"thmBeta": {
+							"budgets": [
+								{
+									"type": "anyComponentStyle",
+									"maximumWarning": "6kb"
+								}
+							],
+							"optimization": {
+								"scripts": true,
+								"styles": true
+							},
+							"outputHashing": "all",
+							"sourceMap": {
+								"hidden": false,
+								"styles": false,
+								"scripts": true
+							},
+							"namedChunks": false,
+							"aot": true,
+							"extractLicenses": true,
+							"vendorChunk": true,
+							"commonChunk": true,
+							"buildOptimizer": true,
+							"serviceWorker": true,
+							"ngswConfigPath": "src/ngsw-config.json",
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.thm.beta.ts"
+								}
+							],
+							"styles": [
+								"node_modules/@fortawesome/fontawesome-svg-core/styles.css",
+								"node_modules/prism-themes/themes/prism-ghcolors.css",
+								"src/styles/styles.scss",
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-blackbeauty.scss",
+									"bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-westermann-blue.scss",
+									"bundleName": "theme-westermann-blue-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-westermann-blue.scss",
+									"bundleName": "theme-default"
+								}
+							]
+						},
+						"westermann": {
+							"budgets": [
+								{
+									"type": "anyComponentStyle",
+									"maximumWarning": "6kb"
+								}
+							],
+							"optimization": {
+								"scripts": true,
+								"styles": true
+							},
+							"outputHashing": "all",
+							"sourceMap": {
+								"hidden": false,
+								"styles": false,
+								"scripts": true
+							},
+							"namedChunks": false,
+							"aot": true,
+							"extractLicenses": true,
+							"vendorChunk": true,
+							"commonChunk": true,
+							"buildOptimizer": true,
+							"serviceWorker": true,
+							"ngswConfigPath": "src/ngsw-config.json",
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.westermann.ts"
+								}
+							],
+							"styles": [
+								"node_modules/@fortawesome/fontawesome-svg-core/styles.css",
+								"node_modules/prism-themes/themes/prism-ghcolors.css",
+								"src/styles/styles.scss",
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-blackbeauty.scss",
+									"bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-westermann-blue.scss",
+									"bundleName": "theme-westermann-blue-__CSS_FILE_HASH__"
+								},
+								{
+									"inject": false,
+									"input": "src/styles/themes/theme-westermann-blue.scss",
+									"bundleName": "theme-default"
+								}
+							]
+						}
+					}
+				},
+				"serve": {
+					"builder": "@angular-devkit/build-angular:dev-server",
+					"options": {
+						"browserTarget": "frontend:build",
+						"proxyConfig": "src/proxy.conf.json"
+					},
+					"configurations": {
+						"production": {
+							"browserTarget": "frontend:build:production"
+						},
+						"thmStaging": {
+							"browserTarget": "frontend:build:thmStaging"
+						},
+						"thmBeta": {
+							"browserTarget": "frontend:build:thmBeta"
+						},
+						"westermann": {
+							"browserTarget": "frontend:build:westermann"
+						}
+					}
+				},
+				"extract-i18n": {
+					"builder": "@angular-devkit/build-angular:extract-i18n",
+					"options": {
+						"browserTarget": "frontend:build"
+					}
+				},
+				"test": {
+					"builder": "@angular-devkit/build-angular:karma",
+					"options": {
+						"main": "src/test.ts",
+						"polyfills": "src/polyfills.ts",
+						"tsConfig": "src/tsconfig.spec.json",
+						"karmaConfig": "karma.conf.js",
+						"styles": ["src/styles/styles.scss"],
+						"stylePreprocessorOptions": {
+							"includePaths": ["src/styles/themes"]
+						},
+						"scripts": [
+							"node_modules/marked/lib/marked.js",
+							"node_modules/prismjs/prism.js",
+							"node_modules/prismjs/components.js"
+						],
+						"assets": [
+							"src/assets/fonts",
+							"src/assets/js",
+							"src/assets/i18n",
+							"src/assets/images",
+							"src/assets/styles",
+							"src/assets/jobs",
+							"src/assets/static",
+							"src/assets/serverEndpoint.json",
+							"src/assets/imageDerivates.json",
+							"src/assets/themeData.json",
+							"src/assets/version.txt",
+							{
+								"glob": "click-service-worker.js",
+								"input": "src",
+								"output": "/"
+							}
+						],
+						"codeCoverageExclude": ["/**/*mock*.ts"]
+					}
+				},
+				"lint": {
+					"builder": "@angular-devkit/build-angular:tslint",
+					"options": {
+						"tsConfig": ["src/tsconfig.app.json", "src/tsconfig.spec.json"],
+						"exclude": []
+					}
+				},
+				"server": {
+					"builder": "@angular-devkit/build-angular:server",
+					"options": {
+						"outputPath": "dist/frontend/server",
+						"main": "src/server.ts",
+						"tsConfig": "src/tsconfig.server.json",
+						"stylePreprocessorOptions": {
+							"includePaths": ["src/styles/themes"]
+						}
+					},
+					"configurations": {
+						"production": {
+							"optimization": {
+								"scripts": true,
+								"styles": true
+							},
+							"outputHashing": "media",
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.prod.ts"
+								}
+							],
+							"sourceMap": false
+						},
+						"thmStaging": {
+							"optimization": {
+								"scripts": true,
+								"styles": true
+							},
+							"outputHashing": "media",
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.thm.staging.ts"
+								}
+							],
+							"sourceMap": false
+						},
+						"thmBeta": {
+							"optimization": {
+								"scripts": true,
+								"styles": true
+							},
+							"outputHashing": "media",
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.thm.beta.ts"
+								}
+							],
+							"sourceMap": false
+						},
+						"westermann": {
+							"optimization": {
+								"scripts": true,
+								"styles": true
+							},
+							"outputHashing": "media",
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.westermann.ts"
+								}
+							],
+							"sourceMap": false
+						}
+					}
+				},
+				"serve-ssr": {
+					"builder": "@nguniversal/builders:ssr-dev-server",
+					"options": {
+						"browserTarget": "frontend:build",
+						"serverTarget": "frontend:server"
+					},
+					"configurations": {
+						"production": {
+							"browserTarget": "frontend:build:production",
+							"serverTarget": "frontend:server:production"
+						},
+						"thmStaging": {
+							"browserTarget": "frontend:build:thmStaging",
+							"serverTarget": "frontend:server:thmStaging"
+						},
+						"thmBeta": {
+							"browserTarget": "frontend:build:thmBeta",
+							"serverTarget": "frontend:server:thmBeta"
+						},
+						"westermann": {
+							"browserTarget": "frontend:build:westermann",
+							"serverTarget": "frontend:server:westermann"
+						}
+					}
+				},
+				"prerender": {
+					"builder": "@nguniversal/builders:prerender",
+					"options": {
+						"browserTarget": "frontend:build",
+						"serverTarget": "frontend:server",
+						"routes": ["info/about", "info/tos", "info/imprint", "info/dataprivacy", "languages", "themes", "login", "/"]
+					},
+					"configurations": {
+						"production": {
+							"browserTarget": "frontend:build:production",
+							"serverTarget": "frontend:server:production"
+						},
+						"thmStaging": {
+							"browserTarget": "frontend:build:thmStaging",
+							"serverTarget": "frontend:server:thmStaging"
+						},
+						"thmBeta": {
+							"browserTarget": "frontend:build:thmBeta",
+							"serverTarget": "frontend:server:thmBeta"
+						},
+						"westermann": {
+							"browserTarget": "frontend:build:westermann",
+							"serverTarget": "frontend:server:westermann"
+						}
+					}
+				}
+			}
+		}
+	},
+	"defaultProject": "frontend",
+	"schematics": {
+		"@schematics/angular:component": {
+			"style": "scss"
+		}
+	},
+	"cli": {
+		"analytics": false
+	}
 }
