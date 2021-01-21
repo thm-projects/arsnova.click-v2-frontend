@@ -4,8 +4,10 @@ import { StorageKey } from './enums/enums';
 export function jwtOptionsFactory(platformId): any {
   return {
     tokenGetter: () => {
-      if (isPlatformServer(platformId)) {
+      if(isPlatformServer(platformId)) {
         return null;
+      } else {
+        return null; 
       }
 
       return sessionStorage.getItem(StorageKey.LoginToken);
