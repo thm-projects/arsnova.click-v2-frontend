@@ -1,10 +1,11 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { RxStompService } from '@stomp/ng2-stompjs';
-import { TranslatePipeMock } from '../../../_mocks/_pipes/TranslatePipeMock';
+import { HotkeysService } from 'angular2-hotkeys';
+import { UniversalCookieConsentService } from 'universal-cookie-consent';
 import { jwtOptionsFactory } from '../../lib/jwt.factory';
 import { ConnectionMockService } from '../../service/connection/connection.mock.service';
 import { ConnectionService } from '../../service/connection/connection.service';
@@ -14,6 +15,8 @@ import { SettingsService } from '../../service/settings/settings.service';
 import { SharedService } from '../../service/shared/shared.service';
 import { StorageService } from '../../service/storage/storage.service';
 import { StorageServiceMock } from '../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../service/themes/themes.mock.service';
+import { ThemesService } from '../../service/themes/themes.service';
 import { TrackingMockService } from '../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
 import { TwitterService } from '../../service/twitter/twitter.service';
@@ -25,7 +28,7 @@ describe('InfoComponent', () => {
   let component: InfoComponent;
   let fixture: ComponentFixture<InfoComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, HttpClientTestingModule, RouterTestingModule, JwtModule.forRoot({
@@ -40,6 +43,9 @@ describe('InfoComponent', () => {
         RxStompService, {
           provide: StorageService,
           useClass: StorageServiceMock,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
@@ -49,23 +55,29 @@ describe('InfoComponent', () => {
         }, HeaderLabelService, {
           provide: TwitterService,
           useClass: TwitterServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {}
+        }, {
+          provide: UniversalCookieConsentService,
+          useValue: {}
         },
       ],
-      declarations: [InfoComponent, TranslatePipeMock],
+      declarations: [InfoComponent],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(InfoComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
 
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(InfoComponent.TYPE).toEqual('InfoComponent');
   }));
 });

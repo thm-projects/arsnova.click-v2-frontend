@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SwUpdate } from '@angular/service-worker';
@@ -9,9 +9,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModalModule, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxStompService } from '@stomp/ng2-stompjs';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { HotkeysService } from 'angular2-hotkeys';
 import { TOAST_CONFIG } from 'ngx-toastr';
 import { of } from 'rxjs';
-import { TranslatePipeMock } from '../../../../../../_mocks/_pipes/TranslatePipeMock';
 import { SwUpdateMock } from '../../../../../../_mocks/_services/SwUpdateMock';
 import { HeaderComponent } from '../../../../../header/header/header.component';
 import { SurveyQuestionEntity } from '../../../../../lib/entities/question/SurveyQuestionEntity';
@@ -23,12 +23,13 @@ import { CustomMarkdownService } from '../../../../../service/custom-markdown/cu
 import { CustomMarkdownServiceMock } from '../../../../../service/custom-markdown/CustomMarkdownServiceMock';
 import { FooterBarService } from '../../../../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../../../../service/header-label/header-label.service';
-import { I18nService } from '../../../../../service/i18n/i18n.service';
 import { QuestionTextService } from '../../../../../service/question-text/question-text.service';
 import { QuizMockService } from '../../../../../service/quiz/quiz-mock.service';
 import { QuizService } from '../../../../../service/quiz/quiz.service';
 import { SettingsService } from '../../../../../service/settings/settings.service';
 import { SharedService } from '../../../../../service/shared/shared.service';
+import { ThemesMockService } from '../../../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../../../service/themes/themes.service';
 import { TrackingMockService } from '../../../../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../../../../service/tracking/tracking.service';
 import { I18nTestingModule } from '../../../../../shared/testing/i18n-testing/i18n-testing.module';
@@ -38,7 +39,7 @@ describe('AnsweroptionsDefaultComponent', () => {
   let component: AnsweroptionsDefaultComponent;
   let fixture: ComponentFixture<AnsweroptionsDefaultComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule,
@@ -63,6 +64,9 @@ describe('AnsweroptionsDefaultComponent', () => {
         }, {
           provide: QuizService,
           useClass: QuizMockService,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
@@ -88,25 +92,28 @@ describe('AnsweroptionsDefaultComponent', () => {
             default: {},
             config: {},
           },
+        }, {
+          provide: HotkeysService,
+          useValue: {}
         },
       ],
       declarations: [
-        HeaderComponent, LivePreviewComponent, AnsweroptionsDefaultComponent, TranslatePipeMock,
+        HeaderComponent, LivePreviewComponent, AnsweroptionsDefaultComponent,
       ],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(AnsweroptionsDefaultComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
 
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(AnsweroptionsDefaultComponent.TYPE).toEqual('AnsweroptionsDefaultComponent');
   }));
 

@@ -3,13 +3,22 @@
   box-shadow: none !important;
 }
 
+html {
+  font-size: 18px;
+}
+
 body {
   height: 100%;
+}
+
+.mh-100vh {
+  min-height: 100vh;
 }
 
 * {
   backface-visibility: hidden;
   outline: none !important;
+  touch-action: manipulation;
 }
 
 .qrCodeContent {
@@ -45,8 +54,6 @@ body {
 }
 
 p {
-  margin: 0;
-
   img {
     max-width: 100%;
     max-height: 50vh;
@@ -54,8 +61,8 @@ p {
 }
 
 img[alt*="emoji_"] {
-  height: 24px;
-  width: 24px;
+  height: 54px;
+  width: 54px;
 }
 
 iframe {
@@ -76,30 +83,24 @@ iframe {
     width: calc(100% + 30px);
     margin-left: -15px;
     margin-right: -15px;
+    border-radius: 0;
 
     .btn {
       border-radius: 0;
     }
   }
-}
 
-.box-shadow-success {
-  box-shadow: 0 0 .25rem $success;
-  pointer-events: none;
-}
-
-.box-shadow-danger {
-  box-shadow: 0 0 .25rem $danger;
-  pointer-events: none;
-}
-
-.box-shadow-warning {
-  box-shadow: 0 0 .25rem $warning;
-  pointer-events: none;
+  .cc-window {
+    border-radius: 0 !important;
+  }
 }
 
 .color-twitter {
   color: #1DA1F2 !important;
+
+  &:hover {
+    color: #1393e2 !important;
+  }
 }
 
 .btn-twitter-follow {
@@ -147,4 +148,57 @@ iframe {
 
 .sentry-error-embed-wrapper {
   z-index: 2000 !important;
+}
+
+#confetti-canvas {
+  position: absolute;
+  top: 0;
+}
+
+.mathjax-container {
+  p {
+    margin-bottom: 1rem;
+  }
+}
+
+.mh-20vh {
+  max-height: 20vh;
+}
+
+@include media-breakpoint-only(xs) {
+  .full-xs {
+    margin-left: -#{$grid-gutter-width / 2};
+    margin-right: -#{$grid-gutter-width / 2};
+
+    .card {
+      border-radius: 0;
+    }
+  }
+
+}
+
+.ucc-modal {
+  overflow: auto;
+
+  @include media-breakpoint-down(sm) {
+    .ucc-buttons {
+      flex-wrap: wrap;
+
+      .ucc-button:nth-child(1) {
+        margin-bottom: var(--ucc-button-spacing);
+      }
+
+      .ucc-button {
+        flex-basis: 100% !important;
+      }
+    }
+
+    .ucc-consent-type {
+      flex-wrap: wrap;
+
+      .ucc-consent-type__content {
+        flex-basis: 100%;
+      }
+    }
+  }
 }

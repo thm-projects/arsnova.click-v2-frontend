@@ -1,12 +1,13 @@
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { HttpEventType } from '@angular/common/http';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { captureException, setExtras } from '@sentry/browser';
 import { RxStompService } from '@stomp/ng2-stompjs';
 import { RxStompState } from '@stomp/rx-stomp';
+import { HotkeysService } from 'angular2-hotkeys';
 import { filter, switchMapTo } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { DefaultSettings } from '../../lib/default.settings';
-import { StorageKey } from '../../lib/enums/enums';
 import { StatusProtocol } from '../../lib/enums/Message';
 import { QuizState } from '../../lib/enums/QuizState';
 import { FooterbarElement } from '../../lib/footerbar-element/footerbar-element';
@@ -81,9 +82,11 @@ export function setFullScreen(full: boolean): void {
   providedIn: 'root',
 })
 export class FooterBarService {
+  private _footerElements: Array<IFooterBarElement> = [];
+  private _connectionState: RxStompState;
 
   public TYPE_REFERENCE: string;
-
+  public collapsedNavbar: boolean;
   public footerElemQuizpool: IFooterBarElement = new FooterbarElement({
     id: 'quizpool',
     iconLayer: [
@@ -164,16 +167,14 @@ export class FooterBarService {
     showIntro: false,
     introTranslate: 'region.footer.footer_bar.description.import',
     linkTarget: null,
-  }, function (): void {
-    if (document) {
-      document.getElementById('upload-session').click();
-    }
+  }, () =>  {
+    this.document.getElementById('upload-session').click();
   });
   public footerElemHashtagManagement: IFooterBarElement = new FooterbarElement({
     id: 'sessionManagement',
     iconClass: ['fas', 'wrench'],
     textClass: 'footerElementText',
-    textName: 'component.name_management.session_management',
+    textName: 'region.footer.footer_bar.my-quizzes',
     selectable: false,
     showIntro: false,
     introTranslate: 'region.footer.footer_bar.description.sessionManagement',
@@ -232,7 +233,7 @@ export class FooterBarService {
   });
   public footerElemNicknames: IFooterBarElement = new FooterbarElement({
     id: 'nicknames',
-    iconClass: ['fas', 'users'],
+    iconClass: ['fas', 'mask'],
     textClass: 'footerElementText',
     textName: 'region.footer.footer_bar.nicknames',
     selectable: false,
@@ -327,7 +328,6 @@ export class FooterBarService {
     linkTarget: null,
   }, function (): void {
   });
-
   /*
    * Currently unused since the server decides if it will cache the quiz contents
    */
@@ -342,7 +342,6 @@ export class FooterBarService {
     linkTarget: null,
   }, function (): void {
   });
-
   public footerElemBlockRudeNicknames: IFooterBarElement = new FooterbarElement({
     id: 'blockRudeNicknames',
     iconClass: ['fas', 'lock'],
@@ -351,17 +350,6 @@ export class FooterBarService {
     selectable: true,
     showIntro: false,
     introTranslate: 'region.footer.footer_bar.description.blockRudeNicknames',
-    linkTarget: null,
-  }, function (): void {
-  });
-  public footerElemEnableCasLogin: IFooterBarElement = new FooterbarElement({
-    id: 'enableCasLogin',
-    iconClass: ['fas', 'sign-in-alt'],
-    textClass: 'footerElementText',
-    textName: 'region.footer.footer_bar.enable_cas_login',
-    selectable: true,
-    showIntro: false,
-    introTranslate: 'region.footer.footer_bar.description.enableCasLogin',
     linkTarget: null,
   }, function (): void {
   });
@@ -391,7 +379,7 @@ export class FooterBarService {
     id: 'login',
     iconClass: ['fas', 'sign-in-alt'],
     textClass: 'footerElementText',
-    textName: 'region.footer.footer_bar.login',
+    textName: `region.footer.footer_bar.login_${environment.loginButtonLabelConfiguration}`,
     selectable: false,
     showIntro: false,
     introTranslate: 'region.footer.footer_bar.description.login',
@@ -458,17 +446,43 @@ export class FooterBarService {
   }, () => {
     this.twitterService.tweet();
   });
-
-  private _footerElements: Array<IFooterBarElement> = [];
+  public footerElemHotkeys: IFooterBarElement = new FooterbarElement({
+    id: 'hotkey',
+    iconClass: ['fas', 'keyboard'],
+    textClass: 'footerElementText',
+    textName: 'region.footer.footer_bar.hotkeys',
+    selectable: false,
+    showIntro: false,
+    introTranslate: 'region.footer.footer_bar.hotkeys',
+    linkTarget: null,
+  }, () => {
+    this.hotkeysService.cheatSheetToggle.next();
+  });
+  public footerElemAudio: IFooterBarElement = new FooterbarElement({
+    id: 'audio',
+    iconClass: ['fas', 'volume-up'],
+    textClass: 'footerElementText',
+    textName: 'region.footer.footer_bar.audio',
+    selectable: false,
+    showIntro: false,
+    introTranslate: 'region.footer.footer_bar.audio',
+    linkTarget: null,
+  }, self => {
+    this.quizService.toggleAudioPlay();
+    if (this.quizService.playAudio) {
+      self.iconClass = ['fas', 'volume-up'];
+    } else {
+      self.iconClass = ['fas', 'volume-mute'];
+    }
+  });
 
   get footerElements(): Array<IFooterBarElement> {
     return this._footerElements;
   }
 
-  private _connectionState: RxStompState;
-
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(DOCUMENT) private document: Document,
     private userService: UserService,
     private rxStompService: RxStompService,
     private quizService: QuizService,
@@ -477,6 +491,7 @@ export class FooterBarService {
     private translateService: TranslateService,
     private themesService: ThemesService,
     private twitterService: TwitterService,
+    private hotkeysService: HotkeysService,
   ) {
 
     this.quizService.quizUpdateEmitter.pipe(filter(quiz => !!quiz && [QuizState.Active, QuizState.Running].includes(quiz.state)),
@@ -544,35 +559,54 @@ export class FooterBarService {
   }
 
   private updateFooterElementsState(): void {
-    this.footerElemReadingConfirmation.isActive = !!this.quizService.quiz.sessionConfig.readingConfirmationEnabled;
-    this.footerElemConfidenceSlider.isActive = !!this.quizService.quiz.sessionConfig.confidenceSliderEnabled;
-    this.footerElemStartQuiz.isActive = this.quizService.isValid() && this._connectionState === RxStompState.OPEN;
-    this.footerElemNicknames.isActive = this._connectionState === RxStompState.OPEN;
-
-    this.footerElemExport.restoreClickCallback();
-    this.footerElemExport.onClickCallback = async () => {
-      const link = `${DefaultSettings.httpApiEndpoint}/quiz/export/${encodeURIComponent(this.quizService.quiz.name)}/${encodeURIComponent(
-        sessionStorage.getItem(StorageKey.PrivateKey))}/${encodeURIComponent(this.themesService.currentTheme)}/${encodeURIComponent(
-        this.translateService.currentLang)}`;
-      window.open(link);
+    this.footerElemExport.onClickCallback = () => {
+      this.footerElemExport.isLoading = true;
+      this.quizApiService.getExportFile(
+        this.quizService.quiz.name,
+        this.themesService.currentTheme,
+        this.translateService.currentLang
+      ).subscribe(event => {
+        if (event.type === HttpEventType.Response) {
+          const blob = new Blob([event.body], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+          const a = document.createElement('a');
+          const objectUrl = URL.createObjectURL(blob);
+          const date: Date = new Date();
+          const dateFormatted = `${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}-${date.getHours()}_${date.getMinutes()}`;
+          const name = `Export-${this.quizService.quiz.name}-${dateFormatted}.xlsx`;
+          a.href = objectUrl;
+          a.download = name;
+          a.click();
+          URL.revokeObjectURL(objectUrl);
+          this.footerElemExport.isLoading = false;
+          this.footerElemExport.loadingBarState = 0;
+          return;
+        } else if (event.type === HttpEventType.DownloadProgress) {
+          this.footerElemExport.loadingBarState = Math.round((100 * event.loaded) / event.total);
+        }
+      }, e => {
+        this.footerElemExport.isLoading = false;
+        this.footerElemExport.loadingBarState = 0;
+        setExtras({topic: 'Export failed'});
+        captureException(e);
+      });
     };
-
-    this.footerElemEnableCasLogin.restoreClickCallback();
-    this.footerElemEnableCasLogin.isActive = this.quizService.quiz.sessionConfig.nicks.restrictToCasLogin;
-    this.footerElemEnableCasLogin.onClickCallback = () => {
-      const newState = !this.footerElemEnableCasLogin.isActive;
-      this.footerElemEnableCasLogin.isActive = newState;
-      this.quizService.quiz.sessionConfig.nicks.restrictToCasLogin = newState;
-      this.quizService.persist();
-    };
-
-    this.footerElemBlockRudeNicknames.restoreClickCallback();
-    this.footerElemBlockRudeNicknames.isActive = this.quizService.quiz.sessionConfig.nicks.blockIllegalNicks;
     this.footerElemBlockRudeNicknames.onClickCallback = () => {
       const newState = !this.footerElemBlockRudeNicknames.isActive;
       this.footerElemBlockRudeNicknames.isActive = newState;
       this.quizService.quiz.sessionConfig.nicks.blockIllegalNicks = newState;
       this.quizService.persist();
     };
+
+    if (!this.quizService.quiz) {
+      return;
+    }
+
+    this.footerElemReadingConfirmation.isActive = !!this.quizService.quiz.sessionConfig.readingConfirmationEnabled;
+    this.footerElemConfidenceSlider.isActive = !!this.quizService.quiz.sessionConfig.confidenceSliderEnabled;
+    this.footerElemStartQuiz.isActive = this.quizService.isValid() && this._connectionState === RxStompState.OPEN;
+    this.footerElemNicknames.isActive = this._connectionState === RxStompState.OPEN;
+
+    this.footerElemBlockRudeNicknames.restoreClickCallback();
+    this.footerElemBlockRudeNicknames.isActive = this.quizService.quiz.sessionConfig.nicks.blockIllegalNicks;
   }
 }

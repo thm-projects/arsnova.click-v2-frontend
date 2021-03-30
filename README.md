@@ -1,5 +1,11 @@
 #### arsnova.click v2 Frontend
 
+###### Installation
+
+You can find an Installationguide [here](https://github.com/thm-projects/arsnova.click-v2/blob/master/documentation/Frontend-Installationguide.md)  
+
+You can find a guide to create a custom theme [here](https://github.com/thm-projects/arsnova.click-v2/blob/master/documentation/HowToCreateCustomTheme.md)
+
 ###### Global Dependencies
 
 - CentOS / RHEL
@@ -30,8 +36,20 @@ Available commands (via running the nodejs module or by passing the command with
 Enter `npm test` in the root directory to run the unit tests.
 It is required to define the location of a local Google Chrome installation to use the headless mode
 
+###### Code style analysis
+For a local code style analysis with docker-compose you'll need docker and docker-compose installed.
+To run a local code style check with sonarqube, follow these steps:
+1. switch into the analysis folder  
+  `cd analysis`
+2. start the sonarqube server  
+  `docker-compose up -d sonarqube`
+3. when sonarqube has started, you may run analysis whenever you want with  
+  `docker-compose run --rm analysis`
+
 ###### Run (DEV)
-Go to the root directory and enter `npm run start:DEV` or use `docker-compose up -d local` to build the app for the local environment
+Go to the root directory and enter `npm run dev:ssr` or use `docker-compose up -d local` to build the app for the local environment. For local development the ssr node process should be given the environment
+variable "NODE_ENV=development" since the underlying express server will proxy the requests to the backend using another port correctly then without the requirement
+of a proxy server like nginx. See `src/proxy.conf.json` for details about the proxy configuration.
 
 ###### Build (PROD)
 Go to the root directory and enter `npm run build:PROD` or use a custom Dockerfile to run your environment

@@ -1,3 +1,4 @@
+import { isPlatformServer } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -25,28 +26,29 @@ import { QuizService } from '../../../service/quiz/quiz.service';
   styleUrls: ['./reading-confirmation.component.scss'],
 })
 export class ReadingConfirmationComponent implements OnInit, OnDestroy, IHasTriggeredNavigation {
-  public static TYPE = 'ReadingConfirmationComponent';
-
-  public hasTriggeredNavigation: boolean;
-
-  public questionIndex: number;
-  public questionText: string;
+  public static readonly TYPE = 'ReadingConfirmationComponent';
 
   private _serverUnavailableModal: NgbModalRef;
   private readonly _messageSubscriptions: Array<string> = [];
   private readonly _destroy = new Subject();
 
+  public hasTriggeredNavigation: boolean;
+  public questionIndex: number;
+  public questionText: string;
+
   constructor(
+    public quizService: QuizService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private connectionService: ConnectionService,
     private attendeeService: AttendeeService,
     private router: Router,
-    private quizService: QuizService,
     private questionTextService: QuestionTextService,
     private sanitizer: DomSanitizer,
     private headerLabelService: HeaderLabelService,
     private footerBarService: FooterBarService,
-    private memberApiService: MemberApiService, private ngbModal: NgbModal, private messageQueue: SimpleMQ,
+    private memberApiService: MemberApiService,
+    private ngbModal: NgbModal,
+    private messageQueue: SimpleMQ,
   ) {
 
     this.footerBarService.TYPE_REFERENCE = ReadingConfirmationComponent.TYPE;
@@ -60,6 +62,10 @@ export class ReadingConfirmationComponent implements OnInit, OnDestroy, IHasTrig
   }
 
   public ngOnInit(): void {
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
     this.connectionService.serverStatusEmitter.pipe(takeUntil(this._destroy)).subscribe(isConnected => {
       if (isConnected) {
         if (this._serverUnavailableModal) {
@@ -78,14 +84,30 @@ export class ReadingConfirmationComponent implements OnInit, OnDestroy, IHasTrig
       this._serverUnavailableModal.result.finally(() => this._serverUnavailableModal = null);
     });
 
+    if (this.hasTriggeredNavigation) {
+      return;
+    }
+
     if (this.attendeeService.hasReadingConfirmation()) {
       this.hasTriggeredNavigation = true;
       this.router.navigate(['/quiz', 'flow', 'results']);
       return;
     }
 
+    this.quizService.loadDataToPlay(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => {
+      this.handleMessages();
+    }).catch(() => this.hasTriggeredNavigation = true);
+
+    this.questionTextService.eventEmitter.pipe(takeUntil(this._destroy)).subscribe((value: string) => {
+      this.questionText = value;
+    });
+
     this.quizService.quizUpdateEmitter.pipe(takeUntil(this._destroy)).subscribe(quiz => {
       if (!quiz) {
+        return;
+      }
+
+      if (this.hasTriggeredNavigation) {
         return;
       }
 
@@ -96,15 +118,7 @@ export class ReadingConfirmationComponent implements OnInit, OnDestroy, IHasTrig
       }
 
       this.questionIndex = this.quizService.quiz.currentQuestionIndex;
-      this.questionTextService.change(this.quizService.currentQuestion().questionText);
-    });
-
-    this.quizService.loadDataToPlay(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => {
-      this.handleMessages();
-    }).catch(() => this.hasTriggeredNavigation = true);
-
-    this.questionTextService.eventEmitter.pipe(takeUntil(this._destroy)).subscribe((value: string) => {
-      this.questionText = value;
+      this.questionTextService.change(this.quizService.currentQuestion().questionText).subscribe();
     });
   }
 
@@ -127,6 +141,10 @@ export class ReadingConfirmationComponent implements OnInit, OnDestroy, IHasTrig
         this.quizService.quiz.currentQuestionIndex = payload.nextQuestionIndex;
         sessionStorage.removeItem(StorageKey.CurrentQuestionIndex);
       }), this.messageQueue.subscribe(MessageProtocol.Start, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'voting']);
       }), this.messageQueue.subscribe(MessageProtocol.UpdatedResponse, payload => {
@@ -135,11 +153,19 @@ export class ReadingConfirmationComponent implements OnInit, OnDestroy, IHasTrig
       }), this.messageQueue.subscribe(MessageProtocol.UpdatedSettings, payload => {
         this.quizService.quiz.sessionConfig = payload.sessionConfig;
       }), this.messageQueue.subscribe(MessageProtocol.Reset, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.attendeeService.clearResponses();
         this.quizService.quiz.currentQuestionIndex = -1;
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'lobby']);
       }), this.messageQueue.subscribe(MessageProtocol.Closed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
       }), this.messageQueue.subscribe(MessageProtocol.Added, payload => {

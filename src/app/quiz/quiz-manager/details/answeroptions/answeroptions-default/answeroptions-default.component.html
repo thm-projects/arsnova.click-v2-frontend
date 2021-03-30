@@ -28,13 +28,13 @@
                                                                                   class="h-100 d-flex align-items-center"></fa-icon>
               </span>
               <input (input)="updateAnswerValue($event, i)"
-                     [class.rounded-right]="['SurveyQuestion', 'ABCDSingleChoiceQuestion'].includes(question.TYPE)"
+                     [class.rounded-right]="['SurveyQuestion', 'ABCDSurveyQuestion'].includes(question.TYPE)"
                      [class.rounded-left]="!canDeleteAnswer"
                      [readOnly]="!canEditAnswer"
                      [value]="elem.answerText"
                      class="btn-block text-left p-2 border-0"
                      type="text">
-              <label *ngIf="!['SurveyQuestion', 'ABCDSingleChoiceQuestion'].includes(question.TYPE)"
+              <label *ngIf="!['SurveyQuestion', 'ABCDSurveyQuestion'].includes(question.TYPE)"
                      [class.btn-danger]="!elem.isCorrect"
                      [class.btn-success]="elem.isCorrect"
                      class="btn cursor-pointer mb-0">
@@ -59,7 +59,7 @@
                [attr.data-intro]="'component.answeroptions.description.show_answer_content_on_buttons' | translate"
                class="col-12 mb-2 d-flex">
             <p [innerHTML]="'component.answeroptions.show_answer_content_on_buttons' | translate"
-               class="mb-0 mr-2 align-self-center w-100"
+               class="mr-2 align-self-center w-100"
                style="line-height: 1.2;"></p>
             <label [class.btn-danger]="!question.displayAnswerText"
                    [class.btn-success]="question.displayAnswerText"
@@ -79,7 +79,7 @@
           <div [attr.data-intro]="'component.answeroptions.description.show_one_answer_per_row' | translate"
                class="col-12 mb-2 d-flex">
             <p [innerHTML]="'component.answeroptions.show_one_answer_per_row' | translate"
-               class="mb-0 mr-2 align-self-center w-100"
+               class="mr-2 align-self-center w-100"
                style="line-height: 1.2;"></p>
             <label [class.btn-danger]="!question?.showOneAnswerPerRow"
                    [class.btn-success]="question?.showOneAnswerPerRow"
@@ -96,10 +96,10 @@
               <span *ngIf="!question?.showOneAnswerPerRow">{{'component.answeroptions.free_text_question.offText' | translate}}</span>
             </label>
           </div>
-          <div *ngIf="question?.TYPE === 'SurveyQuestion'"
+          <div *ngIf="['SurveyQuestion', 'ABCDSurveyQuestion'].includes(question?.TYPE)"
                [attr.data-intro]="'component.answeroptions.description.multiple_selection_survey' | translate"
                class="col-12 mb-2 d-flex">
-            <p class="mb-0 mr-2 align-self-center w-100"
+            <p class="mr-2 align-self-center w-100"
                style="line-height: 1.2;">
               {{'component.answeroptions.multiple_selection_survey' | translate}}
             </p>
@@ -130,6 +130,7 @@
   <div class="col-md-6">
     <div class="d-flex justify-content-center mt-5 mt-md-0">
       <app-live-preview
+        [revalidate]="onChange"
         [targetDevice]="DEVICE_TYPE.XS"
         [targetEnvironment]="ENVIRONMENT_TYPE.ANSWEROPTIONS"></app-live-preview>
     </div>

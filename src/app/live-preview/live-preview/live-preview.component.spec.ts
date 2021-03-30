@@ -1,17 +1,16 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SwUpdate } from '@angular/service-worker';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { TranslateService } from '@ngx-translate/core';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { TOAST_CONFIG } from 'ngx-toastr';
 import { TranslatePipeMock } from '../../../_mocks/_pipes/TranslatePipeMock';
 import { SwUpdateMock } from '../../../_mocks/_services/SwUpdateMock';
-import { TranslateServiceMock } from '../../../_mocks/_services/TranslateServiceMock';
-import { DEVICE_TYPES, LIVE_PREVIEW_ENVIRONMENT } from '../../../environments/environment';
 import { HeaderModule } from '../../header/header.module';
+import { DeviceType } from '../../lib/enums/DeviceType';
+import { LivePreviewEnvironment } from '../../lib/enums/LivePreviewEnvironment';
 import { ConnectionMockService } from '../../service/connection/connection.mock.service';
 import { ConnectionService } from '../../service/connection/connection.service';
 import { CustomMarkdownService } from '../../service/custom-markdown/custom-markdown.service';
@@ -34,7 +33,7 @@ describe('LivePreviewComponent', () => {
   let component: LivePreviewComponent;
   let fixture: ComponentFixture<LivePreviewComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, RouterTestingModule, HttpClientTestingModule, HeaderModule, NgbModule, AngularSvgIconModule.forRoot(),
@@ -52,9 +51,6 @@ describe('LivePreviewComponent', () => {
         }, FooterBarService, SharedService, SettingsService, HeaderLabelService, {
           provide: TrackingService,
           useClass: TrackingMockService,
-        }, {
-          provide: TranslateService,
-          useClass: TranslateServiceMock,
         }, I18nService, {
           provide: SwUpdate,
           useClass: SwUpdateMock,
@@ -70,38 +66,38 @@ describe('LivePreviewComponent', () => {
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(LivePreviewComponent);
     component = fixture.componentInstance;
-    component.targetEnvironment = LIVE_PREVIEW_ENVIRONMENT.QUESTION;
-    component.targetDevice = DEVICE_TYPES.XS;
+    component.targetEnvironment = LivePreviewEnvironment.QUESTION;
+    component.targetDevice = DeviceType.XS;
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
 
-  it('should contain a TYPE definition', async(() => {
+  it('should contain a TYPE definition', waitForAsync(() => {
     expect(LivePreviewComponent.TYPE).toEqual('LivePreviewComponent');
   }));
 
-  it('#deviceClass', async(() => {
-    component.targetDevice = DEVICE_TYPES.XS;
+  it('#deviceClass', waitForAsync(() => {
+    component.targetDevice = DeviceType.XS;
     expect(component.deviceClass()).toEqual('device_xs');
   }));
 
-  it('#getComputedWidth', async(() => {
-    component.targetDevice = DEVICE_TYPES.XS;
+  it('#getComputedWidth', waitForAsync(() => {
+    component.targetDevice = DeviceType.XS;
     expect(component.getComputedWidth()).toEqual('calc(50% - 1rem)');
   }));
 
-  it('#normalizeAnswerOptionIndex', async(() => {
+  it('#normalizeAnswerOptionIndex', waitForAsync(() => {
     expect(component.normalizeAnswerOptionIndex(0)).toEqual('A');
     expect(component.normalizeAnswerOptionIndex(1)).toEqual('B');
   }));
 
-  it('#sanitizeHTML', async(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
+  it('#sanitizeHTML', waitForAsync(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
     const markup = '<div><span>Test</span></div>';
     spyOn(sanitizer, 'bypassSecurityTrustHtml').and.callThrough();
     component.sanitizeHTML(markup);

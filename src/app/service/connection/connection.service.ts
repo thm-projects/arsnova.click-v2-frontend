@@ -1,9 +1,10 @@
 import { isPlatformServer } from '@angular/common';
-import { EventEmitter, Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { RxStompService } from '@stomp/ng2-stompjs';
 import { RxStompState } from '@stomp/rx-stomp';
 import { SimpleMQ } from 'ng2-simple-mq';
-import { ReplaySubject } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { MessageProtocol } from '../../lib/enums/Message';
 import { IMessage } from '../../lib/interfaces/communication/IMessage';
 import { StatisticsApiService } from '../api/statistics/statistics-api.service';
@@ -13,9 +14,17 @@ import { SharedService } from '../shared/shared.service';
   providedIn: 'root',
 })
 export class ConnectionService {
-  public readonly dataEmitter: ReplaySubject<IMessage> = new ReplaySubject<IMessage>();
-
   private _serverAvailable: boolean;
+  private _websocketAvailable = false;
+  private _serverStatusEmitter = new ReplaySubject<boolean>(1);
+  private _websocketStatusEmitter = new ReplaySubject<boolean>(1);
+  private _rtt = 0;
+  private _lowSpeed = false;
+  private _mediumSpeed = false;
+  private _pending = false;
+  private _isWebSocketAuthorized = false;
+
+  public readonly dataEmitter: ReplaySubject<IMessage> = new ReplaySubject<IMessage>();
 
   get serverAvailable(): boolean {
     return this._serverAvailable;
@@ -23,43 +32,37 @@ export class ConnectionService {
 
   set serverAvailable(value: boolean) {
     this._serverAvailable = value;
+    this._serverStatusEmitter.next(value);
   }
 
-  private _websocketAvailable = false;
+  set websocketAvailable(value: boolean) {
+    this._websocketAvailable = value;
+    this._websocketStatusEmitter.next(value);
+  }
 
   get websocketAvailable(): boolean {
     return this._websocketAvailable;
   }
 
-  set websocketAvailable(value: boolean) {
-    this._websocketAvailable = value;
-  }
-
-  private _serverStatusEmitter = new EventEmitter<boolean>();
-
-  get serverStatusEmitter(): EventEmitter<boolean> {
+  get serverStatusEmitter(): ReplaySubject<boolean> {
     return this._serverStatusEmitter;
   }
 
-  private _rtt = 0;
+  get websocketStatusEmitter(): ReplaySubject<boolean> {
+    return this._websocketStatusEmitter;
+  }
 
   get rtt(): number {
     return this._rtt;
   }
 
-  private _lowSpeed = false;
-
   get lowSpeed(): boolean {
     return this._lowSpeed;
   }
 
-  private _mediumSpeed = false;
-
   get mediumSpeed(): boolean {
     return this._mediumSpeed;
   }
-
-  private _pending = false;
 
   get pending(): boolean {
     return this._pending;
@@ -68,8 +71,6 @@ export class ConnectionService {
   set pending(value: boolean) {
     this._pending = value;
   }
-
-  private _isWebSocketAuthorized = false;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -81,8 +82,10 @@ export class ConnectionService {
     this.initWebsocket();
   }
 
-  public cleanUp(): void {
+  public cleanUp(): Observable<boolean> {
     this._isWebSocketAuthorized = false;
+
+    return new Observable(subscriber => subscriber.next(true));
   }
 
   public initConnection(overrideCurrentState?: boolean): Promise<any> {
@@ -131,22 +134,46 @@ export class ConnectionService {
       return;
     }
 
-    this.connectToGlobalChannel();
-
     this.rxStompService.connectionState$.subscribe(value => {
       switch (value) {
         case RxStompState.OPEN:
-          this._websocketAvailable = true;
-          this._serverAvailable = true;
-          this._serverStatusEmitter.emit(true);
+          this.websocketAvailable = true;
           break;
         case RxStompState.CLOSED:
-          this._websocketAvailable = false;
-          this._serverAvailable = false;
-          this._serverStatusEmitter.emit(false);
+          this.websocketAvailable = false;
           break;
       }
     });
+  }
+
+  public connectToGlobalChannel(): Observable<any> {
+    return this.rxStompService.watch(encodeURI(`/exchange/global`)).pipe(tap(message => {
+      console.log('Message in global channel received', message);
+      try {
+        const parsedMessage = JSON.parse(message.body);
+        switch (parsedMessage.step) {
+          case MessageProtocol.SetActive:
+            if (!this.sharedService.activeQuizzes.includes(parsedMessage.payload.quizName)) {
+              this.sharedService.activeQuizzes.push(parsedMessage.payload.quizName);
+            }
+            this.sharedService.activeQuizzesChanged.next();
+            break;
+          case MessageProtocol.SetInactive:
+            const index = this.sharedService.activeQuizzes.indexOf(parsedMessage.payload.quizName);
+            if (index > -1) {
+              this.sharedService.activeQuizzes.splice(index, 1);
+            }
+            this.sharedService.activeQuizzesChanged.next();
+            break;
+          default:
+            console.log('Publishing message to queue', parsedMessage.step, parsedMessage.payload || {});
+            this.messageQueue.publish(parsedMessage.step, parsedMessage.payload || {}, false);
+            break;
+        }
+      } catch (ex) {
+        console.error('Invalid message received', ex);
+      }
+    }));
   }
 
   private calculateConnectionSpeedIndicator(): void {
@@ -160,32 +187,5 @@ export class ConnectionService {
       this._lowSpeed = false;
       this._mediumSpeed = false;
     }
-  }
-
-  private connectToGlobalChannel(): void {
-    this.rxStompService.watch(encodeURI(`/exchange/global`)).subscribe(message => {
-      console.log('Message in global channel received', message);
-      try {
-        const parsedMessage = JSON.parse(message.body);
-        switch (parsedMessage.step) {
-          case MessageProtocol.SetActive:
-            if (!this.sharedService.activeQuizzes.includes(parsedMessage.payload.quizName)) {
-              this.sharedService.activeQuizzes.push(parsedMessage.payload.quizName);
-            }
-            break;
-          case MessageProtocol.SetInactive:
-            const index = this.sharedService.activeQuizzes.indexOf(parsedMessage.payload.quizName);
-            if (index > -1) {
-              this.sharedService.activeQuizzes.splice(index, 1);
-            }
-            break;
-          default:
-            this.messageQueue.publish(parsedMessage.step, parsedMessage.payload || {}, false);
-            break;
-        }
-      } catch (ex) {
-        console.error('Invalid message received', ex);
-      }
-    });
   }
 }

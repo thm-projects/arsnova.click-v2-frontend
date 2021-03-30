@@ -1,3 +1,4 @@
+import { isPlatformServer } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID, SecurityContext } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -19,17 +20,17 @@ import { UserService } from '../../../service/user/user.service';
   styleUrls: ['./nickname-select.component.scss'],
 })
 export class NicknameSelectComponent implements OnInit, OnDestroy {
-  public static TYPE = 'NicknameSelectComponent';
-  public isLoggingIn: string;
-  public isLoading = true;
+  public static readonly TYPE = 'NicknameSelectComponent';
 
   private _nicks: Array<string> = [];
+  private _messageSubscriptions: Array<string> = [];
+
+  public isLoggingIn: string;
+  public isLoading = true;
 
   get nicks(): Array<string> {
     return this._nicks;
   }
-
-  private _messageSubscriptions: Array<string> = [];
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -90,6 +91,10 @@ export class NicknameSelectComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
     }
 
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
     this.quizService.loadDataToPlay(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => {
       this.memberApiService.getAvailableNames(this.quizService.quiz.name).subscribe(data => {
         this._nicks = this._nicks.concat(data);
@@ -106,6 +111,8 @@ export class NicknameSelectComponent implements OnInit, OnDestroy {
     }), this.messageQueue.subscribe(MessageProtocol.Removed, payload => {
       this.attendeeService.removeMember(payload.name);
       this.nicks.push(payload.name);
+    }), this.messageQueue.subscribe(MessageProtocol.Closed, payload => {
+      this.router.navigate(['/']);
     }));
   }
 

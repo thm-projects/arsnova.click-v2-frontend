@@ -8,17 +8,11 @@ export enum Filter {
   InvalidKeys, //
   InvalidDE, //
   InvalidEN, //
-  InvalidES, //
-  InvalidFr, //
-  InvalidIt, //
 }
 
 export enum LanguageTranslation {
   DE = 'Deutsch', //
   EN = 'English', //
-  FR = 'Français', //
-  IT = 'Italiano', //
-  ES = 'Español', //
 }
 
 export enum NumberType {
@@ -29,18 +23,12 @@ export enum NumberType {
 
 export enum CurrencyType {
   DE = 'EUR', //
-  EN = 'EUR', //
-  FR = 'EUR', //
-  IT = 'EUR', //
-  ES = 'EUR', //
+  EN = 'GBP', //
 }
 
 export enum Language {
   EN = 'en', //
   DE = 'de', //
-  FR = 'fr', //
-  ES = 'es', //
-  IT = 'it', //
 }
 
 export enum Project {
@@ -49,19 +37,20 @@ export enum Project {
 }
 
 export enum StorageKey {
-  TwitterOptIn           = 'TwitterOptIn', //
-  CurrentBonusToken      = 'CurrentBonusToken', //
-  CurrentQuestionIndex   = 'CurrentQuestionIndex', //
-  PrivateKey             = 'PrivateKey', //
-  LoginToken             = 'LoginToken', //
-  QuizToken              = 'QuizToken', //
-  CasToken               = 'CasToken', //
-  CurrentQuizName        = 'CurrentQuizName', //
-  CurrentNickName        = 'CurrentNickName', //
-  CurrentMemberGroupName = 'CurrentMemberGroupName', //
-  Language               = 'Language', //
-  QuizTheme              = 'QuizTheme', //
-  DefaultTheme           = 'DefaultTheme', //
+  OutdatedVersionFunnelStep = 'OutdatedVersionFunnelStep', //
+  PushSubscription          = 'PushSubscription', //
+  TwitterOptIn              = 'TwitterOptIn', //
+  CurrentQuestionIndex      = 'CurrentQuestionIndex', //
+  PrivateKey                = 'PrivateKey', //
+  LoginToken                = 'LoginToken', //
+  QuizToken                 = 'QuizToken', //
+  CasToken                  = 'CasToken', //
+  CurrentQuizName           = 'CurrentQuizName', //
+  CurrentNickName           = 'CurrentNickName', //
+  CurrentMemberGroupName    = 'CurrentMemberGroupName', //
+  Language                  = 'Language', //
+  QuizTheme                 = 'QuizTheme', //
+  DefaultTheme              = 'DefaultTheme', //
 }
 
 export enum DbState {

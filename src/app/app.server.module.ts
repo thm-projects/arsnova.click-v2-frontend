@@ -2,11 +2,17 @@ import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
 import { NgModule, PLATFORM_ID } from '@angular/core';
 import { TransferState } from '@angular/platform-browser';
 import { ServerModule, ServerTransferStateModule } from '@angular/platform-server';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateCompiler, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { AngularSvgIconModule, SvgLoader } from 'angular-svg-icon';
+import { HotkeyModule, HotkeysService } from 'angular2-hotkeys';
+import * as fs from 'fs';
+import * as path from 'path';
 import { join } from 'path';
+import { Subject } from 'rxjs';
 import { AppModule } from './app.module';
 import { UniversalInterceptor } from './interceptors/universal.interceptor';
+import { THEME_MAP } from './lib/injection-token/theme-map';
 import { SvgServerLoader } from './lib/SvgServerLoader';
 import { createTranslateCompiler, createUniversalTranslateLoader } from './lib/translation.factory';
 import { RootComponent } from './root/root/root.component';
@@ -35,7 +41,7 @@ export function svgLoaderFactory(http: HttpClient, transferState: TransferState)
         provide: TranslateCompiler,
         useFactory: createTranslateCompiler,
       },
-    }), AppModule, ServerModule, ServerTransferStateModule,
+    }), AppModule, ServerModule, ServerTransferStateModule, HotkeyModule.forRoot(),
   ],
   providers: [
     {
@@ -45,6 +51,20 @@ export function svgLoaderFactory(http: HttpClient, transferState: TransferState)
     }, {
       provide: TrackingService,
       useClass: TrackingMockService,
+    }, {
+      provide: THEME_MAP,
+      useValue: JSON.parse(fs.readFileSync(path.join(__dirname, '/../browser/assets/theme-hashes.json'), { encoding: 'utf-8' })),
+    }, NgbActiveModal, {
+      provide: HotkeysService,
+      useValue: {
+        cheatSheetToggle: new Subject(),
+        add: () => {},
+        reset: () => {},
+        remove: () => {},
+        get: () => {},
+        pause: () => {},
+        unpause: () => {},
+      },
     },
   ],
   bootstrap: [RootComponent],

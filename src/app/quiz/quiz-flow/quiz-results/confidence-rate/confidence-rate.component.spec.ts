@@ -1,9 +1,7 @@
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { TranslateService } from '@ngx-translate/core';
-import { TranslateServiceMock } from '../../../../../_mocks/_services/TranslateServiceMock';
 import { AttendeeMockService } from '../../../../service/attendee/attendee.mock.service';
 import { AttendeeService } from '../../../../service/attendee/attendee.service';
 import { ConnectionMockService } from '../../../../service/connection/connection.mock.service';
@@ -30,7 +28,7 @@ describe('QuizResults: ConfidenceRateComponent', () => {
   let component: ConfidenceRateComponent;
   let fixture: ComponentFixture<ConfidenceRateComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, SharedModule, RouterTestingModule,
@@ -54,30 +52,27 @@ describe('QuizResults: ConfidenceRateComponent', () => {
         }, I18nService, HeaderLabelService, {
           provide: AttendeeService,
           useClass: AttendeeMockService,
-        }, {
-          provide: TranslateService,
-          useClass: TranslateServiceMock,
         },
       ],
       declarations: [ConfidenceRateComponent],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(ConfidenceRateComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
 
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(ConfidenceRateComponent.TYPE).toEqual('ConfidenceRateComponent');
   }));
 
-  it('#sanitizeStyle', async(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
+  it('#sanitizeStyle', waitForAsync(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
     expect(component.sanitizeStyle('20%')).toBeTruthy();
   })));
 });

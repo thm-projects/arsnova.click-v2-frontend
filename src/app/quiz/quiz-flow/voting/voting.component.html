@@ -1,9 +1,20 @@
+<div class="ml-auto" *ngIf="quizService.playAudio && quizService.quiz?.sessionConfig?.music.shared.countdownRunning">
+  <app-audio-player [config]="musicConfig"></app-audio-player>
+</div>
+
 <div *ngIf="quizService?.currentQuestion()?.timer > 0"
-     class="overflow-hidden mb-3 d-flex"
-     id="countdown-header">
-  <div class="ml-auto">
-    <span *ngIf="countdown && countdown.isRunning">{{countdown.remainingTime}}</span>
-    <fa-icon *ngIf="!countdown || !countdown.isRunning"
+     class="overflow-hidden mb-3 d-flex">
+
+  <fa-icon *ngIf="quizService?.currentQuestion()?.requiredForToken"
+           [icon]="['fas', 'key']"
+           class="text-warning align-self-center"
+           id="token-icon-header"
+           [ngbTooltip]="'component.quiz_summary.required-for-token.label' | translate"></fa-icon>
+
+  <div class="ml-auto"
+       id="countdown-header">
+    <span *ngIf="countdown">{{countdown}}</span>
+    <fa-icon *ngIf="!countdown"
              [icon]="'spinner'"
              [spin]="true"></fa-icon>
     <fa-icon [icon]="'hourglass'"
@@ -19,16 +30,18 @@
   </h5>
 
   <app-voting-question *ngIf="questionText"
-                       [questionText]="questionText"></app-voting-question>
+                       [questionText]="questionText"
+                       [answers]="quizService?.currentQuestion()?.displayAnswerText === false ? answers : null"
+                       [tags]="quizService?.currentQuestion()?.tags"></app-voting-question>
 </ng-container>
 
 <div *ngIf="displayAnswerButtons()"
      [class.mb-5]="showSendResponseButton()"
-     class="d-flex justify-content-around align-items-center flex-wrap">
-  <button (click)="toggleSelectAnswer(i)"
+     class="d-flex justify-content-around align-items-center flex-wrap mt-3">
+  <button (click)="toggleSelectAnswer(elem)"
           *ngFor="let elem of answers; let i = index"
-          [class.btn-invers]="isSelected(i)"
-          [class.btn-secondary]="!isSelected(i)"
+          [class.btn-invers]="isSelected(elem)"
+          [class.btn-secondary]="!isSelected(elem)"
           [class.m-2]="!getQuestionAsSurvey().showOneAnswerPerRow"
           [class.my-2]="getQuestionAsSurvey().showOneAnswerPerRow"
           [style.flex-basis]="getQuestionAsSurvey().showOneAnswerPerRow ? '100%' : 'auto'"
@@ -67,7 +80,7 @@
      class="position-fixed fixed-bottom py-2 d-flex bg-primary">
   <button (click)="sendResponses()"
           [disabled]="isSendingResponse"
-          class="btn btn-info btn-lg mx-3 px-sm-5 mx-sm-auto flex-grow-1 flex-sm-grow-0">
+          class="btn btn-info btn-lg my-3 my-sm-0 mx-3 px-sm-5 mx-sm-auto flex-grow-1 flex-sm-grow-0">
     <span class="mr-2">{{'component.voting.send' | translate}}</span>
     <fa-icon *ngIf="isSendingResponse"
              [icon]="'spinner'"

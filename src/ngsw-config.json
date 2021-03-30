@@ -7,9 +7,9 @@
       "resources": {
         "files": [
           "/assets/i18n/**",
-          "/index.html",
           "/*.js",
-          "/manifest.webmanifest"
+          "/index.html",
+          "/manifest*.json"
         ]
       }
     },
@@ -19,6 +19,7 @@
       "updateMode": "prefetch",
       "resources": {
         "files": [
+          "/*.css",
           "/assets/js/**"
         ]
       }
@@ -45,24 +46,13 @@
         "/rabbitmq/**",
         "/rabbitmq-mgmt/**",
         "https://polyfill.io/**",
-        "https://sentry.io/**"
+        "https://sentry.arsnova.click/**"
       ],
       "cacheConfig": {
         "strategy": "freshness",
-        "maxSize": 100,
-        "maxAge": "3d",
-        "timeout": "10s"
-      }
-    },
-    {
-      "name": "api-performance",
-      "urls": [
-        "/*.css"
-      ],
-      "cacheConfig": {
-        "strategy": "performance",
-        "maxSize": 100,
-        "maxAge": "3d"
+        "maxSize": 1,
+        "maxAge": "1u",
+        "timeout": "1s"
       }
     }
   ]

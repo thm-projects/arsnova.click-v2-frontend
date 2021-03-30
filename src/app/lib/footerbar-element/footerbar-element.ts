@@ -26,6 +26,10 @@ export class FooterbarElement implements IFooterBarElement {
     return this._iconClass;
   }
 
+  set iconClass(value: IconProp) {
+    this._iconClass = value;
+  }
+
   get iconColorClass(): string {
     return this._iconColorClass;
   }
@@ -85,11 +89,21 @@ export class FooterbarElement implements IFooterBarElement {
     this._isLoading = value;
   }
 
-  private readonly _introTranslate: string;
+  private _loadingBarState: number;
+
+  get loadingBarState(): number {
+    return this._loadingBarState;
+  }
+
+  set loadingBarState(value: number) {
+    this._loadingBarState = value;
+  }
+
   private _restoreOnClickCallback: Function;
+  private _iconClass: IconProp;
+  private readonly _introTranslate: string;
   private readonly _id: string;
   private readonly _iconLayer: Array<IconParams>;
-  private readonly _iconClass: IconProp;
   private readonly _iconColorClass: string;
   private readonly _textClass: string;
   private readonly _textName: string;
@@ -111,6 +125,7 @@ export class FooterbarElement implements IFooterBarElement {
                 linkTarget, //
                 queryParams, //
                 isLoading, //
+                loadingBarState, //
               }: IFooterBarElement, onClickCallback?: Function) {
     this._id = id;
     this._iconLayer = iconLayer;
@@ -125,6 +140,7 @@ export class FooterbarElement implements IFooterBarElement {
     this._linkTarget = linkTarget;
     this._queryParams = queryParams;
     this._isLoading = isLoading;
+    this._loadingBarState = loadingBarState || 0;
     this.onClickCallback = onClickCallback;
   }
 

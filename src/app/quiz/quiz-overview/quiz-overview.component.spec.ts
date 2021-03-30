@@ -1,13 +1,14 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { SimpleMQ } from 'ng2-simple-mq';
-import { TranslatePipeMock } from '../../../_mocks/_pipes/TranslatePipeMock';
+import { QuizFilterPipeMock } from '../../../_mocks/_pipes/QuizFilterPipeMock';
 import { DefaultSettings } from '../../lib/default.settings';
 import { DefaultAnswerEntity } from '../../lib/entities/answer/DefaultAnswerEntity';
 import { SingleChoiceQuestionEntity } from '../../lib/entities/question/SingleChoiceQuestionEntity';
@@ -24,6 +25,8 @@ import { SettingsService } from '../../service/settings/settings.service';
 import { SharedService } from '../../service/shared/shared.service';
 import { StorageService } from '../../service/storage/storage.service';
 import { StorageServiceMock } from '../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../service/themes/themes.mock.service';
+import { ThemesService } from '../../service/themes/themes.service';
 import { TrackingMockService } from '../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
 import { TwitterService } from '../../service/twitter/twitter.service';
@@ -76,7 +79,7 @@ describe('QuizOverviewComponent', () => {
     ],
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, JwtModule.forRoot({
@@ -102,28 +105,34 @@ describe('QuizOverviewComponent', () => {
         }, {
           provide: TrackingService,
           useClass: TrackingMockService,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
         }, SharedService, RxStompService, SimpleMQ, {
           provide: TwitterService,
           useClass: TwitterServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {}
         },
       ],
-      declarations: [QuizOverviewComponent, TranslatePipeMock],
+      declarations: [QuizOverviewComponent, QuizFilterPipeMock],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(QuizOverviewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(QuizOverviewComponent.TYPE).toEqual('QuizOverviewComponent');
   }));
 
@@ -148,7 +157,7 @@ describe('QuizOverviewComponent', () => {
       spyOn(router, 'navigate').and.callFake(() => new Promise<boolean>(resolve => {resolve(); }));
       component.sessions.splice(0, -1, validQuiz);
 
-      component.editQuiz(0);
+      component.editQuiz(validQuiz);
 
       expect(quizService.quiz).toEqual(jasmine.objectContaining(validQuiz));
       expect(router.navigate).toHaveBeenCalledWith(jasmine.arrayWithExactContents(['/quiz', 'manager', 'overview']));
@@ -162,7 +171,7 @@ describe('QuizOverviewComponent', () => {
       component.sessions.push(validQuiz);
       const exportData = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(validQuiz));
 
-      await component.exportQuiz(0, (self, event) => {
+      await component.exportQuiz(validQuiz, (self, event) => {
         event.preventDefault();
         event.stopImmediatePropagation();
         expect(self.href).toEqual(exportData);

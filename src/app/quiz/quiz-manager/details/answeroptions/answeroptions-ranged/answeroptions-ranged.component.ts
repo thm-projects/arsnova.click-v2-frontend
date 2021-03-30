@@ -1,12 +1,13 @@
-import { isPlatformServer } from '@angular/common';
 import { Component, HostListener, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { distinctUntilChanged, map, takeUntil, tap } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
+import { HotkeysService } from 'angular2-hotkeys';
+import { takeUntil } from 'rxjs/operators';
 import { RangedQuestionEntity } from '../../../../../lib/entities/question/RangedQuestionEntity';
 import { QuizPoolApiService } from '../../../../../service/api/quiz-pool/quiz-pool-api.service';
 import { FooterBarService } from '../../../../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../../../../service/header-label/header-label.service';
+import { I18nService } from '../../../../../service/i18n/i18n.service';
 import { QuizService } from '../../../../../service/quiz/quiz.service';
 import { AbstractQuizManagerDetailsComponent } from '../../abstract-quiz-manager-details.component';
 
@@ -16,7 +17,7 @@ import { AbstractQuizManagerDetailsComponent } from '../../abstract-quiz-manager
   styleUrls: ['./answeroptions-ranged.component.scss'],
 })
 export class AnsweroptionsRangedComponent extends AbstractQuizManagerDetailsComponent implements OnInit, OnDestroy {
-  public static TYPE = 'AnsweroptionsRangedComponent';
+  public static readonly TYPE = 'AnsweroptionsRangedComponent';
 
   protected _question: RangedQuestionEntity;
 
@@ -62,12 +63,18 @@ export class AnsweroptionsRangedComponent extends AbstractQuizManagerDetailsComp
     footerBarService: FooterBarService,
     quizPoolApiService: QuizPoolApiService,
     router: Router,
+    hotkeysService: HotkeysService,
+    translate: TranslateService,
+    i18nService: I18nService,
   ) {
-    super(platformId, quizService, headerLabelService, footerBarService, quizPoolApiService, router, route);
+    super(platformId, quizService, headerLabelService, footerBarService, quizPoolApiService, router, route, hotkeysService, translate, i18nService);
   }
 
   public ngOnInit(): void {
     super.ngOnInit();
+
+    const target = ['/quiz', 'manager', this._isQuizPool ? 'quiz-pool' : this._questionIndex, 'overview'];
+    this.footerBarService.footerElemBack.onClickCallback = () => this.router.navigate(target);
 
     this.quizService.quizUpdateEmitter.pipe(takeUntil(this.destroy)).subscribe(() => {
       this._question = this.quizService.quiz.questionList[this._questionIndex] as RangedQuestionEntity;

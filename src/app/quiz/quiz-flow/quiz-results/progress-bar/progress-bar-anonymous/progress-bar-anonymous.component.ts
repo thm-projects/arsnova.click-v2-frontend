@@ -9,7 +9,7 @@ import { AbstractProgressBar } from '../AbstractProgressBar';
   styleUrls: ['./progress-bar-anonymous.component.scss'],
 })
 export class ProgressBarAnonymousComponent extends AbstractProgressBar {
-  public static TYPE = 'ProgressBarAnonymousComponent';
+  public static readonly TYPE = 'ProgressBarAnonymousComponent';
 
   public correct: { absolute: number; percent: string } = {
     absolute: 0,
@@ -23,14 +23,17 @@ export class ProgressBarAnonymousComponent extends AbstractProgressBar {
     absolute: 0,
     percent: '',
   };
-  public base = 0;
 
   @Input() public type: QuestionType;
 
   @Input() set attendeeData(value: any) {
+    if (!value) {
+      return;
+    }
+
     this.correct = value.correct;
     this.wrong = value.wrong;
-    this.base = value.base;
+    this._base = value._base;
     this.neutral = value.neutral;
   }
 
@@ -39,6 +42,6 @@ export class ProgressBarAnonymousComponent extends AbstractProgressBar {
   }
 
   public isSurveyQuestion(): boolean {
-    return [QuestionType.SurveyQuestion, QuestionType.ABCDSingleChoiceQuestion].includes(this.type);
+    return [QuestionType.SurveyQuestion, QuestionType.ABCDSurveyQuestion].includes(this.type);
   }
 }

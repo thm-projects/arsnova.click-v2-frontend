@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
 import { StorageKey } from '../../../lib/enums/enums';
 import { IAvailableNicks } from '../../../lib/interfaces/IAvailableNicks';
 import { NickApiService } from '../../../service/api/nick/nick-api.service';
@@ -17,12 +17,17 @@ import { QuizService } from '../../../service/quiz/quiz.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NicknameManagerComponent implements OnInit, OnDestroy {
-  public static TYPE = 'NicknameManagerComponent';
+  public static readonly TYPE = 'NicknameManagerComponent';
+
+  private _availableNicks: IAvailableNicks;
+  private _selectedCategory = '';
+  private _availableNicksBackup: IAvailableNicks;
+  private _previousSearchValue = '';
+  private readonly _destroy = new Subject();
+
   public readonly throttle = 0;
   public readonly scrollDistance = 4;
   public visibleData = 20;
-
-  private _availableNicks: IAvailableNicks;
 
   get availableNicks(): IAvailableNicks {
     return this._availableNicks;
@@ -38,8 +43,6 @@ export class NicknameManagerComponent implements OnInit, OnDestroy {
     this.cd.markForCheck();
   }
 
-  private _selectedCategory = '';
-
   get selectedCategory(): string {
     return this._selectedCategory;
   }
@@ -49,13 +52,10 @@ export class NicknameManagerComponent implements OnInit, OnDestroy {
     this.visibleData = 20;
   }
 
-  private readonly _destroy = new Subject();
-  private _availableNicksBackup: IAvailableNicks;
-  private _previousSearchValue = '';
-
   constructor(
+    public quizService: QuizService,
+    @Inject(PLATFORM_ID) private platformId: Object,
     private sanitizer: DomSanitizer,
-    private quizService: QuizService,
     private footerBarService: FooterBarService,
     private nickApiService: NickApiService,
     private customMarkdownService: CustomMarkdownService,
@@ -64,12 +64,13 @@ export class NicknameManagerComponent implements OnInit, OnDestroy {
 
     this.footerBarService.TYPE_REFERENCE = NicknameManagerComponent.TYPE;
     const footerElements = [this.footerBarService.footerElemBack, this.footerBarService.footerElemBlockRudeNicknames];
-    if (environment.enableCasLogin) {
-      footerElements.push(this.footerBarService.footerElemEnableCasLogin);
-    }
     this.footerBarService.replaceFooterElements(footerElements);
 
-    this.quizService.loadDataToEdit(sessionStorage.getItem(StorageKey.CurrentQuizName));
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
+    this.quizService.loadDataToEdit(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => this.cd.markForCheck());
   }
 
   public onScrollDown(): void {
@@ -224,5 +225,12 @@ export class NicknameManagerComponent implements OnInit, OnDestroy {
       case 'emojis':
         return 'component.nickname_categories.category.emojis';
     }
+  }
+
+  public getParsedSelectedNicks(): Array<SafeHtml> {
+    return this.quizService.quiz?.sessionConfig.nicks.selectedNicks
+      .map(v => this.customMarkdownService.parseGithubFlavoredMarkdown(v))
+      .map(v => this.sanitizeHTML(v))
+      ;
   }
 }

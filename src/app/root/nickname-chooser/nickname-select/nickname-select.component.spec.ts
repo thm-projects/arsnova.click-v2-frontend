@@ -1,15 +1,16 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID, SecurityContext } from '@angular/core';
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { SimpleMQ } from 'ng2-simple-mq';
-import { TranslatePipeMock } from '../../../../_mocks/_pipes/TranslatePipeMock';
 import { jwtOptionsFactory } from '../../../lib/jwt.factory';
 import { AttendeeMockService } from '../../../service/attendee/attendee.mock.service';
 import { AttendeeService } from '../../../service/attendee/attendee.service';
@@ -24,6 +25,8 @@ import { SettingsService } from '../../../service/settings/settings.service';
 import { SharedService } from '../../../service/shared/shared.service';
 import { StorageService } from '../../../service/storage/storage.service';
 import { StorageServiceMock } from '../../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../service/themes/themes.service';
 import { UserService } from '../../../service/user/user.service';
 import { I18nTestingModule } from '../../../shared/testing/i18n-testing/i18n-testing.module';
 
@@ -33,7 +36,7 @@ describe('NicknameSelectComponent', () => {
   let component: NicknameSelectComponent;
   let fixture: ComponentFixture<NicknameSelectComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         JwtModule.forRoot({
@@ -42,7 +45,7 @@ describe('NicknameSelectComponent', () => {
             useFactory: jwtOptionsFactory,
             deps: [PLATFORM_ID, StorageService],
           },
-        }), I18nTestingModule, RouterTestingModule, HttpClientTestingModule, FontAwesomeModule,
+        }), I18nTestingModule, RouterTestingModule, HttpClientTestingModule, FontAwesomeModule, NgbAlertModule,
       ],
       providers: [
         {
@@ -54,6 +57,9 @@ describe('NicknameSelectComponent', () => {
         }, {
           provide: QuizService,
           useClass: QuizMockService,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
@@ -63,13 +69,16 @@ describe('NicknameSelectComponent', () => {
         }, {
           provide: UserService,
           useValue: {},
-        }, SimpleMQ,
+        }, SimpleMQ, {
+          provide: HotkeysService,
+          useValue: {}
+        },
       ],
-      declarations: [NicknameSelectComponent, TranslatePipeMock],
+      declarations: [NicknameSelectComponent],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const library: FaIconLibrary = TestBed.inject(FaIconLibrary);
     library.addIcons(faSpinner);
     fixture = TestBed.createComponent(NicknameSelectComponent);
@@ -98,7 +107,7 @@ describe('NicknameSelectComponent', () => {
   });
 
   describe('#sanitizeHTML', () => {
-    it('should sanitize a given html string', async(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
+    it('should sanitize a given html string', waitForAsync(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
       const markup = '<div><span>TestMarkup</span></div>';
 
       spyOn(sanitizer, 'sanitize').and.callFake((ctx: SecurityContext, value: string) => value as string);

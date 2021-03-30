@@ -5,8 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { of } from 'rxjs';
-import { TranslatePipeMock } from '../../../../../../_mocks/_pipes/TranslatePipeMock';
 import { FreeTextAnswerEntity } from '../../../../../lib/entities/answer/FreetextAnwerEntity';
 import { jwtOptionsFactory } from '../../../../../lib/jwt.factory';
 import { ConnectionMockService } from '../../../../../service/connection/connection.mock.service';
@@ -19,6 +19,8 @@ import { QuizMockService } from '../../../../../service/quiz/quiz-mock.service';
 import { QuizService } from '../../../../../service/quiz/quiz.service';
 import { SettingsService } from '../../../../../service/settings/settings.service';
 import { SharedService } from '../../../../../service/shared/shared.service';
+import { ThemesMockService } from '../../../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../../../service/themes/themes.service';
 import { I18nTestingModule } from '../../../../../shared/testing/i18n-testing/i18n-testing.module';
 import { AnsweroptionsFreetextComponent } from './answeroptions-freetext.component';
 
@@ -47,7 +49,10 @@ describe('AnsweroptionsFreetextComponent', () => {
           {
             provide: QuizService,
             useClass: QuizMockService,
-          }, HeaderLabelService, FooterBarService, SettingsService, {
+          }, HeaderLabelService, {
+            provide: ThemesService,
+            useClass: ThemesMockService
+          }, FooterBarService, SettingsService, {
             provide: ConnectionService,
             useClass: ConnectionMockService,
           }, SharedService, {
@@ -60,9 +65,12 @@ describe('AnsweroptionsFreetextComponent', () => {
                 get: () => null,
               }),
             },
+          }, {
+            provide: HotkeysService,
+            useValue: {}
           },
         ],
-        declarations: [AnsweroptionsFreetextComponent, TranslatePipeMock],
+        declarations: [AnsweroptionsFreetextComponent],
       }).compileComponents();
     }
   ));

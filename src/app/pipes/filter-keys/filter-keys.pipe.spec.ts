@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, TestBed } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { Filter, Language } from '../../lib/enums/enums';
 import { jwtOptionsFactory } from '../../lib/jwt.factory';
@@ -20,7 +20,6 @@ describe('FilterKeysPipe', () => {
       value: {
         [Language.DE]: 'test1value',
         [Language.EN]: 'test1value',
-        [Language.FR]: 'test1value',
       },
     }, {
       key: 'test2key',
@@ -31,7 +30,7 @@ describe('FilterKeysPipe', () => {
     },
   ];
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         JwtModule.forRoot({
@@ -62,7 +61,7 @@ describe('FilterKeysPipe', () => {
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     pipe = new FilterKeysPipe(TestBed.inject(LanguageLoaderService));
   }));
 
@@ -86,15 +85,4 @@ describe('FilterKeysPipe', () => {
     expect(pipe.transform(mockValues, Filter.InvalidEN).length).toEqual(0);
   });
 
-  it('should return false if the language files have FR keys', () => {
-    expect(pipe.transform(mockValues, Filter.InvalidFr).length).toEqual(1);
-  });
-
-  it('should return false if the language files do not have ES keys', () => {
-    expect(pipe.transform(mockValues, Filter.InvalidES).length).toBeGreaterThan(0);
-  });
-
-  it('should return false if the language files do not have IT keys', () => {
-    expect(pipe.transform(mockValues, Filter.InvalidIt).length).toBeGreaterThan(0);
-  });
 });

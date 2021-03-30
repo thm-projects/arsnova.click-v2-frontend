@@ -1,13 +1,15 @@
 import { SecurityContext } from '@angular/core';
-import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeStyle } from '@angular/platform-browser';
 
 export abstract class AbstractProgressBar {
+  private _percent: number;
+
+  protected _base: number;
+
   public absolute: number;
   public label: string;
   public normalizedAnswerIndex: string;
   public progressbarCssClass: string;
-
-  private _percent: number;
 
   get percent(): number {
     return this._percent;
@@ -16,8 +18,6 @@ export abstract class AbstractProgressBar {
   set percent(value: number) {
     this._percent = value;
   }
-
-  private _base: number;
 
   get base(): number {
     return this._base;
@@ -34,11 +34,16 @@ export abstract class AbstractProgressBar {
     return this.sanitizer.sanitize(SecurityContext.STYLE, `${value}`);
   }
 
-  public sanitizeHTML(value: string): string {
-    return this.sanitizer.sanitize(SecurityContext.HTML, `${value}`);
+  public sanitizeHTML(value: string): SafeHtml {
+    // sanitizer.bypassSecurityTrustHtml is required for highslide and mathjax
+    return this.sanitizer.bypassSecurityTrustHtml(value);
   }
 
   protected initData(value: any): void {
+    if (!value) {
+      return;
+    }
+
     this.percent = value.percent;
     this.base = value.base;
     this.absolute = value.absolute;

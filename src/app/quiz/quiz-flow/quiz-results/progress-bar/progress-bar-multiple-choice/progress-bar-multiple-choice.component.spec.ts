@@ -1,11 +1,8 @@
-import { SecurityContext } from '@angular/core';
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { TranslateService } from '@ngx-translate/core';
-import { TranslatePipeMock } from '../../../../../../_mocks/_pipes/TranslatePipeMock';
-import { TranslateServiceMock } from '../../../../../../_mocks/_services/TranslateServiceMock';
+import { I18nTestingModule } from '../../../../../shared/testing/i18n-testing/i18n-testing.module';
 
 import { ProgressBarMultipleChoiceComponent } from './progress-bar-multiple-choice.component';
 
@@ -13,22 +10,17 @@ describe('ProgressBarMultipleChoiceComponent', () => {
   let component: ProgressBarMultipleChoiceComponent;
   let fixture: ComponentFixture<ProgressBarMultipleChoiceComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        FontAwesomeModule,
+        I18nTestingModule, FontAwesomeModule,
       ],
-      providers: [
-        {
-          provide: TranslateService,
-          useClass: TranslateServiceMock,
-        },
-      ],
-      declarations: [ProgressBarMultipleChoiceComponent, TranslatePipeMock],
+      providers: [],
+      declarations: [ProgressBarMultipleChoiceComponent],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const library: FaIconLibrary = TestBed.inject(FaIconLibrary);
     library.addIcons(faSpinner);
     fixture = TestBed.createComponent(ProgressBarMultipleChoiceComponent);
@@ -36,7 +28,7 @@ describe('ProgressBarMultipleChoiceComponent', () => {
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
   it('should contain a TYPE reference', () => {
@@ -50,8 +42,8 @@ describe('ProgressBarMultipleChoiceComponent', () => {
   it('#sanitizeHTML', inject([DomSanitizer], (sanitizer: DomSanitizer) => {
     const markup = '<div><span>TestMarkup</span></div>';
 
-    spyOn(sanitizer, 'sanitize').and.callFake((ctx: SecurityContext, value: string) => value as string);
+    spyOn(sanitizer, 'bypassSecurityTrustHtml').and.callFake((value: string) => value as string);
     component.sanitizeHTML(markup);
-    expect(sanitizer.sanitize).toHaveBeenCalled();
+    expect(sanitizer.bypassSecurityTrustHtml).toHaveBeenCalled();
   }));
 });

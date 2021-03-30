@@ -1,3 +1,7 @@
+.cursor-default {
+  cursor: default !important;
+}
+
 .cursor-pointer {
   cursor: pointer !important;
 }
@@ -34,18 +38,6 @@
 
   &:-ms-input-placeholder {
     @include placeholder-align-center;
-  }
-}
-
-fa-icon {
-  &.cursor-pointer {
-    &:hover {
-      color: lighten(#000, 50%)
-    }
-
-    &:active {
-      color: lighten(#000, 40%)
-    }
   }
 }
 
@@ -91,8 +83,8 @@ button:disabled {
   cursor: not-allowed !important;
 }
 
-.w-50px {
-  width: 50px;
+.w-40px {
+  width: 40px;
 }
 
 .w-100px {

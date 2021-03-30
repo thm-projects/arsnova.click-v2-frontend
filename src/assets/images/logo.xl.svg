@@ -1,7 +1,8 @@
-<svg height="60"
-     id="logo-image"
+<svg id="logo-image-xl"
      viewBox="0 0 60 60"
-     width="60"
+     height="60px"
+     width="60px"
+     font-size="0.9rem"
      xmlns="http://www.w3.org/2000/svg">
    <text class="arsnova-logo-ars"
          x="2"
@@ -12,7 +13,7 @@
          y="20">nova
    </text>
    <text class="arsnova-logo-click"
-         style="font-size: 1.7rem;"
+         style="font-size: 1.5rem;"
          x="0"
          y="45">.click
    </text>

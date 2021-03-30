@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Pipe, PipeTransform } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -9,7 +9,6 @@ import { RxStompService } from '@stomp/ng2-stompjs';
 import { SimpleMQ } from 'ng2-simple-mq';
 import { MarkdownService, MarkedOptions } from 'ngx-markdown';
 import { LanguageFilterPipeMock } from '../../../_mocks/_pipes/LanguageFilterPipeMock';
-import { TranslatePipeMock } from '../../../_mocks/_pipes/TranslatePipeMock';
 import { TwitterApiService } from '../../service/api/twitter/twitter-api.service';
 import { TwitterService } from '../../service/twitter/twitter.service';
 import { TwitterServiceMock } from '../../service/twitter/twitter.service.mock';
@@ -30,10 +29,10 @@ describe('TwitterCardsComponent', () => {
   let component: TwitterCardsComponent;
   let fixture: ComponentFixture<TwitterCardsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [TwitterCardsComponent, TranslatePipeMock, SearchFilterPipeMock, LanguageFilterPipeMock],
       imports: [I18nTestingModule, FormsModule, RouterTestingModule, HttpClientTestingModule, FontAwesomeModule, NgbModule],
+      declarations: [TwitterCardsComponent, SearchFilterPipeMock, LanguageFilterPipeMock],
       providers: [
         TwitterApiService, RxStompService, SimpleMQ, MarkdownService, {
           provide: MarkedOptions,
@@ -56,7 +55,7 @@ describe('TwitterCardsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(TwitterCardsComponent.TYPE).toEqual('TwitterCardsComponent');
   }));
 

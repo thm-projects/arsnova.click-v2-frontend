@@ -1,4 +1,4 @@
-import { isPlatformServer } from '@angular/common';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { Component, EventEmitter, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -20,7 +20,7 @@ import { TrackingService } from '../../service/tracking/tracking.service';
   styleUrls: ['./theme-switcher.component.scss'],
 })
 export class ThemeSwitcherComponent implements OnInit, OnDestroy {
-  public static TYPE = 'ThemeSwitcherComponent';
+  public static readonly TYPE = 'ThemeSwitcherComponent';
 
   private _themeChangedEmitter = new EventEmitter<string>();
 
@@ -44,9 +44,13 @@ export class ThemeSwitcherComponent implements OnInit, OnDestroy {
     headerLabelService.headerLabel = 'component.theme_switcher.set_theme';
 
     let footerElements;
+
     if (environment.forceQuizTheme && sessionStorage.getItem(StorageKey.CurrentQuizName)) {
-      this.quizService.loadDataToEdit(sessionStorage.getItem(StorageKey.CurrentQuizName));
       footerElements = [this.footerBarService.footerElemBack];
+
+      if (isPlatformBrowser(this.platformId)) {
+        this.quizService.loadDataToEdit(sessionStorage.getItem(StorageKey.CurrentQuizName));
+      }
 
       this.footerBarService.footerElemBack.onClickCallback = () => {
         this.router.navigate(['/quiz', 'manager']);

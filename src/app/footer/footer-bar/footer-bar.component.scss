@@ -10,8 +10,8 @@
 }
 
 @mixin navbarFooterSMView() {
-  position: absolute;
-  max-width: 20vw;
+  position: fixed;
+  top: 70px;
 
   .footerElement {
     .footerElemText {
@@ -29,13 +29,11 @@
 
     .footerElemText {
       flex-shrink: 0;
-      max-width: calc(20vw - 36px);
     }
   }
 }
 
 .navbar-footer {
-  left: 0;
   z-index: 1040;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
@@ -55,20 +53,32 @@
   @include media-breakpoint-up(md) {
     @include border-right-radius($border-radius);
     opacity: 0.95;
-    max-width: 20vw;
+    max-width: calc(20vw - 36px);
+
+    .footerElemText {
+      max-width: calc(100% - 26px);
+    }
   }
 
   .footerElement {
     flex-shrink: 0;
     scroll-snap-align: start;
+    height: 40px;
 
     @include media-breakpoint-only(xs) {
       flex-grow: 1;
 
       .footerElemText {
-        display: block;
-        line-height: 40px;
+        display: flex;
       }
+    }
+
+    .badge {
+      font-size: xx-small;
+    }
+
+    .progress {
+      height: 5px;
     }
   }
 

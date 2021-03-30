@@ -1,5 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { Observable, Subject } from 'rxjs';
+import { filter, map, takeUntil } from 'rxjs/operators';
 import { FreeTextAnswerEntity } from '../../../../lib/entities/answer/FreetextAnwerEntity';
 import { AbstractQuestionEntity } from '../../../../lib/entities/question/AbstractQuestionEntity';
 import { NumberType } from '../../../../lib/enums/enums';
@@ -13,8 +15,10 @@ import { QuizService } from '../../../../service/quiz/quiz.service';
   templateUrl: './progress-bar.component.html',
   styleUrls: ['./progress-bar.component.scss'],
 })
-export class ProgressBarComponent {
-  public static TYPE = 'ProgressBarComponent';
+export class ProgressBarComponent implements OnDestroy {
+  public static readonly TYPE = 'ProgressBarComponent';
+
+  private readonly _destroy = new Subject();
 
   @Input() public data: Array<string>;
   @Input() public questionIndex: number;
@@ -29,35 +33,45 @@ export class ProgressBarComponent {
   ) {
   }
 
-  public attendeeDataForAnswer(answerIndex: number = 0): object {
-    if (!this.attendeeService.attendees.length || !this.quizService.quiz) {
-      return {};
-    }
+  public ngOnDestroy(): void {
+    this._destroy.next();
+    this._destroy.complete();
+  }
 
-    const question = this.quizService.quiz.questionList[this.questionIndex];
+  public attendeeDataForAnswer(answerIndex: number = 0): Observable<object> {
+    return this.attendeeService.attendeeAmount.pipe(
+      filter(() => Boolean(this.quizService.quiz)),
+      map(attendeeAmount => {
+        if (!attendeeAmount) {
+          return {};
+        }
 
-    if (this.hideProgressbarCssStyle) {
-      return this.getAnonymousCorrectWrongResults(question);
-    }
+        const question = this.quizService.quiz.questionList[this.questionIndex];
+        if (this.hideProgressbarCssStyle) {
+          return this.getAnonymousCorrectWrongResults(question);
+        }
 
-    const result = {
-      answerIndex: answerIndex,
-      label: [QuestionType.ABCDSingleChoiceQuestion].includes(question.TYPE) ? null : this.data[answerIndex],
-      absolute: 0,
-      base: this.attendeeService.attendees.length,
-      percent: '0',
-      isCorrect: 0,
-    };
+        const result = {
+          answerIndex: answerIndex,
+          label: [QuestionType.ABCDSurveyQuestion].includes(question.TYPE) ? null : this.data[answerIndex],
+          absolute: 0,
+          base: this.attendeeService.attendees.length,
+          percent: '0',
+          isCorrect: 0,
+        };
 
-    if (question.TYPE === QuestionType.RangedQuestion) {
-      this.updateResultSetForRangedQuestions(result, question);
-    } else if (question.TYPE === QuestionType.FreeTextQuestion) {
-      this.updateResultSetForFreetextQuestions(result, question);
-    } else {
-      this.updateResultSetForQuestions(result, question, answerIndex);
-    }
+        if (question.TYPE === QuestionType.RangedQuestion) {
+          this.updateResultSetForRangedQuestions(result, question);
+        } else if (question.TYPE === QuestionType.FreeTextQuestion) {
+          this.updateResultSetForFreetextQuestions(result, question);
+        } else {
+          this.updateResultSetForQuestions(result, question, answerIndex);
+        }
 
-    return result;
+        return result;
+      }),
+      takeUntil(this._destroy),
+    );
   }
 
   private getAnonymousCorrectWrongResults(question): object {
@@ -66,13 +80,14 @@ export class ProgressBarComponent {
       wrong: 0,
       neutral: 0,
     };
-    let base = this.attendeeService.attendees.length;
+    const base = this.attendeeService.attendees.length;
+    let storedBase = 0;
 
     this.attendeeService.attendees.forEach(value => {
       if (typeof value.responses[this.questionIndex] === 'undefined' || value.responses[this.questionIndex].responseTime === -1) {
         return false;
       }
-      const responseValue: Array<number> | string = value.responses[this.questionIndex].value;
+      const responseValue: Array<number | string> | string = value.responses[this.questionIndex].value;
       if (!Array.isArray(responseValue) && !['number', 'string'].includes(typeof responseValue)) {
         return false;
       }
@@ -94,52 +109,38 @@ export class ProgressBarComponent {
         } else {
           wrong++;
         }
-      } else if ([QuestionType.SurveyQuestion, QuestionType.ABCDSingleChoiceQuestion].includes(question.TYPE)) {
+      } else if ([QuestionType.SurveyQuestion, QuestionType.ABCDSurveyQuestion].includes(question.TYPE)) {
         neutral++;
       } else {
-        const storedBase = base;
-        base--;
         question.answerOptionList.forEach((answer, answerIndex) => {
-          if (answer.isCorrect) {
-            if ((
-                  (
-                    responseValue as unknown as Array<string>
-                  ).indexOf(answerIndex)
-                ) > -1) {
+          const hasAnswerSelected = (responseValue as Array<string>).indexOf(answerIndex) > -1;
+          if (hasAnswerSelected) {
+            storedBase++;
+            if (answer.isCorrect) {
               correct++;
-              base++;
-            }
-          } else {
-            if ((
-                  (
-                    responseValue as unknown as Array<string>
-                  ).indexOf(answerIndex)
-                ) > -1) {
+            } else {
               wrong++;
-              base++;
             }
           }
         });
-        if (storedBase === base - 1) {
-          base++;
-        }
       }
     });
 
+    const usedBase = storedBase === 0 ? base : storedBase;
     return {
       correct: {
         absolute: correct,
-        percent: this.i18nService.formatNumber(correct / this.attendeeService.attendees.length, NumberType.Percent),
+        percent: this.i18nService.formatNumber(correct / usedBase, NumberType.Percent),
       },
       wrong: {
         absolute: wrong,
-        percent: this.i18nService.formatNumber(wrong / this.attendeeService.attendees.length, NumberType.Percent),
+        percent: this.i18nService.formatNumber(wrong / usedBase, NumberType.Percent),
       },
       neutral: {
         absolute: neutral,
-        percent: this.i18nService.formatNumber(neutral / this.attendeeService.attendees.length, NumberType.Percent),
+        percent: this.i18nService.formatNumber(neutral / usedBase, NumberType.Percent),
       },
-      base,
+      base: usedBase,
     };
   }
 
@@ -197,7 +198,7 @@ export class ProgressBarComponent {
         if (value.responses[this.questionIndex].value === null || //
             typeof value.responses[this.questionIndex].value === 'undefined' || //
             !valueString) {
-          return true;
+          return false;
         }
         return responseValue < question.rangeMin || responseValue > question.rangeMax;
       }

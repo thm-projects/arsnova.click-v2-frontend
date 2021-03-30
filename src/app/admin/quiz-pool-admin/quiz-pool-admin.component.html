@@ -1,10 +1,42 @@
 <div class="bg-white text-dark p-3 mb-5">
   <div class="row">
-    <div class="col-12 col-sm-auto d-flex align-items-center">
+    <div class="col-md-auto d-flex align-items-end">
       <button (click)="toggleSource()"
-              class="btn btn-primary">
+              class="btn btn-primary btn-sm">
         <span class="text-truncate">Show {{getToggleSourceText()}}</span>
       </button>
+    </div>
+    <div class="col-md d-flex align-items-center flex-column mt-3 mt-md-0">
+      <label class="text-muted mb-0 align-self-start"
+             for="import-url">Import approved pool questions from other arsnova.click server</label>
+      <div class="input-group input-group-sm">
+        <input #targetImportServer
+               class="form-control"
+               id="import-url"
+               placeholder="URL"
+               type="text"/>
+        <div class="input-group-append">
+          <button (click)="importFromServer(targetImportServer.value)"
+                  [disabled]="isUploading"
+                  class="btn btn-primary">
+            <fa-icon *ngIf="isUploading"
+                     [spin]="true"
+                     icon="spinner"></fa-icon>
+            <span *ngIf="!isUploading">Start</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 d-flex align-items-center flex-column mt-3">
+      <label class="text-muted mb-0 align-self-start"
+             for="import-url">Search content</label>
+      <input #searchInput
+             (change)="cd.markForCheck()"
+             class="form-control"
+             id="search"
+             placeholder="Search..."
+             type="text"/>
     </div>
   </div>
 </div>
@@ -15,55 +47,62 @@
        class="col-12">
     <h5>Current View: {{getCurrentSourceText()}}</h5>
   </div>
-  <div *ngFor="let question of questions"
-       class="col-12">
-    <div class="card mb-3 text-dark p-0">
-      <div class="card-body">
-        <div class="d-flex">
-          <div>
-            <p class="card-text">
-              <span>Type: </span>
-              <span>{{question.question.TYPE}}</span>
-            </p>
-            <p class="card-text">
-              <span>Tags: </span>
-              <span>
+
+  <ng-container *ngIf="questions | genericFilter:{'question.questionText': searchInput.value, 'question.tags': searchInput.value} as result">
+    <div *ngFor="let question of result"
+         class="col-12">
+      <div class="card mb-3 p-0">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="w-100">
+              <p class="card-text d-flex">
+                <span>Type:&nbsp;</span>
+                <span>{{question.question.TYPE}}</span>
+                <span class="ml-auto">
+                <a (click)="quizService.cleanUp().subscribe()"
+                   [queryParams]="{id: question.id}"
+                   [routerLink]="['/quiz', 'manager', 'quiz-pool', 'overview']"
+                   class="nav-link text-dark p-0 ml-3">
+                  <fa-icon [icon]="'edit'"
+                           class="cursor-pointer"></fa-icon>
+                </a>
+              </span>
+              </p>
+              <p class="card-text">
+                <span>Tags: </span>
+                <span>
                 <ng-container *ngFor="let tag of question.question.tags; let lastElem = last">
                   <span>{{tag}}</span>
                   <ng-container *ngIf="!lastElem">, </ng-container>
                 </ng-container>
               </span>
-            </p>
+              </p>
+              <p class="card-text">
+                <span>Question Text: </span>
+                <span>{{question.question.questionText}}</span>
+              </p>
+            </div>
           </div>
-          <div class="ml-auto">
-            <a [queryParams]="{id: question.id}"
-               (click)="quizService.cleanUp()"
-               [routerLink]="['/quiz', 'manager', 'quiz-pool', 'overview']"
-               class="nav-link text-dark p-0 ml-3">
-              <fa-icon [icon]="'edit'"
-                       class="cursor-pointer"></fa-icon>
-            </a>
-          </div>
+          <p class="card-text mt-2">
+            <button (click)="approveQuestion(question)"
+                    *ngIf="!question.approved"
+                    class="badge badge-primary">Approve Question
+            </button>
+            <button (click)="declineQuestion(question)"
+                    [class.ml-2]="!question.approved"
+                    class="badge badge-danger">
+              <span *ngIf="!question.approved">Decline&nbsp;</span>
+              <span *ngIf="question.approved">Delete&nbsp;</span>
+              <span>Question</span>
+            </button>
+          </p>
         </div>
-        <p class="card-text mt-2">
-          <button (click)="approveQuestion(question)"
-                  *ngIf="!question.approved"
-                  class="badge badge-primary">Approve Question
-          </button>
-          <button (click)="declineQuestion(question)"
-                  [class.ml-2]="!question.approved"
-                  class="badge badge-danger">
-            <span *ngIf="!question.approved">Decline&nbsp;</span>
-            <span *ngIf="question.approved">Delete&nbsp;</span>
-            <span>Question</span>
-          </button>
-        </p>
       </div>
     </div>
-  </div>
 
-  <div class="col-12">
-    <h5 *ngIf="!questions?.length"
-        class="mt-5 mb-0 text-center">{{getNotFoundText()}}</h5>
-  </div>
+    <div class="col-12">
+      <h5 *ngIf="!questions?.length || !result?.length"
+          class="mt-5 mb-0 text-center">{{getNotFoundText()}}</h5>
+    </div>
+  </ng-container>
 </div>

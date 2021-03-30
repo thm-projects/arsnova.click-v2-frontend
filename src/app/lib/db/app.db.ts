@@ -2,6 +2,7 @@ import Dexie from 'dexie';
 import { ReplaySubject } from 'rxjs';
 import { QuizEntity } from '../entities/QuizEntity';
 import { DbName, DbTable, StorageKey } from '../enums/enums';
+import { QuestionType } from '../enums/QuestionType';
 
 export class AppDb extends Dexie {
   public readonly initialized: ReplaySubject<void> = new ReplaySubject<void>(1);
@@ -20,14 +21,52 @@ export class AppDb extends Dexie {
     .stores({
       [DbTable.Config]: null,
       [DbTable.Quiz]: null,
-    }).upgrade(trans => {
-      trans.idbtrans.db.deleteObjectStore(DbTable.Quiz);
-      trans.idbtrans.db.deleteObjectStore(DbTable.Config);
+    }).upgrade(async trans => {
+      console.log('Upgrading database');
+      const quizData = await trans.db.table(DbTable.Quiz).toArray();
+      localStorage.setItem('hashtags', JSON.stringify(quizData.map(quiz => quiz.name)));
+      quizData.forEach(quiz => localStorage.setItem(quiz.name, quiz));
+      this.backendDB().deleteObjectStore(DbTable.Quiz);
+      this.backendDB().deleteObjectStore(DbTable.Config);
     });
 
     this.version(1).stores({
       [DbTable.Config]: 'type',
       [DbTable.Quiz]: 'name',
+    });
+
+    this.version(1.1).stores({
+      [DbTable.Config]: 'type',
+      [DbTable.Quiz]: 'name',
+    }).upgrade(async trans => {
+      const quizData = await trans.db.table(DbTable.Quiz).toArray();
+      return Promise.all(quizData.map(value => {
+        if (typeof value.sessionConfig.nicks.memberGroups[0] === 'string') {
+          value.sessionConfig.nicks.memberGroups = value.sessionConfig.nicks.memberGroups
+            .filter((groupName: any) => groupName !== 'Default')
+            .map((groupName: any) => ({name: groupName, color: 'success'}))
+          ;
+          return this[DbTable.Quiz].put(value);
+        }
+      }));
+    });
+
+    this.version(1.2).stores({
+      [DbTable.Config]: 'type',
+      [DbTable.Quiz]: 'name',
+    }).upgrade(async trans => {
+      const quizData = await trans.db.table<QuizEntity>(DbTable.Quiz).toArray();
+      return Promise.all(quizData.map(quiz => {
+        quiz.questionList = quiz.questionList.map(question => {
+          if ((question.TYPE as string) === 'ABCDSingleChoiceQuestion') {
+            question.TYPE = QuestionType.ABCDSurveyQuestion;
+          }
+
+          return question;
+        });
+
+        return this[DbTable.Quiz].put(quiz);
+      }));
     });
 
     this.Config.get(StorageKey.PrivateKey).then(privateKey => {

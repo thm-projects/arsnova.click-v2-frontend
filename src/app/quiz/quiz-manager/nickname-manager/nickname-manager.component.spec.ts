@@ -1,10 +1,11 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { JustafewPipeMock } from '../../../../_mocks/_pipes/JustafewPipeMock';
 import { TranslatePipeMock } from '../../../../_mocks/_pipes/TranslatePipeMock';
@@ -20,6 +21,8 @@ import { SettingsService } from '../../../service/settings/settings.service';
 import { SharedService } from '../../../service/shared/shared.service';
 import { StorageService } from '../../../service/storage/storage.service';
 import { StorageServiceMock } from '../../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../service/themes/themes.service';
 import { TwitterService } from '../../../service/twitter/twitter.service';
 import { TwitterServiceMock } from '../../../service/twitter/twitter.service.mock';
 import { I18nTestingModule } from '../../../shared/testing/i18n-testing/i18n-testing.module';
@@ -62,7 +65,7 @@ describe('NicknameManagerComponent', () => {
     emojis: [],
   };
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, RouterTestingModule, HttpClientTestingModule, JwtModule.forRoot({
@@ -83,19 +86,25 @@ describe('NicknameManagerComponent', () => {
         }, {
           provide: QuizService,
           useClass: QuizMockService,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
         }, SharedService, {
           provide: TwitterService,
           useClass: TwitterServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {}
         },
       ],
       declarations: [NicknameManagerComponent, TranslatePipeMock, JustafewPipeMock],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(NicknameManagerComponent);
     component = fixture.componentInstance;
     component.availableNicks = JSON.parse(JSON.stringify(nicknames));
@@ -106,11 +115,11 @@ describe('NicknameManagerComponent', () => {
     quizService.quiz.sessionConfig.nicks.selectedNicks.splice(0, quizService.quiz.sessionConfig.nicks.selectedNicks.length);
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
 
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(NicknameManagerComponent.TYPE).toEqual('NicknameManagerComponent');
   }));
 

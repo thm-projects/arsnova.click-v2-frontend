@@ -8,12 +8,14 @@ import { QuizVisibility } from '../../lib/enums/QuizVisibility';
   styleUrls: ['./quiz-save.component.scss'],
 })
 export class QuizSaveComponent {
-  public quizVisibility: string;
+  public static readonly TYPE = 'QuizSaveComponent';
+
+  private _isSubmitting: boolean;
+
+  public quizVisibility = QuizVisibility.Any;
   public expiry: string;
   public description: string;
   public noExpiry: boolean;
-
-  private _isSubmitting: boolean;
 
   get isSubmitting(): boolean {
     return this._isSubmitting;

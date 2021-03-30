@@ -39,6 +39,7 @@
       <span class="d-block d-sm-none">{{'component.quiz_manager.details.question_type.short' | translate}}</span>
     </button>
     <button type="button"
+            *ngIf="environment.enableQuizPool"
             class="btn btn-light"
             (click)="trackDetailsTarget('tags')"
             [disabled]="!question?.TYPE"
@@ -49,105 +50,149 @@
     </button>
   </div>
 
+  <div *ngIf="quizService.isAddingPoolQuestion"
+       class="alert alert-info mb-2 mb-sm-4 btn-header">
+    <span>{{'component.quiz_manager.details.pool-save-warning' | translate}}</span>
+  </div>
+
   <div role="listitem"
        [attr.data-intro]="'component.quiz_summary.description.question_item' | translate">
-    <div class="mb-2 question">
-      <h4 *ngIf="!quizService.isAddingPoolQuestion">
+    <div class="mb-2">
+      <h5 *ngIf="!quizService.isAddingPoolQuestion">
         <span>{{'component.quiz_summary.question' | translate}}&nbsp;{{questionIndex + 1}}</span>:
-      </h4>
-      <p class="mb-0">
-        <span>{{'component.quiz_summary.text' | translate}}:&nbsp;</span>
-        <span *ngIf="question?.questionText"
-              class="break-word"
-              [innerHTML]="question?.questionText"></span>
-        <span *ngIf="!question?.questionText">{{'component.quiz_summary.validation_errors.reasons.empty_question_text' | translate}}</span>
-      </p>
-      <p class="mb-0">
+      </h5>
+
+      <p *ngIf="!question?.questionText?.length">{{'component.quiz_summary.text' | translate}}:&nbsp;{{'component.quiz_summary.validation_errors.reasons.empty_question_text' | translate}}</p>
+
+      <app-voting-question *ngIf="question?.questionText?.length"
+                           class="d-block mh-20vh overflow-hidden"
+                           [questionText]="customMarkdownService.parseGithubFlavoredMarkdown(question?.questionText)"></app-voting-question>
+
+      <p>
         <span>{{'component.quiz_summary.type' | translate}}:&nbsp;</span>
         <span *ngIf="!question?.TYPE">{{'component.quiz_summary.validation_errors.reasons.empty_question_type' | translate}}</span>
         <span *ngIf="question?.TYPE">{{question?.translationReferrer() | translate}}</span>
       </p>
-      <p class="mb-0">
+      <p *ngIf="environment.enableQuizPool">
         <span>{{'component.quiz_summary.tags' | translate}}:&nbsp;</span>
         <span *ngIf="!question?.tags?.length">{{'component.quiz_manager.no-added-tags' | translate}}</span>
         <span *ngFor="let tag of question?.tags; let lastElem = last">{{tag}}<span *ngIf="!lastElem">, </span></span>
       </p>
     </div>
-    <div class="mb-2 answers">
+
+    <div class="mb-2">
       <div>
-        <h4><span [innerHTML]="'component.quiz_summary.answer' | translate"></span>:&nbsp;</h4>
+        <h5><span [innerHTML]="'component.quiz_summary.answer' | translate"></span>:&nbsp;</h5>
       </div>
       <div role="list">
         <div *ngIf="question?.TYPE === 'RangedQuestion'">
-          <p role="listitem"
-             class="mb-0">
+          <p role="listitem">
             <span [innerHTML]="'component.answeroptions.ranged_question.correct_value' | translate"></span>:&nbsp;
             <span [innerHTML]="toString(getQuestionAsRanged(question)?.correctValue)"></span>
           </p>
-          <p role="listitem"
-             class="mb-0">
+          <p role="listitem">
             <span [innerHTML]="'component.answeroptions.ranged_question.min_range' | translate"></span>:&nbsp;
             <span [innerHTML]="toString(getQuestionAsRanged(question)?.rangeMin)"></span>
           </p>
-          <p role="listitem"
-             class="mb-0">
+          <p role="listitem">
             <span [innerHTML]="'component.answeroptions.ranged_question.max_range' | translate"></span>:&nbsp;
             <span [innerHTML]="toString(getQuestionAsRanged(question)?.rangeMax)"></span>
           </p>
         </div>
         <div *ngIf="question?.TYPE === 'FreeTextQuestion'">
           <p *ngIf="question?.answerOptionList[0]?.answerText"
-             class="mb-0"
              role="listitem"
              [innerHTML]="question?.answerOptionList[0]?.answerText"></p>
           <p *ngIf="!question?.answerOptionList[0]?.answerText"
-             class="mb-0"
              role="listitem">
             {{'component.quiz_summary.validation_errors.reasons.empty_question_text' | translate}}
           </p>
         </div>
         <div *ngIf="!['RangedQuestion', 'FreeTextQuestion'].includes(question?.TYPE)">
           <p *ngFor="let answer of question?.answerOptionList; let i = index;"
-             class="mb-0"
-             role="listitem">
+             role="listitem" class="answer-list-element">
             <span>{{'component.quiz_summary.answer' | translate}}&nbsp;{{i+1}}</span>
-            <span *ngIf="!['SurveyQuestion', 'ABCDSingleChoiceQuestion'].includes(question?.TYPE)">
+            <span *ngIf="!['SurveyQuestion', 'ABCDSurveyQuestion'].includes(question?.TYPE)">
               <span *ngIf="answer.isCorrect">&nbsp;({{'component.quiz_summary.correct' | translate}})</span>
               <span *ngIf="!answer.isCorrect">&nbsp;({{'component.quiz_summary.wrong' | translate}})</span>
             </span>
             <span>:&nbsp;</span>
             <span *ngIf="answer.answerText"
-                  [innerHTML]="answer.answerText"></span>
+                  [innerHTML]="sanitizeHTML(renderedAnswers[i])"></span>
             <span *ngIf="!answer.answerText">{{'component.quiz_summary.validation_errors.reasons.empty_question_text' | translate}}</span>
           </p>
-          <p *ngIf="!question?.answerOptionList.length"
-             class="mb-0">
+          <p *ngIf="!question?.answerOptionList.length">
             {{'component.quiz_summary.validation_errors.reasons.no_answers_defined' | translate}}
           </p>
         </div>
       </div>
     </div>
+
     <div *ngIf="question?.TYPE === 'FreeTextQuestion'"
-         class="mb-2 answers">
-      <h4>{{'component.quiz_summary.answer_configuration' | translate}}:&nbsp;</h4>
-      <p *ngFor="let config of getAnswerAsFreetext(question?.answerOptionList[0])?.getConfig()"
-         class="mb-0">
+         class="mb-2">
+      <h5>{{'component.quiz_summary.answer_configuration' | translate}}:&nbsp;</h5>
+      <p *ngFor="let config of getAnswerAsFreetext(question?.answerOptionList[0])?.getConfig()">
         <span>{{config.configTitle | translate}}</span>:&nbsp;
         <span>{{config.configEnabledString | translate}}</span>
       </p>
     </div>
-    <div class="mb-2 timer">
-      <h4>{{'component.quiz_summary.timer' | translate}}:</h4>
+
+    <div class="mb-2 d-flex flex-wrap">
+      <h5 class="mb-0 mr-3">{{'component.quiz_summary.timer' | translate}}:</h5>
       <p *ngIf="question?.timer">{{question?.timer}}&nbsp;{{ 'component.timer.second' | translate:{COUNT: question?.timer} }}</p>
       <p *ngIf="!question?.timer">{{ 'component.quiz_summary.no-timer' | translate }}</p>
     </div>
+
+    <div *ngIf="canSelectRequiredForTokenState(question)"
+         class="mb-2 d-flex flex-wrap">
+      <h5 class="mb-0 mr-md-3">
+        <small>
+          <fa-icon [icon]="'info-circle'"
+                   class="mr-2"
+                   [ngbTooltip]="'component.quiz_summary.required-for-token.label' | translate"></fa-icon>
+        </small>
+        <span>{{'component.quiz_summary.required-for-token.title' | translate}}:</span>
+      </h5>
+      <button *ngIf="question"
+             class="btn btn-sm cursor-pointer mb-0 align-self-center flex-grow-1 flex-sm-grow-0"
+             [class.btn-success]="question.requiredForToken"
+             (click)="setRequiredForToken(question)"
+             [class.btn-danger]="!question.requiredForToken">
+        <span *ngIf="question.requiredForToken">{{'global.yes' | translate}}</span>
+        <span *ngIf="!question.requiredForToken">{{'global.no' | translate}}</span>
+      </button>
+    </div>
+
+    <div *ngIf="canSelectDifficulty(question)"
+         class="mb-2 d-flex flex-wrap">
+      <h5 class="mb-0 mr-5 text-nowrap">
+        <small>
+          <fa-icon [icon]="'info-circle'"
+                   class="mr-2"
+                   [ngbTooltip]="'component.quiz_summary.difficulty.label' | translate"></fa-icon>
+        </small>
+        <span>{{'component.quiz_summary.difficulty.title' | translate}}:</span>
+      </h5>
+
+      <div *ngIf="question"
+           class="d-flex flex-wrap align-items-center">
+        <input type="range"
+               class="mr-md-3 flex-grow-1"
+               [min]="1"
+               [max]="10"
+               [(ngModel)]="question.difficulty">
+        <p class="text-center text-nowrap">{{getDifficultyTranslation() | translate:{multiplicator: question.difficulty} }}</p>
+      </div>
+
+    </div>
+
     <div class="mb-2 validation">
-      <h4 class="bg-light p-2 rounded text-center">
+      <h5 class="bg-light p-2 rounded text-center">
         <span class="text-success"
               *ngIf="question?.isValid() && !(showSaveQuizButton && !question?.tags?.length)">{{'component.quiz_summary.question_successful' | translate}}</span>
         <span class="text-danger"
               *ngIf="!question?.isValid() || (showSaveQuizButton && !question?.tags?.length)">{{'component.quiz_summary.question_failed' | translate}}</span>
-      </h4>
+      </h5>
       <ul *ngIf="!question?.isValid() || (showSaveQuizButton && !question.tags?.length)"
           id="quizSummaryValidationErrors"
           [attr.data-intro]="'component.quiz_summary.description.validation_errors' | translate"

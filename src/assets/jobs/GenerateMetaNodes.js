@@ -2,12 +2,13 @@ const path = require('path');
 const fs = require('fs');
 const process = require('process');
 const minimist = require('minimist');
-const mkdirp = require('mkdirp');
 const mf = require('messageformat');
 
 const argv = minimist(process.argv.slice(2));
 
-const languages = ['en', 'de', 'fr', 'it', 'es'];
+// const languages = ['en', 'de', 'fr', 'it', 'es'];
+const languages = ['en', 'de'];
+
 const rawThemes = require('./../themeData');
 const imageDerivates = require('./../imageDerivates');
 

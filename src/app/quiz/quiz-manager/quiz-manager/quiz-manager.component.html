@@ -1,80 +1,50 @@
 <button (click)="openQuestionTypeModal()"
-        class="btn btn-light btn-shadow my-4 mt-md-0">
+        class="btn btn-light btn-shadow my-4 mt-md-1 mx-auto mx-md-0 d-flex">
   <span>{{'component.quiz_manager.select-available-question' | translate}}</span>
+  <fa-icon [icon]="'plus'" class="ml-2">  
+  </fa-icon>
 </button>
 
-<h2 class="d-flex align-items-center">
-  <span>{{'component.quiz_manager.added_questions_title' | translate}}</span>
-  <small>
-    <fa-icon [icon]="'info-circle'"
-             class="ml-2"
-             container="body"
-             ngbPopover="{{'component.quiz_manager.description.added_questions' | translate}}"
-             popoverClass="text-dark"
-             popoverTitle="{{'component.quiz_manager.added_questions_title' | translate}}"></fa-icon>
-  </small>
+<h2 *ngIf="quizService.quiz?.questionList.length as questionListLength"
+    (click)="questionListLength > 1 ? toggleQuestionBody() : null"
+    [class.cursor-pointer]="questionListLength > 1"
+    class="d-flex align-items-center">
+  <span>{{'component.quiz_manager.added_questions_title' | translate:{amount: questionListLength} }}</span>
+
+  <span *ngIf="questionListLength > 1"
+        class="ml-auto">
+    <fa-icon *ngIf="!hasAllQuestionBodiesHidden()"
+             [icon]="'angle-double-up'"
+             class="mx-2"
+             role="button"></fa-icon>
+    <fa-icon *ngIf="hasAllQuestionBodiesHidden()"
+             [icon]="'angle-double-down'"
+             class="mx-2"
+             role="button"></fa-icon>
+  </span>
 </h2>
 
 <h4 *ngIf="!quizService.quiz?.questionList.length">{{'component.quiz_manager.no_added_questions' | translate}}</h4>
 
-<ul class="list-unstyled">
-
-  <li *ngFor="let elem of quizService.quiz?.questionList; let i = index;"
-      class="btn btn-outline-secondary btn-block text-left">
-
-    <div class="form-row">
-
-      <div class="col-md-8">
-        <p class="text-truncate">
-          <span>{{elem.translationReferrer() | translate}}</span>
-
-          <fa-icon *ngIf="!elem.isValid()"
-                   [icon]="'exclamation-triangle'"
-                   [ngbTooltip]="'component.quiz_summary.question_failed' | translate"
-                   class="text-warning ml-2"></fa-icon>
-
-          <span class="font-italic ml-2"
-                *ngIf="elem.tags?.length">
-            <ng-container *ngFor="let tag of elem.tags; let lastElem = last">{{tag}}
-              <ng-container *ngIf="!lastElem">, </ng-container></ng-container>
-          </span>
-        </p>
-      </div>
-
-      <div class="col-sm-auto ml-sm-auto mt-2 mt-sm-0">
-        <fa-icon (click)="moveQuestionUp(i)"
-                 *ngIf="i"
-                 [icon]="'arrow-up'"
-                 class="cursor-pointer mx-4 mx-md-2"
-                 role="button"></fa-icon>
-
-        <fa-icon (click)="moveQuestionDown(i)"
-                 *ngIf="i !== quizService.quiz?.questionList.length - 1"
-                 [icon]="'arrow-down'"
-                 class="cursor-pointer mx-4 mx-md-2"
-                 role="button"></fa-icon>
-
-        <fa-icon (click)="updloadToQuizPool(elem)"
-                 [class.text-danger]="!elem.isValid() || !elem.tags?.length"
-                 [icon]="['fas', (isUploading(elem) ? 'spinner' : 'cloud-upload-alt')]"
-                 [ngbTooltip]="getTooltipForUpload(elem) | translate"
-                 [spin]="isUploading(elem)"
-                 class="cursor-pointer mx-4 mx-md-2"
-                 role="button"></fa-icon>
-
-        <fa-icon (click)="trackEditQuestion()"
-                 [icon]="'edit'"
-                 [routerLink]="['/quiz', 'manager', i,  'overview']"
-                 class="cursor-pointer mx-4 mx-md-2"
-                 role="button"></fa-icon>
-
-        <fa-icon (click)="deleteQuestion(i)"
-                 [icon]="'trash'"
-                 class="cursor-pointer mx-4 mx-md-2"
-                 role="button"></fa-icon>
-
-      </div>
-
-    </div>
-  </li>
+<ul class="list-unstyled full-xs">
+  <ng-container *ngIf="isLoaded">
+    <app-question-card (bodyVisibility)="toggleQuestionBody(elem)"
+                       (delete)="deleteQuestion(i)"
+                       (edit)="trackEditQuestion()"
+                       (moveDown)="moveQuestionDown(i)"
+                       (moveUp)="moveQuestionUp(i)"
+                       (moveAllDown)="moveQuestionAllDown(i)"
+                       (moveAllUp)="moveQuestionAllUp(i)"
+                       *ngFor="let elem of quizService.quiz?.questionList; let i = index;"
+                       [canMoveDown]="i !== quizService.quiz?.questionList.length - 1"
+                       [canMoveAllDown]="i < quizService.quiz?.questionList.length - 2"
+                       [canMoveUp]="i > 0"
+                       [canMoveAllUp]="i > 1"
+                       [elem]="elem"
+                       [index]="i"
+                       [isBodyHidden]="hasQuestionBodyHidden(elem)"
+                       [revalidate]="revalidate"
+                       class="card mb-3"
+                       role="listitem"></app-question-card>
+  </ng-container>
 </ul>

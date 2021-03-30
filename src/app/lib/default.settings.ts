@@ -1,11 +1,22 @@
 import { environment } from '../../environments/environment';
 
+function stompEndpointFactory(): string {
+  if (typeof location === 'undefined') {
+    return null;
+  }
+
+  if (environment.stompConfig.endpoint.startsWith('/')) {
+    return location.protocol.replace('http', 'ws') + location.host + environment.stompConfig.endpoint;
+  }
+
+  return environment.stompConfig.endpoint;
+}
+
 export const DefaultSettings = {
   siteId: 'arsnova.click-v2',
-  ssrEndpoint: environment.ssrEndpoint,
-  httpApiEndpoint: environment.httpApiEndpoint,
-  httpLibEndpoint: environment.httpLibEndpoint,
-  serverEndpoint: environment.serverEndpoint,
+  httpApiEndpoint: environment.serverEndpoint + '/api/v1',
+  httpLibEndpoint: environment.serverEndpoint + '/api/lib',
+  stompEndpoint: stompEndpointFactory(),
   defaultQuizSettings: {
     answers: {
       answerText: '',
@@ -17,15 +28,17 @@ export const DefaultSettings = {
     },
     question: {
       dispayAnswerText: true,
-      showOneAnswerPerRow: false,
+      showOneAnswerPerRow: true,
       questionText: '',
-      timer: 60,
+      timer: 30,
       multipleSelectionEnabled: true,
       rangeMin: 0,
       rangeMax: 60,
       correctValue: 30,
       answerOptionList: [],
       tags: [],
+      requiredForToken: true,
+      difficulty: 5
     },
     sessionConfig: {
       music: {
@@ -33,6 +46,11 @@ export const DefaultSettings = {
           lobby: true,
           countdownRunning: true,
           countdownEnd: true,
+        },
+        shared: {
+          lobby: false,
+          countdownRunning: false,
+          countdownEnd: false,
         },
         volumeConfig: {
           global: 60,
@@ -42,17 +60,16 @@ export const DefaultSettings = {
           useGlobalVolume: true,
         },
         titleConfig: {
-          lobby: 'Song0',
-          countdownRunning: 'Song0',
-          countdownEnd: 'Song0',
+          lobby: 'Song3',
+          countdownRunning: 'Song1',
+          countdownEnd: 'Song1',
         },
       },
       nicks: {
-        memberGroups: ['Default'],
+        memberGroups: [],
         maxMembersPerGroup: 10,
         autoJoinToGroup: false,
         blockIllegalNicks: true,
-        restrictToCasLogin: false,
         selectedNicks: [],
       },
       theme: environment.defaultTheme,

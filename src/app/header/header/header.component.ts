@@ -4,10 +4,9 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 import { NgbModal, NgbPopover } from '@ng-bootstrap/ng-bootstrap';
-import { Subject } from 'rxjs';
-import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { merge, of, Subject } from 'rxjs';
+import { catchError, takeUntil } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Title } from '../../lib/enums/enums';
 import { ConnectionService } from '../../service/connection/connection.service';
 import { HeaderLabelService } from '../../service/header-label/header-label.service';
 import { I18nService } from '../../service/i18n/i18n.service';
@@ -20,32 +19,26 @@ import { UpdateCheckService } from '../../service/update-check/update-check.serv
   styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  public static TYPE = 'HeaderComponent';
+  public static readonly TYPE = 'HeaderComponent';
+
+  private _storage: StorageEstimate;
+  private isThemePreview: boolean;
+
+  @ViewChild('connectionIndicatorPopover', { static: true }) private connectionIndicatorPopover: NgbPopover;
+  @ViewChild('connectionIndicator', { static: true }) private connectionIndicator: ElementRef<SVGElement>;
+
+  private readonly _destroy = new Subject();
 
   @Input() public showHeader = true;
   @Input() public logoSize = 'auto';
   @Input() public interactiveLogo = true;
 
   public isCheckingForUpdates: boolean;
-  public readonly logoStyle = {
-    height: '60px',
-    width: '60px',
-  };
-  public readonly logoXlStyle = environment.title === Title.Default ? {
-    height: '60px',
-    width: '60px',
-  } : {};
-
-  private _storage: StorageEstimate;
+  public readonly version = environment.version;
 
   get storage(): StorageEstimate {
     return this._storage;
   }
-
-  private isThemePreview: boolean;
-  @ViewChild('connectionIndicatorPopover', { static: true }) private connectionIndicatorPopover: NgbPopover;
-  @ViewChild('connectionIndicator', { static: true }) private connectionIndicator: ElementRef<SVGElement>;
-  private readonly _destroy = new Subject();
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -72,6 +65,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
                      this.connectionService.lowSpeed ? 'fill-danger' : //
                      'fill-success';
 
+    console.log('switching to ', cssClass);
     this.connectionIndicator.nativeElement.classList.remove(...['fill-danger', 'fill-warning', 'fill-grey', 'fill-success']);
     this.connectionIndicator.nativeElement.classList.add(cssClass);
   }
@@ -80,7 +74,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isThemePreview = isPlatformBrowser(this.platformId) && location.pathname.startsWith('/preview');
     this.generateConnectionQualityColor();
 
-    this.connectionService.serverStatusEmitter.pipe(distinctUntilChanged(), takeUntil(this._destroy)).subscribe(() => {
+    merge(
+      this.connectionService.serverStatusEmitter,
+      this.connectionService.websocketStatusEmitter,
+    ).pipe(
+      catchError(err => of(err)),
+      takeUntil(this._destroy)
+    ).subscribe(() => {
       if (!this.showHeader || this.isThemePreview) {
         return;
       }
@@ -138,28 +138,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   public checkForUpdates(): void {
     this.isCheckingForUpdates = true;
+    console.log(this.updates);
     if (this.updates.isEnabled) {
-
-      this.updateCheckService.doCheck().then(() => {
-        this.updateCheckService.clearCache().finally(() => {
-          if (this._storage.quota >= this._storage.usage) {
-            this.reloadPage();
-          }
+      this.updateCheckService.doCheck()
+        .then(() => this.updateCheckService.clearCache())
+        .catch(err => console.error(err))
+        .finally(() => {
+          this.isCheckingForUpdates = false;
+          this.updateCheckService.reloadPage();
         });
-      }).catch(err => console.error(err)).finally(() => {
-        this.isCheckingForUpdates = false;
-        this.reloadPage();
-      });
     } else {
-      this.reloadPage();
+      this.updateCheckService.clearCache()
+        .catch(err => console.error(err))
+        .finally(() => {
+          this.isCheckingForUpdates = false;
+          this.updateCheckService.reloadPage();
+        });
     }
   }
 
   public round(number: number): number {
     return Math.round(number);
-  }
-
-  public reloadPage(): void {
-    location.reload(true);
   }
 }

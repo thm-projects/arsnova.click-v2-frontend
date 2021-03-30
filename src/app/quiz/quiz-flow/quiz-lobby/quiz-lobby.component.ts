@@ -7,6 +7,8 @@ import { SimpleMQ } from 'ng2-simple-mq';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { MemberEntity } from '../../../lib/entities/member/MemberEntity';
+import { AudioPlayerConfigTarget } from '../../../lib/enums/AudioPlayerConfigTarget';
 import { StorageKey } from '../../../lib/enums/enums';
 import { MessageProtocol } from '../../../lib/enums/Message';
 import { QuizState } from '../../../lib/enums/QuizState';
@@ -14,6 +16,7 @@ import { UserRole } from '../../../lib/enums/UserRole';
 import { FooterbarElement } from '../../../lib/footerbar-element/footerbar-element';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
 import { IMemberSerialized } from '../../../lib/interfaces/entities/Member/IMemberSerialized';
+import { IAudioPlayerConfig } from '../../../lib/interfaces/IAudioConfig';
 import { IHasTriggeredNavigation } from '../../../lib/interfaces/IHasTriggeredNavigation';
 import { ServerUnavailableModalComponent } from '../../../modals/server-unavailable-modal/server-unavailable-modal.component';
 import { MemberApiService } from '../../../service/api/member/member-api.service';
@@ -37,21 +40,20 @@ import { QrCodeContentComponent } from './modals/qr-code-content/qr-code-content
   styleUrls: ['./quiz-lobby.component.scss'],
 })
 export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavigation {
-  public static TYPE = 'QuizLobbyComponent';
 
-  public hasTriggeredNavigation: boolean;
-
+  public static readonly TYPE = 'QuizLobbyComponent';
   private _nickToRemove: string;
-
-  get nickToRemove(): string {
-    return this._nickToRemove;
-  }
-
-  private readonly _messageSubscriptions: Array<string> = [];
   private _serverUnavailableModal: NgbModalRef;
   private _reconnectTimeout: any;
   private _kickMemberModalRef: NgbActiveModal;
   private readonly _destroy = new Subject();
+  private readonly _messageSubscriptions: Array<string> = [];
+  public hasTriggeredNavigation: boolean;
+  public musicConfig: IAudioPlayerConfig;
+
+  get nickToRemove(): string {
+    return this._nickToRemove;
+  }
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -87,11 +89,26 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
         return;
       }
 
+      if (this.hasTriggeredNavigation) {
+        return;
+      }
+
       if (this.quizService.quiz.state === QuizState.Inactive) {
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
         return;
       }
+
+      this.musicConfig = {
+        loop: true,
+        autostart: true,
+        hideControls: true,
+        original_volume: String(this.quizService.quiz.sessionConfig.music.volumeConfig.useGlobalVolume ?
+                                this.quizService.quiz.sessionConfig.music.volumeConfig.global :
+                                this.quizService.quiz.sessionConfig.music.volumeConfig.lobby),
+        src: this.quizService.quiz.sessionConfig.music.titleConfig.lobby,
+        target: AudioPlayerConfigTarget.lobby
+      };
 
       this.handleMessages();
 
@@ -101,6 +118,13 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
         this.handleNewQuiz();
       } else {
         this.handleNewAttendee();
+      }
+
+      if (this.quizService.quiz.origin) {
+        this.headerLabelService.headerLabel = this.quizService.quiz.origin;
+        this.headerLabelService.subHeader = `Quiz-ID: ${this.quizService.quiz.name}`;
+      } else {
+        this.headerLabelService.headerLabel = this.quizService.quiz.name;
       }
     });
 
@@ -177,6 +201,11 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
   }
 
   public ngOnDestroy(): void {
+    this._destroy.next();
+    this._destroy.complete();
+
+    this.headerLabelService.subHeader = null;
+
     this._messageSubscriptions.forEach(id => this.messageQueue.unsubscribe(id));
 
     if (this.quizService.isOwner) {
@@ -186,13 +215,19 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
     }
 
     clearTimeout(this._reconnectTimeout);
-
-    this._destroy.next();
-    this._destroy.complete();
   }
 
   public toString(value: number): string {
     return String(value);
+  }
+
+  public getColorForNick(elem: MemberEntity): string {
+    const groups = this.quizService.quiz?.sessionConfig.nicks.memberGroups;
+   if (elem.groupName && groups.length) {
+     return groups.find(value => value.name === elem.groupName)?.color ?? '#' + elem.colorCode;
+   }
+
+   return '#' + elem.colorCode;
   }
 
   private handleNewQuiz(): void {
@@ -201,46 +236,53 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
       return;
     }
 
-    this.headerLabelService.headerLabel = this.quizService.quiz.name;
-
     this.trackingService.trackConversionEvent({
       action: QuizLobbyComponent.TYPE,
       label: 'Quiz started',
     });
 
     this.addFooterElementsAsOwner();
+
+    this.attendeeService.attendeeAmount.pipe(takeUntil(this._destroy)).subscribe(() => {
+      this.footerBarService.footerElemStartQuiz.isActive = this.canStartQuiz();
+    });
   }
 
   private addFooterElementsAsAttendee(): void {
-    this.footerBarService.replaceFooterElements([
-      this.footerBarService.footerElemBack,
-    ]);
+    const footerBarElements = [this.footerBarService.footerElemBack];
+    if (this.quizService.quiz.sessionConfig.music.shared.lobby) {
+      footerBarElements.push(this.footerBarService.footerElemAudio);
+    }
+
+    this.footerBarService.replaceFooterElements(footerBarElements);
     this.footerBarService.footerElemBack.onClickCallback = async () => {
+      if (this.hasTriggeredNavigation) {
+        return;
+      }
+
       this.memberApiService.deleteMember(this.quizService.quiz.name, this.attendeeService.ownNick).subscribe();
-      this.attendeeService.cleanUp();
-      this.connectionService.cleanUp();
+      this.attendeeService.cleanUp().subscribe();
+      this.connectionService.cleanUp().subscribe();
       this.hasTriggeredNavigation = true;
       this.router.navigate(['/']);
     };
   }
 
   private addFooterElementsAsOwner(): void {
-    this.footerBarService.footerElemStartQuiz.isActive = this.attendeeService.attendees.length > 0;
-
     const footerElements = [
       this.footerBarService.footerElemStartQuiz, this.footerBarService.footerElemQRCode,
     ];
 
-    if (!environment.requireLoginToCreateQuiz || this.userService.isAuthorizedFor(UserRole.QuizAdmin)) {
-      footerElements.splice(0, 0, this.footerBarService.footerElemEditQuiz);
-    }
-
     if (environment.readingConfirmationEnabled) {
-      footerElements.splice(2, 0, this.footerBarService.footerElemReadingConfirmation);
+      footerElements.push(this.footerBarService.footerElemReadingConfirmation);
     }
 
     if (environment.confidenceSliderEnabled) {
       footerElements.push(this.footerBarService.footerElemConfidenceSlider);
+    }
+
+    if (!environment.requireLoginToCreateQuiz || this.userService.isAuthorizedFor(UserRole.QuizAdmin)) {
+      footerElements.push(this.footerBarService.footerElemEditQuiz);
     }
 
     this.footerBarService.replaceFooterElements(footerElements);
@@ -250,7 +292,11 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
 
   private addFooterElemClickCallbacksAsOwner(): void {
     this.footerBarService.footerElemStartQuiz.onClickCallback = (self: FooterbarElement) => {
-      if (!this.attendeeService.attendees.length) {
+      if (this.hasTriggeredNavigation) {
+        return;
+      }
+
+      if (!this.canStartQuiz()) {
         return;
       }
       self.isLoading = true;
@@ -270,14 +316,21 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
       });
     };
     this.footerBarService.footerElemEditQuiz.onClickCallback = () => {
+      if (this.hasTriggeredNavigation) {
+        return;
+      }
+
       const promise = this.attendeeService.attendees.length ? //
                       this.ngbModal.open(EditModeConfirmComponent).result : //
                       new Promise<any>(resolve => resolve());
       promise.then(() => {
         this.hasTriggeredNavigation = true;
-        this.router.navigate(['/quiz', 'manager', 'overview']).then(() => {
-          this.quizService.close();
-          this.attendeeService.cleanUp();
+        this._destroy.next();
+        this.quizService.loadDataToEdit(sessionStorage.getItem(StorageKey.CurrentQuizName), false)
+          .then(() => this.router.navigate(['/quiz', 'manager', 'overview']))
+          .then(() => this.quizApiService.deleteActiveQuiz(this.quizService.quiz).subscribe())
+          .then(() => {
+          this.attendeeService.cleanUp().subscribe();
         });
       }).catch(() => {});
     };
@@ -299,6 +352,10 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
       }), this.messageQueue.subscribe(MessageProtocol.Start, payload => {
         this.quizService.quiz.currentStartTimestamp = payload.currentStartTimestamp;
       }), this.messageQueue.subscribe(MessageProtocol.Closed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
       }),
@@ -308,25 +365,44 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
   }
 
   private handleMessagesForOwner(): void {
-    this._messageSubscriptions.push(...[
-      this.messageQueue.subscribe(MessageProtocol.AllPlayers, payload => {
-        this.footerBarService.footerElemStartQuiz.isActive = this.attendeeService.attendees.length > 0;
-      }), this.messageQueue.subscribe(MessageProtocol.Added, payload => {
-        this.footerBarService.footerElemStartQuiz.isActive = true;
-      }), this.messageQueue.subscribe(MessageProtocol.Removed, payload => {
-        this.footerBarService.footerElemStartQuiz.isActive = this.attendeeService.attendees.length > 0;
-      }),
-    ]);
+
+  }
+
+  private canStartQuiz(): boolean {
+    if (!this.quizService.quiz.sessionConfig.nicks.memberGroups.length) {
+      return this.attendeeService.attendees.length > 0;
+    }
+
+    let filledTeams = 0;
+    for (const team of this.quizService.quiz.sessionConfig.nicks.memberGroups) {
+      if (this.attendeeService.attendees.some(attendee => attendee.groupName === team.name)) {
+        filledTeams++;
+      }
+
+      if (filledTeams === 2) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private handleMessagesForAttendee(): void {
     this._messageSubscriptions.push(...[
       this.messageQueue.subscribe(MessageProtocol.Start, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'voting']);
       }), this.messageQueue.subscribe(MessageProtocol.UpdatedSettings, payload => {
         this.quizService.quiz.sessionConfig = payload.sessionConfig;
       }), this.messageQueue.subscribe(MessageProtocol.ReadingConfirmationRequested, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         if (environment.readingConfirmationEnabled) {
           this.router.navigate(['/quiz', 'flow', 'reading-confirmation']);
@@ -334,6 +410,10 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
           this.router.navigate(['/quiz', 'flow', 'voting']);
         }
       }), this.messageQueue.subscribe(MessageProtocol.Removed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         const existingNickname = sessionStorage.getItem(StorageKey.CurrentNickName);
         if (existingNickname === payload.name) {
           this.hasTriggeredNavigation = true;
@@ -345,8 +425,6 @@ export class QuizLobbyComponent implements OnInit, OnDestroy, IHasTriggeredNavig
 
   private handleNewAttendee(): void {
     console.log('QuizLobbyComponent: quiz status for attendee initialized', this.quizService.quiz);
-
-    this.headerLabelService.headerLabel = this.quizService.quiz.name;
 
     this.addFooterElementsAsAttendee();
   }

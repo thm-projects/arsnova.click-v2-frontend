@@ -20,23 +20,25 @@ import { StorageService } from '../storage/storage.service';
   providedIn: 'root',
 })
 export class QuizService {
-  public readonly quizUpdateEmitter: ReplaySubject<QuizEntity> = new ReplaySubject(1);
-
   private _isAddingPoolQuestion = false;
+  private _isOwner = false;
+  private _quiz: QuizEntity;
+  private _readingConfirmationRequested = false;
+  private _isInEditMode = false;
+
+  public playAudio = true;
 
   get isAddingPoolQuestion(): boolean {
     return this._isAddingPoolQuestion;
   }
 
   set isAddingPoolQuestion(value: boolean) {
-    if (value && !this._isAddingPoolQuestion) {
+    if (value && !this.quiz) {
       this._isInEditMode = true;
       this.generatePoolQuiz();
     }
     this._isAddingPoolQuestion = value;
   }
-
-  private _isOwner = false;
 
   get isOwner(): boolean {
     return this._isOwner;
@@ -45,8 +47,6 @@ export class QuizService {
   set isOwner(value: boolean) {
     this._isOwner = value;
   }
-
-  private _quiz: QuizEntity;
 
   get quiz(): QuizEntity {
     return this._quiz;
@@ -66,8 +66,6 @@ export class QuizService {
     this.quizUpdateEmitter.next(value);
   }
 
-  private _readingConfirmationRequested = false;
-
   get readingConfirmationRequested(): boolean {
     return this._readingConfirmationRequested;
   }
@@ -76,11 +74,11 @@ export class QuizService {
     this._readingConfirmationRequested = value;
   }
 
-  private _isInEditMode = false;
-
   get isInEditMode(): boolean {
     return this._isInEditMode;
   }
+
+  public readonly quizUpdateEmitter: ReplaySubject<QuizEntity> = new ReplaySubject(1);
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -92,14 +90,15 @@ export class QuizService {
   ) {
   }
 
-  public cleanUp(): void {
+  public cleanUp(): Observable<void> {
     this._readingConfirmationRequested = false;
     this._isAddingPoolQuestion = false;
     this._isInEditMode = false;
 
-    this.close();
-    this.quiz = null;
-    this.isOwner = false;
+    return this.close().pipe(tap(() => {
+      this.quiz = null;
+      this.isOwner = false;
+    }));
   }
 
   public persist(): void {
@@ -139,19 +138,23 @@ export class QuizService {
     return this.quiz.questionList[this.quiz.currentQuestionIndex];
   }
 
-  public close(): void {
+  public close(): Observable<void> {
     if (isPlatformServer(this.platformId)) {
-      return null;
+      return new Observable(subscriber => subscriber.next());
     }
 
     if (this.isOwner && this._quiz) {
       this._quiz.state = QuizState.Inactive;
       this.storageService.db.Quiz.get(this.quiz.name).then(quiz => {
-        quiz.state = QuizState.Inactive;
-        return this.storageService.db.Quiz.put(quiz);
+        if (quiz) {
+          quiz.state = QuizState.Inactive;
+          return this.storageService.db.Quiz.put(quiz);
+        }
       });
-      this.quizApiService.deleteActiveQuiz(this._quiz).subscribe();
+      return this.quizApiService.deleteActiveQuiz(this._quiz);
     }
+
+    return new Observable(subscriber => subscriber.next());
   }
 
   public isValid(): boolean {
@@ -207,6 +210,7 @@ export class QuizService {
 
       if (this.quiz) {
         console.log('QuizService: aborting loadDataToPlay since the quiz is already present', quizName);
+        this._isInEditMode = false;
         resolve();
         return;
       }
@@ -214,6 +218,7 @@ export class QuizService {
       this.storageService.db.Quiz.get(quizName).then(quiz => {
 
         console.log('QuizService: loadDataToPlay finished', quizName);
+        this._isInEditMode = false;
         this.isOwner = !!quiz;
         console.log('QuizService: isOwner', this.isOwner);
         this.restoreSettings(quizName).then(() => resolve());
@@ -221,7 +226,7 @@ export class QuizService {
     });
   }
 
-  public loadDataToEdit(quizName: string): Promise<boolean> {
+  public loadDataToEdit(quizName: string, checkExisting = true): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       if (!quizName) {
         const instance = this.ngbModal.open(NoDataErrorComponent, {
@@ -235,7 +240,7 @@ export class QuizService {
         reject();
         return;
       }
-      if (this.quiz?.name === quizName) {
+      if (checkExisting && this.quiz?.name === quizName) {
         this._isInEditMode = true;
         this._isOwner = true;
         this.quizUpdateEmitter.next(this.quiz);
@@ -277,6 +282,10 @@ export class QuizService {
       questionList: questionList ?? [new SingleChoiceQuestionEntity({ answerOptionList: [] })],
       ...defaultSettings,
     });
+  }
+
+  public toggleAudioPlay(): void {
+    this.playAudio = !this.playAudio;
   }
 
   private restoreSettings(quizName: string): Promise<boolean> {

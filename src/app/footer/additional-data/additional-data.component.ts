@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, HostListener, Inject } from '@angular/core';
+import { FileUploadService } from '../../service/file-upload/file-upload.service';
 import { QuizService } from '../../service/quiz/quiz.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
 
@@ -9,9 +10,11 @@ import { TrackingService } from '../../service/tracking/tracking.service';
   styleUrls: ['./additional-data.component.scss'],
 })
 export class AdditionalDataComponent {
-  public static TYPE = 'AdditionalDataComponent';
+  public static readonly TYPE = 'AdditionalDataComponent';
 
   private _isShowingMore: boolean = window.innerWidth >= 768;
+
+  public clipboardText = true;
 
   get isShowingMore(): boolean {
     return this._isShowingMore;
@@ -21,11 +24,12 @@ export class AdditionalDataComponent {
     this._isShowingMore = value;
   }
 
-  constructor(@Inject(DOCUMENT) readonly document, public quizService: QuizService, private trackingService: TrackingService) {
-  }
-
-  public getQuizUrl(quizName: string): string {
-    return encodeURI(`${document.location.origin}/quiz/${quizName}`);
+  constructor(
+    @Inject(DOCUMENT) readonly document: Document,
+    public quizService: QuizService,
+    private trackingService: TrackingService,
+    private fileUploadService: FileUploadService
+  ) {
   }
 
   public switchShowMoreOrLess(): void {
@@ -48,4 +52,12 @@ export class AdditionalDataComponent {
     this.isShowingMore = window.innerWidth >= 768;
   }
 
+  public renameQuiz(): void {
+    const clone = JSON.parse(JSON.stringify(this.quizService.quiz));
+    clone.name = null;
+    const blob = new Blob([JSON.stringify(clone)], { type: 'application/json' });
+    this.fileUploadService.renameFilesQueue.set('uploadFiles[]', blob, null);
+    this.fileUploadService.overrideLocalQuiz = this.quizService.quiz.name;
+    this.fileUploadService.uploadFile(this.fileUploadService.renameFilesQueue);
+  }
 }

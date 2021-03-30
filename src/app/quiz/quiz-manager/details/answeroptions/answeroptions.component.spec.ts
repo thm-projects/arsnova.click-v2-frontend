@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -10,9 +10,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModalModule, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxStompService } from '@stomp/ng2-stompjs';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { HotkeysService } from 'angular2-hotkeys';
 import { TOAST_CONFIG } from 'ngx-toastr';
 import { of } from 'rxjs';
-import { TranslatePipeMock } from '../../../../../_mocks/_pipes/TranslatePipeMock';
 import { SwUpdateMock } from '../../../../../_mocks/_services/SwUpdateMock';
 import { HeaderComponent } from '../../../../header/header/header.component';
 import { jwtOptionsFactory } from '../../../../lib/jwt.factory';
@@ -31,6 +31,8 @@ import { SettingsService } from '../../../../service/settings/settings.service';
 import { SharedService } from '../../../../service/shared/shared.service';
 import { StorageService } from '../../../../service/storage/storage.service';
 import { StorageServiceMock } from '../../../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../../service/themes/themes.service';
 import { TrackingMockService } from '../../../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../../../service/tracking/tracking.service';
 import { TwitterService } from '../../../../service/twitter/twitter.service';
@@ -46,7 +48,7 @@ describe('AnsweroptionsComponent', () => {
   let component: AnsweroptionsComponent;
   let fixture: ComponentFixture<AnsweroptionsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule,
@@ -72,7 +74,10 @@ describe('AnsweroptionsComponent', () => {
         }, {
           provide: QuizService,
           useClass: QuizMockService,
-        }, HeaderLabelService, FooterBarService, SettingsService, {
+        }, HeaderLabelService, {
+          provide: ThemesService,
+          useClass: ThemesMockService
+        }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
         }, {
@@ -103,6 +108,12 @@ describe('AnsweroptionsComponent', () => {
         }, {
           provide: CustomMarkdownService,
           useClass: CustomMarkdownServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {
+            add: () => {},
+            reset: () => {},
+          }
         },
       ],
       declarations: [
@@ -112,22 +123,21 @@ describe('AnsweroptionsComponent', () => {
         AnsweroptionsFreetextComponent,
         AnsweroptionsRangedComponent,
         AnsweroptionsComponent,
-        TranslatePipeMock,
       ],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(AnsweroptionsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
 
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(AnsweroptionsComponent.TYPE).toEqual('AnsweroptionsComponent');
   }));
 });

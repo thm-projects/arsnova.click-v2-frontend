@@ -1,11 +1,10 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
-import { TranslateService } from '@ngx-translate/core';
 import { RxStompService } from '@stomp/ng2-stompjs';
-import { TranslateServiceMock } from '../../../_mocks/_services/TranslateServiceMock';
+import { HotkeysService } from 'angular2-hotkeys';
 import { jwtOptionsFactory } from '../../lib/jwt.factory';
 import { ConnectionMockService } from '../../service/connection/connection.mock.service';
 import { ConnectionService } from '../../service/connection/connection.service';
@@ -18,6 +17,7 @@ import { SettingsService } from '../../service/settings/settings.service';
 import { SharedService } from '../../service/shared/shared.service';
 import { StorageService } from '../../service/storage/storage.service';
 import { StorageServiceMock } from '../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../service/themes/themes.mock.service';
 import { ThemesService } from '../../service/themes/themes.service';
 import { TrackingMockService } from '../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
@@ -32,7 +32,7 @@ describe('AdminOverviewComponent', () => {
   let component: AdminOverviewComponent;
   let fixture: ComponentFixture<AdminOverviewComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, SharedModule, RouterTestingModule, HttpClientTestingModule, JwtModule.forRoot({
@@ -44,13 +44,13 @@ describe('AdminOverviewComponent', () => {
         }),
       ],
       providers: [
-        RxStompService, {
-          provide: TranslateService,
-          useClass: TranslateServiceMock,
-        }, I18nService, {
+        RxStompService, I18nService, {
           provide: StorageService,
           useClass: StorageServiceMock,
-        }, HeaderLabelService, ThemesService, {
+        }, HeaderLabelService, {
+          provide: ThemesService,
+          useClass: ThemesMockService
+        }, {
           provide: QuizService,
           useClass: QuizMockService,
         }, {
@@ -62,6 +62,9 @@ describe('AdminOverviewComponent', () => {
         }, SharedService, {
           provide: TwitterService,
           useClass: TwitterServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {}
         },
       ],
       declarations: [

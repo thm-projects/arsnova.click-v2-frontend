@@ -1,14 +1,13 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID, SecurityContext } from '@angular/core';
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { TranslateService } from '@ngx-translate/core';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { SimpleMQ } from 'ng2-simple-mq';
-import { TranslateServiceMock } from '../../../../_mocks/_services/TranslateServiceMock';
 import { Language } from '../../../lib/enums/enums';
 import { jwtOptionsFactory } from '../../../lib/jwt.factory';
 import { ServerUnavailableModalComponent } from '../../../modals/server-unavailable-modal/server-unavailable-modal.component';
@@ -27,6 +26,8 @@ import { SettingsService } from '../../../service/settings/settings.service';
 import { SharedService } from '../../../service/shared/shared.service';
 import { StorageService } from '../../../service/storage/storage.service';
 import { StorageServiceMock } from '../../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../service/themes/themes.service';
 import { TrackingMockService } from '../../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../../service/tracking/tracking.service';
 import { SharedModule } from '../../../shared/shared.module';
@@ -39,7 +40,7 @@ describe('LeaderboardComponent', () => {
   let i18nService: I18nService;
   let fixture: ComponentFixture<LeaderboardComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, SharedModule, RouterTestingModule, JwtModule.forRoot({
@@ -60,6 +61,9 @@ describe('LeaderboardComponent', () => {
         }, NgbActiveModal, {
           provide: TrackingService,
           useClass: TrackingMockService,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
@@ -70,15 +74,15 @@ describe('LeaderboardComponent', () => {
           provide: AttendeeService,
           useClass: AttendeeMockService,
         }, {
-          provide: TranslateService,
-          useClass: TranslateServiceMock,
+          provide: HotkeysService,
+          useValue: {}
         },
       ],
       declarations: [LeaderboardComponent, ServerUnavailableModalComponent],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(LeaderboardComponent);
     component = fixture.componentInstance;
     i18nService = TestBed.inject(I18nService);
@@ -86,15 +90,15 @@ describe('LeaderboardComponent', () => {
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
 
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(LeaderboardComponent.TYPE).toEqual('LeaderboardComponent');
   }));
 
-  it('#sanitizeHTML', async(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
+  it('#sanitizeHTML', waitForAsync(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
     const markup = '<div><span>TestMarkup</span></div>';
 
     spyOn(sanitizer, 'sanitize').and.callFake((context: SecurityContext, value: string) => value);
@@ -102,7 +106,7 @@ describe('LeaderboardComponent', () => {
     expect(sanitizer.sanitize).toHaveBeenCalled();
   })));
 
-  it('#parseNickname', async(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
+  it('#parseNickname', waitForAsync(inject([DomSanitizer], (sanitizer: DomSanitizer) => {
     const nicknameDefault = 'TestNickname';
     const nicknameEmoji = ':+1:';
 
@@ -116,7 +120,7 @@ describe('LeaderboardComponent', () => {
     expect(component.sanitizeHTML).toHaveBeenCalled();
   })));
 
-  it('#roundResponseTime', async(() => {
+  it('#roundResponseTime', waitForAsync(() => {
     expect(component.roundResponseTime(10.52123123, 2)).toEqual(10.52);
     expect(component.roundResponseTime(10.2)).toEqual(10);
     expect(component.roundResponseTime(10.5)).toEqual(11);

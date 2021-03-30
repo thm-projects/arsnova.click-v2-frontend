@@ -1,12 +1,13 @@
 import { isPlatformBrowser } from '@angular/common';
-import { ChangeDetectorRef, Component, Inject, Input, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
-import { distinctUntilChanged, map, takeUntil, tap } from 'rxjs/operators';
-import { DEVICE_TYPES, LIVE_PREVIEW_ENVIRONMENT } from '../../../environments/environment';
+import { Observable, of, Subject, Subscription } from 'rxjs';
+import { distinctUntilChanged, filter, map, switchMap, switchMapTo, takeUntil } from 'rxjs/operators';
 import { AbstractChoiceQuestionEntity } from '../../lib/entities/question/AbstractChoiceQuestionEntity';
+import { DeviceType } from '../../lib/enums/DeviceType';
 import { StorageKey } from '../../lib/enums/enums';
+import { LivePreviewEnvironment } from '../../lib/enums/LivePreviewEnvironment';
 import { ConnectionService } from '../../service/connection/connection.service';
 import { QuestionTextService } from '../../service/question-text/question-text.service';
 import { QuizService } from '../../service/quiz/quiz.service';
@@ -15,40 +16,49 @@ import { QuizService } from '../../service/quiz/quiz.service';
   selector: 'app-live-preview',
   templateUrl: './live-preview.component.html',
   styleUrls: ['./live-preview.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LivePreviewComponent implements OnInit, OnDestroy {
-  public static TYPE = 'LivePreviewComponent';
-  public readonly ENVIRONMENT_TYPE = LIVE_PREVIEW_ENVIRONMENT;
+  public static readonly TYPE = 'LivePreviewComponent';
+
+  private _targetEnvironment: LivePreviewEnvironment;
+  private _revalidate: Subscription;
+  private _targetDevice: DeviceType;
+  private _question: AbstractChoiceQuestionEntity;
+  private readonly _destroy = new Subject();
+  private _questionIndex: number;
+
+  public readonly ENVIRONMENT_TYPE = LivePreviewEnvironment;
   public dataSource: Array<string>;
 
-  private _targetEnvironment: LIVE_PREVIEW_ENVIRONMENT;
+  @Input() set revalidate(value: Subject<any>) {
+    if (this._revalidate) {
+      this._revalidate.unsubscribe();
+    }
+    if (value) {
+      this._revalidate = value.pipe(takeUntil(this._destroy)).subscribe(() => this.cd.markForCheck());
+    }
+  }
 
-  get targetEnvironment(): LIVE_PREVIEW_ENVIRONMENT {
+  get targetEnvironment(): LivePreviewEnvironment {
     return this._targetEnvironment;
   }
 
-  @Input() set targetEnvironment(value: LIVE_PREVIEW_ENVIRONMENT) {
+  @Input() set targetEnvironment(value: LivePreviewEnvironment) {
     this._targetEnvironment = value;
   }
 
-  private _targetDevice: DEVICE_TYPES;
-
-  get targetDevice(): DEVICE_TYPES {
+  get targetDevice(): DeviceType {
     return this._targetDevice;
   }
 
-  @Input() set targetDevice(value: DEVICE_TYPES) {
+  @Input() set targetDevice(value: DeviceType) {
     this._targetDevice = value;
   }
-
-  private _question: AbstractChoiceQuestionEntity;
 
   get question(): AbstractChoiceQuestionEntity {
     return this._question;
   }
-
-  private readonly _destroy = new Subject();
-  private _questionIndex: number;
 
   constructor(
     public questionTextService: QuestionTextService,
@@ -63,30 +73,30 @@ export class LivePreviewComponent implements OnInit, OnDestroy {
 
   public deviceClass(): string {
     switch (this.targetDevice) {
-      case DEVICE_TYPES.XS:
+      case DeviceType.XS:
         return 'device_xs';
-      case DEVICE_TYPES.SM:
+      case DeviceType.SM:
         return 'device_sm';
-      case DEVICE_TYPES.MD:
+      case DeviceType.MD:
         return 'device_md';
-      case DEVICE_TYPES.LG:
+      case DeviceType.LG:
         return 'device_lg';
-      case DEVICE_TYPES.XLG:
+      case DeviceType.XLG:
         return 'device_xlg';
     }
   }
 
   public getComputedWidth(): string {
     switch (this.targetDevice) {
-      case DEVICE_TYPES.XS:
+      case DeviceType.XS:
         return 'calc(50% - 1rem)';
-      case DEVICE_TYPES.SM:
+      case DeviceType.SM:
         return 'device_sm';
-      case DEVICE_TYPES.MD:
+      case DeviceType.MD:
         return 'device_md';
-      case DEVICE_TYPES.LG:
+      case DeviceType.LG:
         return 'device_lg';
-      case DEVICE_TYPES.XLG:
+      case DeviceType.XLG:
         return 'device_xlg';
     }
   }
@@ -103,42 +113,37 @@ export class LivePreviewComponent implements OnInit, OnDestroy {
     }
 
     // sanitizer.bypassSecurityTrustHtml is required for highslide
-    return this.sanitizer.bypassSecurityTrustHtml(`${value}`) as string;
+    return this.sanitizer.bypassSecurityTrustHtml(value || '') as string;
   }
 
   public ngOnInit(): void {
     this.questionTextService.eventEmitter.pipe(takeUntil(this._destroy)).subscribe(value => {
       this.dataSource = Array.isArray(value) ? value : [value];
+      this.cd.markForCheck();
     });
 
-    const questionIndex$ = this.route.paramMap.pipe( //
+    this.route.paramMap.pipe( //
+      filter(() => isPlatformBrowser(this.platformId)), //
       map(params => parseInt(params.get('questionIndex'), 10)), //
       distinctUntilChanged(), //
-      tap(questionIndex => {
+      switchMap(questionIndex => {
         if (!isNaN(questionIndex)) {
           this._questionIndex = questionIndex;
-          this.quizService.loadDataToEdit(sessionStorage.getItem(StorageKey.CurrentQuizName));
+
+          return new Observable(subscriber => {
+            this.quizService.loadDataToEdit(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => {
+              subscriber.next();
+              subscriber.complete();
+            });
+          }).pipe(switchMapTo(this.loadQuestionData()));
         } else {
           this.quizService.isAddingPoolQuestion = true;
           this._questionIndex = 0;
+          return this.loadQuestionData();
         }
       }), //
       takeUntil(this._destroy), //
-    );
-
-    switch (this.targetEnvironment) {
-      case this.ENVIRONMENT_TYPE.ANSWEROPTIONS:
-        questionIndex$.subscribe(() => {
-          this._question = <AbstractChoiceQuestionEntity>this.quizService.quiz.questionList[this._questionIndex];
-          this.questionTextService.changeMultiple(this._question.answerOptionList.map(answer => answer.answerText))
-          .then(() => this.cd.markForCheck());
-        });
-        break;
-      case this.ENVIRONMENT_TYPE.QUESTION:
-        break;
-      default:
-        throw new Error(`Unsupported environment type in live preview: '${this.targetEnvironment}'`);
-    }
+    ).subscribe(() => this.cd.markForCheck());
   }
 
   public ngOnDestroy(): void {
@@ -147,6 +152,24 @@ export class LivePreviewComponent implements OnInit, OnDestroy {
 
     if (isPlatformBrowser(this.platformId) && window['hs']) {
       window['hs'].close();
+    }
+  }
+
+  private loadQuestionData(): Observable<any> {
+    if (!this.quizService.quiz) {
+      return of();
+    }
+
+    this._question = <AbstractChoiceQuestionEntity>this.quizService.quiz.questionList[this._questionIndex];
+
+    switch (this.targetEnvironment) {
+      case this.ENVIRONMENT_TYPE.ANSWEROPTIONS:
+        const answers = this._question.answerOptionList.map(answer => answer.answerText);
+        return this.questionTextService.changeMultiple(answers);
+      case this.ENVIRONMENT_TYPE.QUESTION:
+        return this.questionTextService.change(this._question?.questionText);
+      default:
+        throw new Error(`Unsupported environment type in live preview: '${this.targetEnvironment}'`);
     }
   }
 }

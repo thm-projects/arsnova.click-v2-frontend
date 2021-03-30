@@ -1,12 +1,13 @@
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformServer } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DefaultSettings } from '../../../lib/default.settings';
 import { MusicSessionConfigurationEntity } from '../../../lib/entities/session-configuration/MusicSessionConfigurationEntity';
+import { AudioPlayerConfigTarget } from '../../../lib/enums/AudioPlayerConfigTarget';
 import { StorageKey } from '../../../lib/enums/enums';
-import { ISong } from '../../../lib/interfaces/ISong';
+import { IAudioPlayerConfig, ISong } from '../../../lib/interfaces/IAudioConfig';
 import { FooterBarService } from '../../../service/footer-bar/footer-bar.service';
 import { QuizService } from '../../../service/quiz/quiz.service';
 
@@ -16,34 +17,35 @@ import { QuizService } from '../../../service/quiz/quiz.service';
   styleUrls: ['./sound-manager.component.scss'],
 })
 export class SoundManagerComponent implements OnInit, OnDestroy {
-  public static TYPE = 'SoundManagerComponent';
+  public static readonly TYPE = 'SoundManagerComponent';
 
   private _lobbySongs: Array<ISong> = [];
+  private _countdownRunningSounds: Array<ISong> = [];
+  private _countdownEndSounds: Array<ISong> = [];
+  private _config: MusicSessionConfigurationEntity;
+  private _selected = 'lobby';
+  private readonly _destroy = new Subject();
+  public lobbyMusicConfig: IAudioPlayerConfig;
+  public countdownRunningMusicConfig: IAudioPlayerConfig;
+  public countdownEndMusicConfig: IAudioPlayerConfig;
+  public readonly revalidate = new Subject();
+  public readonly AudioPlayerConfigTarget = AudioPlayerConfigTarget;
 
   get lobbySongs(): Array<ISong> {
     return this._lobbySongs;
   }
 
-  private _countdownRunningSounds: Array<ISong> = [];
-
   get countdownRunningSounds(): Array<ISong> {
     return this._countdownRunningSounds;
   }
-
-  private _countdownEndSounds: Array<ISong> = [];
 
   get countdownEndSounds(): Array<ISong> {
     return this._countdownEndSounds;
   }
 
-  private _config: MusicSessionConfigurationEntity;
-
   get config(): MusicSessionConfigurationEntity {
     return this._config;
   }
-
-  private _selected = 'lobby';
-  private readonly _destroy = new Subject();
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -56,6 +58,10 @@ export class SoundManagerComponent implements OnInit, OnDestroy {
     footerBarService.replaceFooterElements([
       this.footerBarService.footerElemBack,
     ]);
+
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
 
     this.quizService.loadDataToEdit(sessionStorage.getItem(StorageKey.CurrentQuizName));
   }
@@ -74,16 +80,18 @@ export class SoundManagerComponent implements OnInit, OnDestroy {
       this.setRandomKey();
       this.setCountdownRunningSongs();
       this.setCountdownEndSongs();
+      this.updateAudioSource();
     });
   }
 
-  public selectSound(target: 'lobby' | 'countdownRunning' | 'countdownEnd', event: Event): void {
+  public selectSound(target: AudioPlayerConfigTarget, event: Event): void {
     this.config.titleConfig[target] = (<HTMLSelectElement>event.target).value;
-    this.toggleMusicPreview(target);
+    this.updateAudioSource();
   }
 
   public openTab(id: string): void {
     this._selected = id;
+    this.updateAudioSource();
   }
 
   public isSelected(elem: string): boolean {
@@ -97,10 +105,29 @@ export class SoundManagerComponent implements OnInit, OnDestroy {
     }
     this._destroy.next();
     this._destroy.complete();
+    this.revalidate.complete();
   }
 
-  public toString(value: number): string {
-    return String(value);
+  public toggleGlobalVolume(): void {
+    this.config.volumeConfig.useGlobalVolume = !this.config?.volumeConfig.useGlobalVolume;
+    this.updateAudioVolume();
+  }
+
+  public updateAudioVolume(value?: string): void {
+    const volumeConfig = this.config?.volumeConfig;
+    if (value) {
+      volumeConfig.global = parseInt(value, 10);
+    }
+
+    this.lobbyMusicConfig.original_volume = String(volumeConfig.useGlobalVolume ? volumeConfig.global : volumeConfig.lobby);
+    this.countdownRunningMusicConfig.original_volume = String(volumeConfig.useGlobalVolume ? volumeConfig.global : volumeConfig.countdownRunning);
+    this.countdownEndMusicConfig.original_volume = String(volumeConfig.useGlobalVolume ? volumeConfig.global : volumeConfig.countdownEnd);
+
+    this.revalidate.next();
+  }
+
+  public toggleConfig(target: AudioPlayerConfigTarget): void {
+    this.quizService.quiz.sessionConfig.music.shared[target] = !this.quizService.quiz.sessionConfig.music.shared[target];
   }
 
   private initConfig(): void {
@@ -172,18 +199,36 @@ export class SoundManagerComponent implements OnInit, OnDestroy {
     });
   }
 
-  private toggleMusicPreview(target: 'lobby' | 'countdownRunning' | 'countdownEnd'): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const audioElements = document.getElementsByTagName('audio');
-      for (let i = 0; i < audioElements.length; i++) {
-        (<HTMLAudioElement>audioElements.item(i)).volume = (parseInt(String(this.config.volumeConfig[target]), 10) || 60) / 100;
-      }
-    }
-  }
-
   private resetSongList(): void {
     this._lobbySongs.splice(0, this._lobbySongs.length);
     this._countdownRunningSounds.splice(0, this._countdownRunningSounds.length);
     this._countdownEndSounds.splice(0, this._countdownEndSounds.length);
+  }
+
+  private updateAudioSource(): void {
+    const volumeConfig = this.config?.volumeConfig;
+
+    this.lobbyMusicConfig = {
+      autostart: false,
+      src: this.config?.titleConfig?.lobby,
+      target: AudioPlayerConfigTarget.lobby,
+      loop: true,
+      original_volume: String(volumeConfig.useGlobalVolume ? volumeConfig.global : volumeConfig.lobby)
+    };
+
+    this.countdownRunningMusicConfig = {
+      autostart: false,
+      src: this.config?.titleConfig?.countdownRunning,
+      target: AudioPlayerConfigTarget.countdownRunning,
+      loop: true,
+      original_volume: String(volumeConfig.useGlobalVolume ? volumeConfig.global : volumeConfig.countdownRunning)
+    };
+
+    this.countdownEndMusicConfig = {
+      autostart: false,
+      src: this.config?.titleConfig?.countdownEnd,
+      target: AudioPlayerConfigTarget.countdownEnd,
+      original_volume: String(volumeConfig.useGlobalVolume ? volumeConfig.global : volumeConfig.countdownEnd)
+    };
   }
 }

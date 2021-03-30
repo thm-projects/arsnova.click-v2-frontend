@@ -1,9 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { QuizEntity } from '../../lib/entities/QuizEntity';
 import { QuizApiService } from '../../service/api/quiz/quiz-api.service';
+import { CustomMarkdownService } from '../../service/custom-markdown/custom-markdown.service';
 import { FileUploadService } from '../../service/file-upload/file-upload.service';
 import { FooterBarService } from '../../service/footer-bar/footer-bar.service';
 import { StorageService } from '../../service/storage/storage.service';
@@ -14,12 +16,16 @@ import { StorageService } from '../../service/storage/storage.service';
   styleUrls: ['./quiz-public.component.scss'],
 })
 export class QuizPublicComponent implements OnInit, OnDestroy {
-  public availablePublicQuizzes: Array<QuizEntity> = [];
-  public isViewingOwnQuizzes = false;
+  public static readonly TYPE = 'QuizPublicComponent';
 
   private readonly _destroy = new Subject();
 
+  public availablePublicQuizzes: Array<QuizEntity> = [];
+  public isViewingOwnQuizzes = false;
+
   constructor(
+    public customMarkdownService: CustomMarkdownService,
+    @Inject(PLATFORM_ID) private platformId: Object,
     private storageService: StorageService,
     private quizApiService: QuizApiService,
     private footerBarService: FooterBarService,
@@ -52,7 +58,11 @@ export class QuizPublicComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this.router.paramMap.pipe(takeUntil(this._destroy), distinctUntilChanged()).subscribe(params => {
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
+    this.router.paramMap.pipe(distinctUntilChanged(), takeUntil(this._destroy)).subscribe(params => {
       if (params.get('own')) {
         this.quizApiService.getOwnPublicQuizzes().subscribe(val => this.availablePublicQuizzes = val);
         this.isViewingOwnQuizzes = true;

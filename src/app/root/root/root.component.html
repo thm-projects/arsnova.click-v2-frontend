@@ -1,23 +1,58 @@
-<div [class.d-none]="isLoading">
+<app-hotkey-cheatsheet></app-hotkey-cheatsheet>
+<universal-cookie-consent></universal-cookie-consent>
+
+<div [class.d-md-block]="!isLoading || (twitterService.showTwitter | async)"
+     [class.d-none]="isLoading || (twitterService.showTwitter | async)">
   <div class="px-1 px-sm-4">
     <app-header></app-header>
   </div>
 
-  <div class="d-flex flex-column flex-md-row">
-    <div>
-      <div class="footer-bar-wrapper flex-grow-0 flex-shrink-0 p-0 w-100">
-        <app-footer-bar></app-footer-bar>
-        <ng-container *ngIf="isInQuizManager">
-          <app-additional-data></app-additional-data>
-        </ng-container>
+  <div class="container-fluid px-0 d-flex flex-wrap">
+    <div class="px-0"
+         [class.col-12]="footerBarService.collapsedNavbar"
+         [class.col-md-2]="!footerBarService.collapsedNavbar"
+         *ngIf="footerBarService.footerElements?.length">
+      <div class="row mr-0 sticky-top">
+        <app-footer-bar class="col-12 pr-0"></app-footer-bar>
+        <app-additional-data *ngIf="isInQuizManager"
+                             class="col-sm-11 offset-sm-1 offset-md-0 pr-0"></app-additional-data>
       </div>
     </div>
 
-    <main class="container pb-4">
+    <main [class]="'pb-5 ' + getClasses()">
       <router-outlet>
       </router-outlet>
     </main>
   </div>
+</div>
+
+<div *ngIf="twitterService.twitterEnabled && twitterService.getOptIn() && (connectionService.serverAvailable || isServer)"
+     [class.flex-column]="twitterService.showTwitter | async"
+     [class.position-absolute]="!(twitterService.showTwitter | async)"
+     [class.position-fixed]="twitterService.showTwitter | async"
+     class="d-flex flex-md-row tweet-container">
+  <fa-icon (click)="toggleTweetsOpened()"
+           [class.d-flex]="!(twitterService.showTwitter | async)"
+           [class.d-md-flex]="twitterService.showTwitter | async"
+           [class.d-none]="twitterService.showTwitter | async"
+           [class.tweets-closed-state]="!(twitterService.showTwitter | async)"
+           [class.tweets-opened-state]="twitterService.showTwitter | async"
+           [icon]="['fab', 'twitter']"
+           class="color-twitter tweet-opener bg-secondary justify-content-center align-items-center cursor-pointer mt-md-2"></fa-icon>
+
+  <div [class.d-none]="!(twitterService.showTwitter | async)"
+       class="bg-secondary">
+    <button (click)="toggleTweetsOpened()"
+            aria-label="Close"
+            class="close cursor-pointer d-md-none w-100"
+            data-dismiss="modal"
+            type="button">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <app-twitter-cards *ngIf="twitterService.showTwitter | async"
+                     class="px-1 bg-secondary tweet-cards-container overflow-auto"></app-twitter-cards>
 </div>
 
 <div [class.d-none]="!isLoading"
@@ -25,4 +60,9 @@
   <div id="loader"></div>
   <div class="loader-section section-left"></div>
   <div class="loader-section section-right"></div>
+</div>
+
+<div *ngIf="showInfoButtonsInFooter" class="d-flex justify-content-between flex-wrap position-absolute bottom-0 w-100">
+  <a target="_blank" class="mx-1 mb-1 btn btn-warning btn-sm" href="/info/imprint" >{{'region.footer.footer_bar.imprint' | translate}}</a>
+  <a target="_blank" class="mx-1 mb-1 btn btn-warning btn-sm" href="/info/dataprivacy">{{'region.footer.footer_bar.dataprivacy' | translate}}</a>
 </div>

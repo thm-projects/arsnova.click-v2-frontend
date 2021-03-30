@@ -1,4 +1,8 @@
-import { AfterViewInit, Component, EventEmitter, Inject, Input, OnDestroy, Output, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
+import { AfterViewInit, Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, PLATFORM_ID } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { IAudioPlayerConfig } from '../../lib/interfaces/IAudioConfig';
 import { FilesApiService } from '../../service/api/files/files-api.service';
 
 @Component({
@@ -6,73 +10,51 @@ import { FilesApiService } from '../../service/api/files/files-api.service';
   templateUrl: './audio-player.component.html',
   styleUrls: ['./audio-player.component.scss'],
 })
-export class AudioPlayerComponent implements AfterViewInit, OnDestroy {
-  public static TYPE = 'AudioPlayerComponent';
-  @Output() public volumeChange = new EventEmitter();
+export class AudioPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
+  public static readonly TYPE = 'AudioPlayerComponent';
 
-  private _autostart: boolean;
-
-  get autostart(): boolean {
-    return this._autostart;
-  }
-
-  @Input() set autostart(value: boolean) {
-    this._autostart = value;
-    this.audioElement.autoplay = value;
-  }
-
-  private _target: 'lobby' | 'countdownRunning' | 'countdownEnd';
-
-  get target(): 'lobby' | 'countdownRunning' | 'countdownEnd' {
-    return this._target;
-  }
-
-  @Input() set target(value: 'lobby' | 'countdownRunning' | 'countdownEnd') {
-    this._target = value;
-
-    this.stopMusic();
-    this.audioElement.src = this.getUrl();
-  }
-
-  private _original_volume: string;
-
-  @Input() set original_volume(value: string) {
-    this._original_volume = value;
-    this._volume = this._original_volume;
-    if (this.audioElement) {
-      this.audioElement.volume = (parseInt(this._volume, 10) || 0) / 100;
-    }
-  }
-
-  private _src: string;
-
-  get src(): string {
-    return this._src;
-  }
-
-  @Input() set src(value: string) {
-    this._src = value;
-
-    this.stopMusic();
-    this.audioElement.src = this.getUrl();
-  }
-
-  private _loop = true;
-
-  get loop(): boolean {
-    return this._loop;
-  }
-
-  @Input() set loop(value: boolean) {
-    if (typeof value === 'undefined') {
-      value = true;
-    }
-    this._loop = value ? true : null;
-
-    this.audioElement.loop = this.loop;
-  }
-
+  private _config: IAudioPlayerConfig;
   private _volume = '1';
+  private _isPlaying = false;
+  private _autostartRejected: boolean;
+  private _revalidate: Subscription;
+  private _audioElement: HTMLAudioElement;
+  private readonly _destroy = new Subject();
+
+  get autostartRejected(): boolean {
+    return this._autostartRejected;
+  }
+
+  @Output() public volumeChange = new EventEmitter();
+  @Output() public playbackFinished = new EventEmitter();
+
+  @Input() set revalidate(value: Subject<void>) {
+    if (this._revalidate) {
+      this._revalidate.unsubscribe();
+    }
+
+    this._revalidate = value.pipe(takeUntil(this._destroy)).subscribe(() => {
+      this._config.autostart = this.isPlaying;
+      this._volume = this._config.original_volume;
+      this._audioElement.volume = (parseInt(this._volume, 10) || 0) / 100;
+    });
+  }
+
+  @Input() set config(value: IAudioPlayerConfig) {
+    this._config = value;
+
+    if (!value) {
+      return;
+    }
+
+    this._volume = this._config.original_volume;
+
+    this.loadAudioElement();
+  }
+
+  get config(): IAudioPlayerConfig {
+    return this._config;
+  }
 
   get volume(): string {
     return this._volume;
@@ -81,53 +63,105 @@ export class AudioPlayerComponent implements AfterViewInit, OnDestroy {
   set volume(value: string) {
     this._volume = value;
     this.volumeChange.emit(this.volume);
-    this.audioElement.volume = (parseInt(this._volume, 10) || 0) / 100;
+    this._audioElement.volume = (parseInt(this._volume, 10) || 0) / 100;
   }
-
-  private _isPlaying = false;
 
   get isPlaying(): boolean {
     return this._isPlaying;
   }
 
-  private readonly audioElement = new Audio();
-
   constructor(@Inject(PLATFORM_ID) private platformId: Object, private filesApiService: FilesApiService) {
+    if (isPlatformBrowser(this.platformId)) {
+      this._audioElement = new Audio();
+      this._audioElement.addEventListener('ended', () => {
+        this.playbackFinished.next();
+        this.stopMusic();
+      });
+    }
+  }
+
+  public ngOnInit(): void {
   }
 
   public getUrl(): string {
-    return this.filesApiService.SOUND_FILE_GET_URL(this._target, this._src);
+    return this.filesApiService.SOUND_FILE_GET_URL(this._config.target, this._config.src);
   }
 
   public playMusic(): void {
-    if (this.audioElement.ended) {
-      this.audioElement.currentTime = 0;
+    this._autostartRejected = false;
+    if (this._audioElement.ended) {
+      this._audioElement.currentTime = 0;
     }
-    this.audioElement.play();
-    this._isPlaying = true;
+    this._audioElement.play().then(() => {
+      this._isPlaying = true;
+    }).catch(() => {
+      // Autoplay was prevented - "NotAllowedError: play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
+      this._autostartRejected = true;
+    });
   }
 
   public pauseMusic(): void {
-    this.audioElement.pause();
+    if (!this._isPlaying) {
+      return;
+    }
+
+    this._audioElement.pause();
     this._isPlaying = false;
   }
 
   public stopMusic(): void {
-    this.audioElement.pause();
-    this.audioElement.currentTime = 0;
+    if (isPlatformServer(this.platformId) || !this._audioElement || !this._isPlaying) {
+      return;
+    }
+
+    this._audioElement.pause();
+    this._audioElement.currentTime = 0;
     this._isPlaying = false;
   }
 
   public isStopped(): boolean {
-    return (!this.audioElement.currentTime && this.audioElement.paused) || this.audioElement.ended;
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
+    return (!this._audioElement.currentTime && this._audioElement.paused) || this._audioElement.ended;
   }
 
   public ngAfterViewInit(): void {
-    this.audioElement.volume = (parseInt(this._volume, 10) || 0) / 100;
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
+    this._audioElement.volume = (parseInt(this._volume, 10) || 0) / 100;
   }
 
   public ngOnDestroy(): void {
-    this.stopMusic();
+    if (isPlatformBrowser(this.platformId)) {
+      this.stopMusic();
+      this._audioElement.removeAttribute('src');
+      this._audioElement.load();
+      this._audioElement = null;
+    }
+
+    this._destroy.next();
+    this._destroy.complete();
+  }
+
+  private loadAudioElement(): void {
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
+    this._audioElement.autoplay = this._config.autostart;
+    this._audioElement.src = this.getUrl();
+    this._audioElement.volume = (parseInt(this._volume, 10) || 0) / 100;
+    this._audioElement.loop = this.config.loop;
+
+    if (this._config.autostart && !this.isPlaying) {
+      this.playMusic();
+    } else {
+      this.stopMusic();
+    }
   }
 
 }

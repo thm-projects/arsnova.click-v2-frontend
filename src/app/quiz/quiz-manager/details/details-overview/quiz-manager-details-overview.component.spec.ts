@@ -3,14 +3,17 @@ import { PLATFORM_ID } from '@angular/core';
 import { ComponentFixture, inject, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
+import { SwPush } from '@angular/service-worker';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { SimpleMQ } from 'ng2-simple-mq';
 import { of } from 'rxjs';
-import { TranslatePipeMock } from '../../../../../_mocks/_pipes/TranslatePipeMock';
 import { jwtOptionsFactory } from '../../../../lib/jwt.factory';
 import { ConnectionMockService } from '../../../../service/connection/connection.mock.service';
 import { ConnectionService } from '../../../../service/connection/connection.service';
+import { CustomMarkdownService } from '../../../../service/custom-markdown/custom-markdown.service';
+import { CustomMarkdownServiceMock } from '../../../../service/custom-markdown/CustomMarkdownServiceMock';
 import { FooterBarService } from '../../../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../../../service/header-label/header-label.service';
 import { QuizMockService } from '../../../../service/quiz/quiz-mock.service';
@@ -19,6 +22,8 @@ import { SettingsService } from '../../../../service/settings/settings.service';
 import { SharedService } from '../../../../service/shared/shared.service';
 import { StorageService } from '../../../../service/storage/storage.service';
 import { StorageServiceMock } from '../../../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../../service/themes/themes.service';
 import { TrackingMockService } from '../../../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../../../service/tracking/tracking.service';
 import { TwitterService } from '../../../../service/twitter/twitter.service';
@@ -49,6 +54,9 @@ describe('QuizManagerDetailsOverviewComponent', () => {
           }, HeaderLabelService, {
             provide: QuizService,
             useClass: QuizMockService,
+          }, {
+            provide: ThemesService,
+            useClass: ThemesMockService
           }, FooterBarService, SettingsService, {
             provide: ConnectionService,
             useClass: ConnectionMockService,
@@ -68,9 +76,21 @@ describe('QuizManagerDetailsOverviewComponent', () => {
           }, {
             provide: TwitterService,
             useClass: TwitterServiceMock,
+          }, {
+            provide: SwPush,
+            useValue: {}
+          }, {
+            provide: HotkeysService,
+            useValue: {
+              add: () => {},
+              reset: () => {},
+            }
+          }, {
+            provide: CustomMarkdownService,
+            useClass: CustomMarkdownServiceMock,
           },
         ],
-        declarations: [QuizManagerDetailsOverviewComponent, TranslatePipeMock],
+        declarations: [QuizManagerDetailsOverviewComponent],
       }).compileComponents();
     }
   ));

@@ -1,19 +1,21 @@
-import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID, SecurityContext } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { SimpleMQ } from 'ng2-simple-mq';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { Countdown } from '../../../lib/countdown/countdown';
 import { AbstractQuestionEntity } from '../../../lib/entities/question/AbstractQuestionEntity';
 import { SurveyQuestionEntity } from '../../../lib/entities/question/SurveyQuestionEntity';
+import { AudioPlayerConfigTarget } from '../../../lib/enums/AudioPlayerConfigTarget';
 import { StorageKey } from '../../../lib/enums/enums';
 import { MessageProtocol, StatusProtocol } from '../../../lib/enums/Message';
 import { QuestionType } from '../../../lib/enums/QuestionType';
 import { QuizState } from '../../../lib/enums/QuizState';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
+import { IAudioPlayerConfig } from '../../../lib/interfaces/IAudioConfig';
 import { IHasTriggeredNavigation } from '../../../lib/interfaces/IHasTriggeredNavigation';
 import { ServerUnavailableModalComponent } from '../../../modals/server-unavailable-modal/server-unavailable-modal.component';
 import { MemberApiService } from '../../../service/api/member/member-api.service';
@@ -29,44 +31,36 @@ import { QuizService } from '../../../service/quiz/quiz.service';
   selector: 'app-voting',
   templateUrl: './voting.component.html',
   styleUrls: ['./voting.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigation {
-  public static TYPE = 'VotingComponent';
-  public isSendingResponse: boolean;
-  public hasTriggeredNavigation: boolean;
+  public static readonly TYPE = 'VotingComponent';
 
   private _answers: Array<string> = [];
+  private _questionText: string;
+  private _selectedAnswers: Array<string> | string | number = [];
+  private _currentQuestion: AbstractQuestionEntity;
+  private _serverUnavailableModal: NgbModalRef;
+  private readonly _destroy = new Subject();
+  private readonly _messageSubscriptions: Array<string> = [];
+
+  public isSendingResponse: boolean;
+  public countdown: number;
+
+  public musicConfig: IAudioPlayerConfig;
+  public hasTriggeredNavigation: boolean;
 
   get answers(): Array<string> {
     return this._answers;
   }
 
-  private _countdown: Countdown;
-
-  get countdown(): Countdown {
-    return this._countdown;
-  }
-
-  set countdown(value: Countdown) {
-    this._countdown = value;
-  }
-
-  private _questionText: string;
-
   get questionText(): string {
     return this._questionText;
   }
 
-  private _selectedAnswers: Array<number> | string | number;
-
-  get selectedAnswers(): Array<number> | string | number {
+  get selectedAnswers(): Array<string> | string | number {
     return this._selectedAnswers;
   }
-
-  private readonly _destroy = new Subject();
-  private _currentQuestion: AbstractQuestionEntity;
-  private _serverUnavailableModal: NgbModalRef;
-  private readonly _messageSubscriptions: Array<string> = [];
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -82,8 +76,11 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
     private memberApiService: MemberApiService,
     private ngbModal: NgbModal,
     private messageQueue: SimpleMQ,
+    private cd: ChangeDetectorRef,
   ) {
-    sessionStorage.removeItem(StorageKey.CurrentQuestionIndex);
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.removeItem(StorageKey.CurrentQuestionIndex);
+    }
     this.footerBarService.TYPE_REFERENCE = VotingComponent.TYPE;
 
     headerLabelService.headerLabel = 'component.voting.title';
@@ -91,8 +88,9 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
     this.footerBarService.replaceFooterElements([]);
   }
 
-  public sanitizeHTML(value: string): string {
-    return this.sanitizer.sanitize(SecurityContext.HTML, `${value}`);
+  public sanitizeHTML(value: string): SafeHtml {
+    // sanitizer.bypassSecurityTrustHtml is required for highslide and mathjax
+    return this.sanitizer.bypassSecurityTrustHtml(value);
   }
 
   public displayAnswerButtons(): boolean {
@@ -112,10 +110,10 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
     return String.fromCharCode(65 + index);
   }
 
-  public isSelected(index: number): boolean {
+  public isSelected(elem: string): boolean {
     return (
-             Array.isArray(this._selectedAnswers) && this._selectedAnswers.indexOf(index) > -1
-           ) || this._selectedAnswers === index;
+             Array.isArray(this._selectedAnswers) && this._selectedAnswers.indexOf(elem) > -1
+           ) || this._selectedAnswers === elem;
   }
 
   public parseTextInput(event: Event): void {
@@ -124,45 +122,46 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
     ).value;
   }
 
-  public isNumber(value: any): boolean {
-    return +value === value && value !== -1;
-  }
-
   public showSendResponseButton(): boolean {
     if (Array.isArray(this.selectedAnswers)) {
-      return !this.toggleSelectedAnswers() && this.selectedAnswers.length > 0;
+      return this.selectedAnswers.length > 0;
     }
 
-    return this.selectedAnswers !== null && //
-           typeof this.selectedAnswers !== 'undefined';
+    return Boolean(this.selectedAnswers) ?? false;
   }
 
-  public toggleSelectAnswer(index: number): void {
+  public toggleSelectAnswer(elem: string): void {
     if (!Array.isArray(this._selectedAnswers)) {
       return;
     }
 
-    this.isSelected(index) ? //
-    this._selectedAnswers.splice(this._selectedAnswers.indexOf(index), 1) : //
+    this.isSelected(elem) ? //
+    this._selectedAnswers.splice(this._selectedAnswers.indexOf(elem), 1) : //
     this.toggleSelectedAnswers() ? //
-    this._selectedAnswers = [index] : //
-    this._selectedAnswers.push(index);
-
-    if (this.toggleSelectedAnswers()) {
-      this.sendResponses();
-    }
+    this._selectedAnswers = [elem] : //
+    this._selectedAnswers.push(elem);
   }
 
   public sendResponses(route?: string): void {
     this.isSendingResponse = true;
-
     this.hasTriggeredNavigation = true;
-    this.router.navigate(this.getNextRoute(route));
-    this.memberApiService.putResponse(this._selectedAnswers).subscribe((data: IMessage) => {
+
+    let result: Array<number> | number | string;
+    if (Array.isArray(this._selectedAnswers)) {
+      result = this._selectedAnswers.map(v => this._answers.findIndex(answer => answer === v));
+    } else {
+      result = this._selectedAnswers;
+    }
+
+    this.memberApiService.putResponse(result).subscribe((data: IMessage) => {
       if (data.status !== StatusProtocol.Success) {
         console.log('VotingComponent: PutResponse failed', data);
       }
-    }, () => {});
+      this.router.navigate(this.getNextRoute(route));
+    }, err => {
+      console.log('VotingComponent: PutResponse failed', err);
+      this.router.navigate(this.getNextRoute(route));
+    });
   }
 
   public initData(): void {
@@ -184,6 +183,10 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
         return;
       }
 
+      if (this.hasTriggeredNavigation) {
+        return;
+      }
+
       if (this.quizService.quiz.state === QuizState.Inactive) {
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
@@ -191,13 +194,33 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
       }
 
       this._currentQuestion = this.quizService.currentQuestion();
-      if (this.attendeeService.hasReponse()) {
+      this.initData();
+
+      if (!this.quizService.isOwner && quiz.sessionConfig.music.shared.countdownRunning) {
+        this.musicConfig = {
+          autostart: true,
+          loop: true,
+          hideControls: true,
+          original_volume: String(this.quizService.quiz.sessionConfig.music.volumeConfig.useGlobalVolume ?
+                                  this.quizService.quiz.sessionConfig.music.volumeConfig.global :
+                                  this.quizService.quiz.sessionConfig.music.volumeConfig.countdownRunning),
+          src: this.quizService.quiz.sessionConfig.music.titleConfig.countdownRunning,
+          target: AudioPlayerConfigTarget.countdownRunning
+        };
+      }
+
+      if ( //
+        (
+          this.quizService.quiz.currentQuestionIndex > -1 &&
+          this.quizService.quiz.currentStartTimestamp === -1 &&
+          !(environment.readingConfirmationEnabled && this.quizService.quiz.sessionConfig.readingConfirmationEnabled)
+        ) || //
+        this.attendeeService.hasResponse() //
+      ) {
         this.hasTriggeredNavigation = true;
         this.router.navigate(this.getNextRoute());
         return;
       }
-
-      this.initData();
 
       this.questionTextService.eventEmitter.pipe(takeUntil(this._destroy)).subscribe((value: string | Array<string>) => {
         if (Array.isArray(value)) {
@@ -205,15 +228,18 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
         } else {
           this._questionText = value;
         }
+        this.cd.markForCheck();
       });
 
-      this.questionTextService.changeMultiple(this._currentQuestion.answerOptionList.map(answer => answer.answerText));
-      this.questionTextService.change(this._currentQuestion.questionText);
+      this.questionTextService.changeMultiple(this._currentQuestion.answerOptionList.map(answer => answer.answerText)).subscribe();
+      this.questionTextService.change(this._currentQuestion.questionText).subscribe();
     });
 
-    this.quizService.loadDataToPlay(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => {
-      this.handleMessages();
-    }).catch(() => this.hasTriggeredNavigation = true);
+    if (isPlatformBrowser(this.platformId)) {
+      this.quizService.loadDataToPlay(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => {
+        this.handleMessages();
+      }).catch(() => this.hasTriggeredNavigation = true);
+    }
 
     this.connectionService.serverStatusEmitter.pipe(takeUntil(this._destroy)).subscribe(isConnected => {
       if (isConnected) {
@@ -238,8 +264,7 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
     this._messageSubscriptions.forEach(id => this.messageQueue.unsubscribe(id));
 
     if (this.countdown) {
-      this.countdown.onChange.unsubscribe();
-      this.countdown.stop();
+      this.countdown = 0;
     }
 
     this._destroy.next();
@@ -261,29 +286,47 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
       }), this.messageQueue.subscribe(MessageProtocol.UpdatedSettings, payload => {
         this.quizService.quiz.sessionConfig = payload.sessionConfig;
       }), this.messageQueue.subscribe(MessageProtocol.Countdown, payload => {
-        if (!this.countdown) {
-          this.countdown = new Countdown(payload.value);
-          this.countdown.onChange.subscribe((value) => {
-            if (!value || value < 1) {
-              this.sendResponses('results');
-            }
-          });
+        if (this.hasTriggeredNavigation) {
+          return;
         }
+
+        this.countdown = payload.value;
+        if (!this.countdown) {
+          this.hasTriggeredNavigation = true;
+          this.sendResponses('results');
+        }
+        this.cd.markForCheck();
       }), this.messageQueue.subscribe(MessageProtocol.Reset, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.attendeeService.clearResponses();
         this.quizService.quiz.currentQuestionIndex = -1;
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'lobby']);
       }), this.messageQueue.subscribe(MessageProtocol.Closed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
       }), this.messageQueue.subscribe(MessageProtocol.Removed, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         const existingNickname = sessionStorage.getItem(StorageKey.CurrentNickName);
         if (existingNickname === payload.name) {
           this.hasTriggeredNavigation = true;
           this.router.navigate(['/']);
         }
       }), this.messageQueue.subscribe(MessageProtocol.Stop, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.sendResponses('results');
       }),
@@ -291,24 +334,23 @@ export class VotingComponent implements OnInit, OnDestroy, IHasTriggeredNavigati
   }
 
   private toggleSelectedAnswers(): boolean {
-    if (this._currentQuestion.TYPE === QuestionType.SurveyQuestion && !(
-      this._currentQuestion as SurveyQuestionEntity
-    ).multipleSelectionEnabled) {
+    if ([QuestionType.SurveyQuestion, QuestionType.ABCDSurveyQuestion].includes(this._currentQuestion.TYPE) &&
+        !(this._currentQuestion as SurveyQuestionEntity).multipleSelectionEnabled) {
       return true;
     }
 
     return [
       QuestionType.SingleChoiceQuestion,
       QuestionType.TrueFalseSingleChoiceQuestion,
-      QuestionType.ABCDSingleChoiceQuestion,
       QuestionType.YesNoSingleChoiceQuestion,
     ].includes(this._currentQuestion.TYPE);
   }
 
   private getNextRoute(route?: string): Array<string> {
+    const hasConfidenceEnabled = environment.confidenceSliderEnabled && this.quizService.quiz.sessionConfig.confidenceSliderEnabled;
+
     return [
-      '/quiz', 'flow', route ? route : environment.confidenceSliderEnabled && //
-                                       this.quizService.quiz.sessionConfig.confidenceSliderEnabled ? 'confidence-rate' : 'results',
+      '/quiz', 'flow', route ? route : (hasConfidenceEnabled ? 'confidence-rate' : 'results'),
     ];
   }
 }

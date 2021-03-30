@@ -3,6 +3,7 @@ import { Inject, Injectable, Optional, PLATFORM_ID } from '@angular/core';
 import { REQUEST } from '@nguniversal/express-engine/tokens';
 import { TranslateService } from '@ngx-translate/core';
 import { Request } from 'express';
+import { ReplaySubject } from 'rxjs';
 import { CurrencyType, Language, NumberType, StorageKey } from '../../lib/enums/enums';
 import { StorageService } from '../storage/storage.service';
 
@@ -11,6 +12,7 @@ import { StorageService } from '../storage/storage.service';
 })
 export class I18nService {
   private _currentLanguage: Language = Language.EN;
+  public readonly initialized = new ReplaySubject<boolean>(1);
 
   get currentLanguage(): Language {
     return this._currentLanguage;
@@ -28,6 +30,7 @@ export class I18nService {
     this.translateService.use(value.toString());
 
     this._currentLanguage = value;
+    this.initialized.next(true);
   }
 
   constructor(
@@ -65,7 +68,7 @@ export class I18nService {
 
   public setLanguage(language: Language | string): void {
     if (!Language[language.toString().toUpperCase()]) {
-      return;
+      language = Language.EN;
     }
 
     this.currentLanguage = Language[language.toString().toUpperCase()];
@@ -96,8 +99,18 @@ export class I18nService {
   public initLanguage(): void {
     let lang;
     if (isPlatformServer(this.platformId)) {
+      if (this.request.url.match(/.*[.][a-zA-Z]*$/)) {
+        return;
+      }
       try {
-        lang = this.request.header('accept-language').match(/([A-Z]{2})/);
+        const reqUrlMatch = this.request.url.match(/\/preview\/.*\/(.{2})/);
+        if (reqUrlMatch) {
+          this.setLanguage(Language[reqUrlMatch[1].toUpperCase()]);
+          return;
+        }
+        if (!lang) {
+          lang = this.request.header('accept-language').match(/([A-Z]{2})/i);
+        }
       } catch {
         lang = null;
       }
@@ -109,13 +122,19 @@ export class I18nService {
       return;
     }
 
+    const urlMatch = location.href.match(/\/preview\/.*\/(.{2})/);
+    if (urlMatch) {
+      this.setLanguage(Language[urlMatch[1].toUpperCase()]);
+      return;
+    }
+
     this.storageService.db.Config.get(StorageKey.Language).then(storedLanguage => {
       if (storedLanguage && Language[storedLanguage.value.toUpperCase()]) {
         this.setLanguage(Language[storedLanguage.value.toUpperCase()]);
       } else if (Language[this.translateService.getBrowserLang().toUpperCase()]) {
         this.setLanguage(Language[this.translateService.getBrowserLang().toUpperCase()]);
       } else {
-        lang = navigator.language.match(/([A-Z]{2})/);
+        lang = navigator.language.match(/([A-Z]{2})/i);
         if (!Array.isArray(lang) || !lang[0]) {
           this.setLanguage(Language.EN);
         } else {

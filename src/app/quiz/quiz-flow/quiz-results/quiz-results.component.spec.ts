@@ -1,12 +1,13 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { TranslateService } from '@ngx-translate/core';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { SimpleMQ } from 'ng2-simple-mq';
-import { TranslateServiceMock } from '../../../../_mocks/_services/TranslateServiceMock';
+import { of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Attendee } from '../../../lib/attendee/attendee';
 import { SurveyQuestionEntity } from '../../../lib/entities/question/SurveyQuestionEntity';
@@ -29,13 +30,15 @@ import { SettingsService } from '../../../service/settings/settings.service';
 import { SharedService } from '../../../service/shared/shared.service';
 import { StorageService } from '../../../service/storage/storage.service';
 import { StorageServiceMock } from '../../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../service/themes/themes.service';
 import { TrackingMockService } from '../../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../../service/tracking/tracking.service';
 import { TwitterService } from '../../../service/twitter/twitter.service';
 import { TwitterServiceMock } from '../../../service/twitter/twitter.service.mock';
 import { SharedModule } from '../../../shared/shared.module';
 import { I18nTestingModule } from '../../../shared/testing/i18n-testing/i18n-testing.module';
-import { VotingQuestionComponent } from '../voting/voting-question/voting-question.component';
+import { VotingQuestionComponent } from '../../../shared/voting-question/voting-question.component';
 import { ConfidenceRateComponent } from './confidence-rate/confidence-rate.component';
 import { ProgressBarAnonymousComponent } from './progress-bar/progress-bar-anonymous/progress-bar-anonymous.component';
 import { ProgressBarFreetextComponent } from './progress-bar/progress-bar-freetext/progress-bar-freetext.component';
@@ -50,7 +53,7 @@ import { ReadingConfirmationProgressComponent } from './reading-confirmation-pro
 describe('QuizResultsComponent', () => {
   let component: QuizResultsComponent;
   let fixture: ComponentFixture<QuizResultsComponent>;
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, SharedModule, RouterTestingModule, JwtModule.forRoot({
@@ -68,7 +71,10 @@ describe('QuizResultsComponent', () => {
         }, RxStompService, {
           provide: StorageService,
           useClass: StorageServiceMock,
-        }, TranslateService, FooterBarService, SettingsService, {
+        }, TranslateService, {
+          provide: ThemesService,
+          useClass: ThemesMockService
+        }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
         }, {
@@ -77,15 +83,15 @@ describe('QuizResultsComponent', () => {
         }, SharedService, {
           provide: AttendeeService,
           useClass: AttendeeMockService,
-        }, HeaderLabelService, I18nService, QuestionTextService, {
-          provide: TranslateService,
-          useClass: TranslateServiceMock,
-        }, SimpleMQ, {
+        }, HeaderLabelService, I18nService, QuestionTextService, SimpleMQ, {
           provide: TrackingService,
           useClass: TrackingMockService,
         }, {
           provide: TwitterService,
           useClass: TwitterServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {}
         },
       ],
       declarations: [
@@ -104,7 +110,7 @@ describe('QuizResultsComponent', () => {
       ],
     }).compileComponents();
   }));
-  beforeEach(async(inject([QuizService], (quizService: QuizService) => {
+  beforeEach(waitForAsync(inject([QuizService], (quizService: QuizService) => {
     fixture = TestBed.createComponent(QuizResultsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -153,12 +159,12 @@ describe('QuizResultsComponent', () => {
   it(`#showStartQuizButton`, inject([QuizService], (quizService: QuizService) => {
     quizService['_isOwner'] = true;
     quizService.readingConfirmationRequested = true;
-    expect(component.showStartQuizButton).toBeFalsy();
+    expect(component.showStartQuizButton).toBeFalse();
   }));
   it(`#hideProgressbarCssStyle`, inject([QuizService], (quizService: QuizService) => {
     quizService.readingConfirmationRequested = false;
     quizService.quiz.currentQuestionIndex = 0;
-    expect(component.hideProgressbarStyle).toBeTruthy();
+    expect(component.hideProgressbarStyle).toBeTrue();
   }));
   it(`#showConfidenceRate`, inject([QuizService, AttendeeService], (quizService: QuizService, attendeeService: AttendeeService) => {
     attendeeService.addMember(new Attendee({
@@ -181,7 +187,7 @@ describe('QuizResultsComponent', () => {
     expect(component.showConfidenceRate(0)).toBeTruthy();
   }));
   it(`#modifyVisibleQuestion`, inject([QuestionTextService], async (questionTextService: QuestionTextService) => {
-    spyOn(questionTextService, 'changeMultiple').and.callFake(() => new Promise<void>(resolve => resolve()));
+    spyOn(questionTextService, 'changeMultiple').and.callFake(() => of([]));
     await component.modifyVisibleQuestion(0);
     expect(questionTextService.changeMultiple).toHaveBeenCalled();
   }));
@@ -229,9 +235,6 @@ describe('QuizResultsComponent', () => {
     quizService.quiz.sessionConfig.readingConfirmationEnabled = true;
     environment.readingConfirmationEnabled = true;
     expect(component.showReadingConfirmation(0)).toBeTruthy();
-  }));
-  it(`#showResponseProgress`, inject([QuizService], (quizService: QuizService) => {
-    expect(component.showResponseProgress()).toEqual(quizService.quiz.sessionConfig.showResponseProgress);
   }));
   it(`#getReadingConfirmationData`, inject([AttendeeService, I18nService], (attendeeService: AttendeeService, i18nService: I18nService) => {
     attendeeService.addMember(new Attendee({

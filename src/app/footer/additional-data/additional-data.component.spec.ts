@@ -1,13 +1,13 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { TranslateService } from '@ngx-translate/core';
-import { TranslatePipeMock } from '../../../_mocks/_pipes/TranslatePipeMock';
-import { TranslateServiceMock } from '../../../_mocks/_services/TranslateServiceMock';
+import { FileUploadMockService } from '../../service/file-upload/file-upload.mock.service';
+import { FileUploadService } from '../../service/file-upload/file-upload.service';
 import { QuizMockService } from '../../service/quiz/quiz-mock.service';
 import { QuizService } from '../../service/quiz/quiz.service';
 import { TrackingMockService } from '../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
+import { I18nTestingModule } from '../../shared/testing/i18n-testing/i18n-testing.module';
 
 import { AdditionalDataComponent } from './additional-data.component';
 
@@ -15,10 +15,10 @@ describe('AdditionalDataComponent', () => {
   let component: AdditionalDataComponent;
   let fixture: ComponentFixture<AdditionalDataComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule, HttpClientTestingModule,
+        I18nTestingModule, RouterTestingModule, HttpClientTestingModule,
       ],
       providers: [
         {
@@ -28,11 +28,11 @@ describe('AdditionalDataComponent', () => {
           provide: TrackingService,
           useClass: TrackingMockService,
         }, {
-          provide: TranslateService,
-          useClass: TranslateServiceMock,
-        },
+          provide: FileUploadService,
+          useClass: FileUploadMockService
+        }
       ],
-      declarations: [AdditionalDataComponent, TranslatePipeMock],
+      declarations: [AdditionalDataComponent],
     }).compileComponents();
   }));
 
@@ -46,7 +46,7 @@ describe('AdditionalDataComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should contain a TYPE definition', async(() => {
+  it('should contain a TYPE definition', waitForAsync(() => {
     expect(AdditionalDataComponent.TYPE).toEqual('AdditionalDataComponent');
   }));
 

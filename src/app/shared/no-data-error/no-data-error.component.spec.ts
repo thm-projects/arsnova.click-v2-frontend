@@ -1,7 +1,7 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { TranslatePipeMock } from '../../../_mocks/_pipes/TranslatePipeMock';
+import { I18nTestingModule } from '../testing/i18n-testing/i18n-testing.module';
 
 import { NoDataErrorComponent } from './no-data-error.component';
 
@@ -9,10 +9,10 @@ describe('NoDataErrorComponent', () => {
   let component: NoDataErrorComponent;
   let fixture: ComponentFixture<NoDataErrorComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
-      declarations: [NoDataErrorComponent, TranslatePipeMock],
+      imports: [I18nTestingModule, RouterTestingModule],
+      declarations: [NoDataErrorComponent],
       providers: [
         {
           provide: NgbActiveModal,

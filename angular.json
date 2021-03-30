@@ -14,7 +14,6 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "aot": true,
-            "extractCss": true,
             "outputPath": "dist/frontend/browser",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -31,6 +30,13 @@
               "src/assets/imageDerivates.json",
               "src/assets/themeData.json",
               "src/assets/piwik/piwik.js",
+              "src/assets/theme-hashes.json",
+              "src/assets/version.txt",
+              {
+                "glob": "click-service-worker.js",
+                "input": "src",
+                "output": "/"
+              },
               {
                 "glob": "robots.txt",
                 "input": "src/assets",
@@ -47,73 +53,20 @@
                 "src/styles/themes"
               ]
             },
-            "fileReplacements": [
-              {
-                "replace": "src/assets/images/logo.svg",
-                "with": "src/assets/images/logo.westermann.svg"
-              },
-              {
-                "replace": "src/assets/images/logo.xl.svg",
-                "with": "src/assets/images/logo.westermann.xl.svg"
-              },
-              {
-                "replace": "src/assets/images/logo_transparent.png",
-                "with": "src/assets/images/logo_transparent.westermann.png"
-              }
-            ],
+            "fileReplacements": [],
             "styles": [
-              "src/styles/styles.scss",
               "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
               "node_modules/prism-themes/themes/prism-ghcolors.css",
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-arsnova-dot-click-contrast.scss",
-                "bundleName": "theme-arsnova-dot-click-contrast"
-              },
+              "src/styles/styles.scss",
               {
                 "inject": false,
                 "input": "src/styles/themes/theme-blackbeauty.scss",
-                "bundleName": "theme-blackbeauty"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-elegant.scss",
-                "bundleName": "theme-elegant"
+                "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
               },
               {
                 "inject": false,
                 "input": "src/styles/themes/theme-Material.scss",
-                "bundleName": "theme-Material"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-Material-hope.scss",
-                "bundleName": "theme-Material-hope"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-decent-blue.scss",
-                "bundleName": "theme-decent-blue"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-Material-blue.scss",
-                "bundleName": "theme-Material-blue"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-spiritual-purple.scss",
-                "bundleName": "theme-spiritual-purple"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-GreyBlue-Lime.scss",
-                "bundleName": "theme-GreyBlue-Lime"
-              },
-              {
-                "inject": false,
-                "input": "src/styles/themes/theme-westermann-blue.scss",
-                "bundleName": "theme-westermann-blue"
+                "bundleName": "theme-Material-__CSS_FILE_HASH__"
               },
               {
                 "inject": false,
@@ -137,15 +90,14 @@
               ],
               "optimization": {
                 "scripts": true,
-                "styles": false
+                "styles": true
               },
               "outputHashing": "all",
               "sourceMap": {
                 "hidden": false,
-                "styles": true,
+                "styles": false,
                 "scripts": true
               },
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -161,57 +113,18 @@
                 }
               ],
               "styles": [
-                "src/styles/styles.scss",
+                "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
                 "node_modules/prism-themes/themes/prism-ghcolors.css",
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-arsnova-dot-click-contrast.scss",
-                  "bundleName": "theme-arsnova-dot-click-contrast"
-                },
+                "src/styles/styles.scss",
                 {
                   "inject": false,
                   "input": "src/styles/themes/theme-blackbeauty.scss",
-                  "bundleName": "theme-blackbeauty"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-elegant.scss",
-                  "bundleName": "theme-elegant"
+                  "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
                 },
                 {
                   "inject": false,
                   "input": "src/styles/themes/theme-Material.scss",
-                  "bundleName": "theme-Material"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-Material-hope.scss",
-                  "bundleName": "theme-Material-hope"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-decent-blue.scss",
-                  "bundleName": "theme-decent-blue"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-Material-blue.scss",
-                  "bundleName": "theme-Material-blue"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-spiritual-purple.scss",
-                  "bundleName": "theme-spiritual-purple"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-GreyBlue-Lime.scss",
-                  "bundleName": "theme-GreyBlue-Lime"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-westermann-blue.scss",
-                  "bundleName": "theme-westermann-blue"
+                  "bundleName": "theme-Material-__CSS_FILE_HASH__"
                 },
                 {
                   "inject": false,
@@ -229,15 +142,14 @@
               ],
               "optimization": {
                 "scripts": true,
-                "styles": false
+                "styles": true
               },
               "outputHashing": "all",
               "sourceMap": {
                 "hidden": false,
-                "styles": true,
+                "styles": false,
                 "scripts": true
               },
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -253,57 +165,18 @@
                 }
               ],
               "styles": [
-                "src/styles/styles.scss",
+                "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
                 "node_modules/prism-themes/themes/prism-ghcolors.css",
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-arsnova-dot-click-contrast.scss",
-                  "bundleName": "theme-arsnova-dot-click-contrast"
-                },
+                "src/styles/styles.scss",
                 {
                   "inject": false,
                   "input": "src/styles/themes/theme-blackbeauty.scss",
-                  "bundleName": "theme-blackbeauty"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-elegant.scss",
-                  "bundleName": "theme-elegant"
+                  "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
                 },
                 {
                   "inject": false,
                   "input": "src/styles/themes/theme-Material.scss",
-                  "bundleName": "theme-Material"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-Material-hope.scss",
-                  "bundleName": "theme-Material-hope"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-decent-blue.scss",
-                  "bundleName": "theme-decent-blue"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-Material-blue.scss",
-                  "bundleName": "theme-Material-blue"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-spiritual-purple.scss",
-                  "bundleName": "theme-spiritual-purple"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-GreyBlue-Lime.scss",
-                  "bundleName": "theme-GreyBlue-Lime"
-                },
-                {
-                  "inject": false,
-                  "input": "src/styles/themes/theme-westermann-blue.scss",
-                  "bundleName": "theme-westermann-blue"
+                  "bundleName": "theme-Material-__CSS_FILE_HASH__"
                 },
                 {
                   "inject": false,
@@ -321,15 +194,14 @@
               ],
               "optimization": {
                 "scripts": true,
-                "styles": false
+                "styles": true
               },
               "outputHashing": "all",
               "sourceMap": {
                 "hidden": false,
-                "styles": true,
+                "styles": false,
                 "scripts": true
               },
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -345,17 +217,18 @@
                 }
               ],
               "styles": [
-                "src/styles/styles.scss",
+                "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
                 "node_modules/prism-themes/themes/prism-ghcolors.css",
+                "src/styles/styles.scss",
                 {
                   "inject": false,
                   "input": "src/styles/themes/theme-blackbeauty.scss",
-                  "bundleName": "theme-blackbeauty"
+                  "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
                 },
                 {
                   "inject": false,
                   "input": "src/styles/themes/theme-westermann-blue.scss",
-                  "bundleName": "theme-westermann-blue"
+                  "bundleName": "theme-westermann-blue-__CSS_FILE_HASH__"
                 },
                 {
                   "inject": false,
@@ -373,15 +246,14 @@
               ],
               "optimization": {
                 "scripts": true,
-                "styles": false
+                "styles": true
               },
               "outputHashing": "all",
               "sourceMap": {
                 "hidden": false,
-                "styles": true,
+                "styles": false,
                 "scripts": true
               },
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -397,17 +269,18 @@
                 }
               ],
               "styles": [
-                "src/styles/styles.scss",
+                "node_modules/@fortawesome/fontawesome-svg-core/styles.css",
                 "node_modules/prism-themes/themes/prism-ghcolors.css",
+                "src/styles/styles.scss",
                 {
                   "inject": false,
                   "input": "src/styles/themes/theme-blackbeauty.scss",
-                  "bundleName": "theme-blackbeauty"
+                  "bundleName": "theme-blackbeauty-__CSS_FILE_HASH__"
                 },
                 {
                   "inject": false,
                   "input": "src/styles/themes/theme-westermann-blue.scss",
-                  "bundleName": "theme-westermann-blue"
+                  "bundleName": "theme-westermann-blue-__CSS_FILE_HASH__"
                 },
                 {
                   "inject": false,
@@ -421,7 +294,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "frontend:build"
+            "browserTarget": "frontend:build",
+            "proxyConfig": "src/proxy.conf.json"
           },
           "configurations": {
             "production": {
@@ -474,7 +348,13 @@
               "src/assets/static",
               "src/assets/serverEndpoint.json",
               "src/assets/imageDerivates.json",
-              "src/assets/themeData.json"
+              "src/assets/themeData.json",
+              "src/assets/version.txt",
+              {
+                "glob": "click-service-worker.js",
+                "input": "src",
+                "output": "/"
+              }
             ],
             "codeCoverageExclude": [
               "/**/*mock*.ts"
@@ -507,7 +387,7 @@
             "production": {
               "optimization": {
                 "scripts": true,
-                "styles": false
+                "styles": true
               },
               "outputHashing": "media",
               "fileReplacements": [
@@ -521,7 +401,7 @@
             "thmStaging": {
               "optimization": {
                 "scripts": true,
-                "styles": false
+                "styles": true
               },
               "outputHashing": "media",
               "fileReplacements": [
@@ -535,7 +415,7 @@
             "thmBeta": {
               "optimization": {
                 "scripts": true,
-                "styles": false
+                "styles": true
               },
               "outputHashing": "media",
               "fileReplacements": [
@@ -549,7 +429,7 @@
             "westermann": {
               "optimization": {
                 "scripts": true,
-                "styles": false
+                "styles": true
               },
               "outputHashing": "media",
               "fileReplacements": [
@@ -572,6 +452,18 @@
             "production": {
               "browserTarget": "frontend:build:production",
               "serverTarget": "frontend:server:production"
+            },
+            "thmStaging": {
+              "browserTarget": "frontend:build:thmStaging",
+              "serverTarget": "frontend:server:thmStaging"
+            },
+            "thmBeta": {
+              "browserTarget": "frontend:build:thmBeta",
+              "serverTarget": "frontend:server:thmBeta"
+            },
+            "westermann": {
+              "browserTarget": "frontend:build:westermann",
+              "serverTarget": "frontend:server:westermann"
             }
           }
         },
@@ -616,7 +508,7 @@
   "defaultProject": "frontend",
   "schematics": {
     "@schematics/angular:component": {
-      "styleext": "scss"
+      "style": "scss"
     }
   },
   "cli": {

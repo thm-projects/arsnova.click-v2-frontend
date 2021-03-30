@@ -1,7 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { Filter, Language, Project } from '../../lib/enums/enums';
+import { Filter, Project } from '../../lib/enums/enums';
 import { FooterBarService } from '../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../service/header-label/header-label.service';
 import { LanguageLoaderService } from '../../service/language-loader/language-loader.service';
@@ -16,21 +16,18 @@ import { UserService } from '../../service/user/user.service';
 })
 export class I18nManagerOverviewComponent implements OnInit, OnDestroy {
   public static readonly TYPE = 'I18nManagerOverviewComponent';
-  public readonly filters = Filter;
-
-  private _langRef = Object.values(Language);
-
-  get langRef(): Array<string> {
-    return this._langRef;
-  }
-
-  private _selectedKey: { key: string, value: string };
-
-  get selectedKey(): { key: string; value: string } {
-    return this._selectedKey;
-  }
 
   private _searchFilter = '';
+  private _unusedKeyFilter: boolean;
+  private _filter = Filter.None;
+  private _hasAnyMatches = of(false);
+  private changedData: EventEmitter<void> = new EventEmitter<void>();
+
+  public readonly filters = Filter;
+  public unauthorized: boolean;
+  public loading = true;
+  public error: boolean;
+  public isSubmitting: boolean;
 
   get searchFilter(): string {
     return this._searchFilter;
@@ -38,21 +35,17 @@ export class I18nManagerOverviewComponent implements OnInit, OnDestroy {
 
   set searchFilter(value: string) {
     this._searchFilter = value;
-    this._selectedKey = null;
+    this.languageLoaderService.selectedKey = null;
   }
-
-  private _unusedKeyFilter: boolean;
 
   get unusedKeyFilter(): boolean {
     return this._unusedKeyFilter;
   }
 
   set unusedKeyFilter(value: boolean) {
-    this._selectedKey = null;
+    this.languageLoaderService.selectedKey = null;
     this._unusedKeyFilter = value;
   }
-
-  private _filter = Filter.None;
 
   get filter(): Filter {
     return this._filter;
@@ -73,21 +66,10 @@ export class I18nManagerOverviewComponent implements OnInit, OnDestroy {
       case 4:
         this._filter = Filter.InvalidEN;
         return;
-      case 5:
-        this._filter = Filter.InvalidES;
-        return;
-      case 6:
-        this._filter = Filter.InvalidFr;
-        return;
-      case 7:
-        this._filter = Filter.InvalidIt;
-        return;
       default:
         throw Error(`Unknown filter set: ${value}`);
     }
   }
-
-  private _hasAnyMatches = of(false);
 
   get hasAnyMatches(): Observable<boolean> {
     return this._hasAnyMatches;
@@ -105,6 +87,7 @@ export class I18nManagerOverviewComponent implements OnInit, OnDestroy {
     public modalOrganizerService: ModalOrganizerService,
     public projectLoaderService: ProjectLoaderService,
     public userService: UserService,
+    private cd: ChangeDetectorRef,
   ) {
     this.headerLabelService.headerLabel = 'I18Nator';
     this.footerBarService.replaceFooterElements([]);
@@ -114,46 +97,54 @@ export class I18nManagerOverviewComponent implements OnInit, OnDestroy {
     this.setProject(Project.Frontend);
 
     if (isPlatformBrowser(this.platformId)) {
-      const contentContainer = document.getElementById('content-container');
+      const contentContainer = document.getElementsByClassName('container');
 
-      if (contentContainer) {
-        contentContainer.classList.remove('container');
-        contentContainer.classList.add('container-fluid');
+      if (contentContainer && contentContainer.length) {
+        contentContainer[0].classList.add('container-lg');
+        contentContainer[0].classList.remove('container');
       }
     }
   }
 
   public ngOnDestroy(): void {
     if (isPlatformBrowser(this.platformId)) {
-      const contentContainer = document.getElementById('content-container');
+      const contentContainer = document.getElementsByClassName('container-lg');
 
-      if (contentContainer) {
-        contentContainer.classList.add('container');
-        contentContainer.classList.remove('container-fluid');
+      if (contentContainer && contentContainer.length) {
+        contentContainer[0].classList.add('container');
+        contentContainer[0].classList.remove('container-lg');
       }
     }
   }
 
   public updateData(): void {
-    this.languageLoaderService.updateProject();
+    this.isSubmitting = true;
+    this.languageLoaderService.updateProject().subscribe({
+      next: () => this.isSubmitting = false,
+      error: () => this.isSubmitting = false,
+    });
   }
 
   public changeFilter(filter: string | number): void {
     this.filter = parseInt(String(filter), 10);
-    this._selectedKey = null;
+    this.languageLoaderService.selectedKey = null;
   }
 
   public setProject(value: Project | string): void {
-    this._selectedKey = null;
+    this.languageLoaderService.selectedKey = null;
     this._searchFilter = '';
+    this.loading = true;
+    this.error = false;
+    this.unauthorized = false;
     this.languageLoaderService.reset();
     this.projectLoaderService.currentProject = value as Project;
 
     this.reloadLanguageData();
   }
 
-  public dataChanged(key: any): void {
-    this._selectedKey = key;
+  public dataChanged(key: { key: string; value: { [key: string]: string } }): void {
+    this.languageLoaderService.selectedKey = key;
+    this.languageLoaderService.changed.next();
   }
 
   public getKeys(dataNode: object): Array<string> {
@@ -179,10 +170,25 @@ export class I18nManagerOverviewComponent implements OnInit, OnDestroy {
   }
 
   public isUnusedKey(): boolean {
-    return !!this.languageLoaderService.unusedKeys.find(unusedKey => unusedKey === this._selectedKey.key);
+    return !!this.languageLoaderService.unusedKeys.find(unusedKey => unusedKey === this.languageLoaderService.selectedKey?.key);
+  }
+
+  public addKey(): void {
+    this.modalOrganizerService.addKey().then(() => this.cd.markForCheck());
+    this.changedData.next();
   }
 
   private reloadLanguageData(): void {
-    this.languageLoaderService.getLangData();
+    this.languageLoaderService.getLangData().subscribe({
+      next: () => {
+        this.loading = false;
+        this.error = false;
+        this.unauthorized = false;
+      },
+      error: err => {
+        this.loading = false;
+        this.error = true;
+      },
+    });
   }
 }

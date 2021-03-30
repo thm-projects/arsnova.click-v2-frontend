@@ -8,9 +8,11 @@ import { Title } from '../../lib/enums/enums';
   providedIn: 'root',
 })
 export class HeaderLabelService {
-  public isUnavailableModalOpen: boolean;
-
   private _headerLabelParams = {};
+  private _headerLabel = 'default';
+  private _subHeader: string;
+
+  public isUnavailableModalOpen: boolean;
 
   get headerLabelParams(): Object {
     return this._headerLabelParams;
@@ -21,8 +23,6 @@ export class HeaderLabelService {
     this.regenerateTitle();
   }
 
-  private _headerLabel = 'default';
-
   get headerLabel(): string {
     return this._headerLabel;
   }
@@ -32,19 +32,44 @@ export class HeaderLabelService {
     this.regenerateTitle();
   }
 
+  get subHeader(): string {
+    return this._subHeader;
+  }
+
+  set subHeader(value: string) {
+    this._subHeader = value;
+    this.regenerateTitle();
+  }
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object, private translateService: TranslateService, private titleService: BrowserTitle) {
     this.translateService.onLangChange.subscribe(() => {
       this.headerLabel = this._headerLabel;
     });
   }
 
+  public hasHeaderLabelParams(): boolean {
+    return Object.keys(this.headerLabelParams || {}).length > 0;
+  }
+
+  public reset(): void {
+    this.headerLabel = 'default';
+    this.headerLabelParams = {};
+    this.subHeader = null;
+  }
+
   private regenerateTitle(): void {
     if (!this._headerLabel || this._headerLabel === 'default') {
       this.titleService.setTitle(HeaderLabelService.getDefaultBrowserTitle());
     } else {
-      this.translateService.get(this._headerLabel, this.headerLabelParams).subscribe(translatedValue => {
-        this.titleService.setTitle(HeaderLabelService.getDefaultBrowserTitle() + ' - ' + translatedValue);
-      });
+      this.translateService
+        .get(this._headerLabel, this.headerLabelParams)
+        .subscribe(translatedValue => {
+          if (this.hasHeaderLabelParams()) {
+            this.titleService.setTitle(HeaderLabelService.getDefaultBrowserTitle() + ' - ' + translatedValue);
+          } else {
+            this.titleService.setTitle(HeaderLabelService.getDefaultBrowserTitle());
+          }
+        });
     }
   }
 

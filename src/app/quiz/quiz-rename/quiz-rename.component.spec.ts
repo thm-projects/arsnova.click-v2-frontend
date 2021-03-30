@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { RxStompService } from '@stomp/ng2-stompjs';
-import { TranslatePipeMock } from '../../../_mocks/_pipes/TranslatePipeMock';
+import { HotkeysService } from 'angular2-hotkeys';
 import { jwtOptionsFactory } from '../../lib/jwt.factory';
 import { ConnectionMockService } from '../../service/connection/connection.mock.service';
 import { ConnectionService } from '../../service/connection/connection.service';
@@ -18,6 +18,8 @@ import { SettingsService } from '../../service/settings/settings.service';
 import { SharedService } from '../../service/shared/shared.service';
 import { StorageService } from '../../service/storage/storage.service';
 import { StorageServiceMock } from '../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../service/themes/themes.mock.service';
+import { ThemesService } from '../../service/themes/themes.service';
 import { TwitterService } from '../../service/twitter/twitter.service';
 import { TwitterServiceMock } from '../../service/twitter/twitter.service.mock';
 import { I18nTestingModule } from '../../shared/testing/i18n-testing/i18n-testing.module';
@@ -50,15 +52,21 @@ describe('QuizRenameComponent', () => {
           }, {
             provide: QuizService,
             useClass: QuizMockService,
+          }, {
+            provide: ThemesService,
+            useClass: ThemesMockService
           }, FooterBarService, SettingsService, {
             provide: ConnectionService,
             useClass: ConnectionMockService,
           }, SharedService, {
             provide: TwitterService,
             useClass: TwitterServiceMock,
+          }, {
+            provide: HotkeysService,
+            useValue: {}
           },
         ],
-        declarations: [QuizRenameComponent, TranslatePipeMock],
+        declarations: [QuizRenameComponent],
       }).compileComponents();
     }
   ));

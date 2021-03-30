@@ -1,12 +1,12 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { of } from 'rxjs';
-import { TranslatePipeMock } from '../../../../../_mocks/_pipes/TranslatePipeMock';
 import { QuestionType } from '../../../../lib/enums/QuestionType';
 import { jwtOptionsFactory } from '../../../../lib/jwt.factory';
 import { ConnectionMockService } from '../../../../service/connection/connection.mock.service';
@@ -19,6 +19,8 @@ import { SettingsService } from '../../../../service/settings/settings.service';
 import { SharedService } from '../../../../service/shared/shared.service';
 import { StorageService } from '../../../../service/storage/storage.service';
 import { StorageServiceMock } from '../../../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../../service/themes/themes.service';
 import { TwitterService } from '../../../../service/twitter/twitter.service';
 import { TwitterServiceMock } from '../../../../service/twitter/twitter.service.mock';
 import { I18nTestingModule } from '../../../../shared/testing/i18n-testing/i18n-testing.module';
@@ -29,7 +31,7 @@ describe('QuestiontypeComponent', () => {
   let quizService: QuizService;
   let fixture: ComponentFixture<QuestiontypeComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, HttpClientTestingModule, RouterTestingModule, JwtModule.forRoot({
@@ -47,6 +49,9 @@ describe('QuestiontypeComponent', () => {
         }, HeaderLabelService, {
           provide: QuizService,
           useClass: QuizMockService,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
@@ -63,13 +68,19 @@ describe('QuestiontypeComponent', () => {
         }, SharedService, {
           provide: TwitterService,
           useClass: TwitterServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {
+            add: () => {},
+            reset: () => {},
+          }
         },
       ],
-      declarations: [QuestiontypeComponent, TranslatePipeMock],
+      declarations: [QuestiontypeComponent],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     quizService = TestBed.inject(QuizService);
     fixture = TestBed.createComponent(QuestiontypeComponent);
     component = fixture.componentInstance;
@@ -78,10 +89,10 @@ describe('QuestiontypeComponent', () => {
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(QuestiontypeComponent.TYPE).toEqual('QuestiontypeComponent');
   }));
 

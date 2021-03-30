@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { AttendeeService } from '../../../../../service/attendee/attendee.service';
 import { QuizService } from '../../../../../service/quiz/quiz.service';
+import { BonusTokenService } from '../../../../../service/user/bonus-token/bonus-token.service';
 
 @Component({
   selector: 'app-bonus-token',
@@ -11,21 +12,33 @@ import { QuizService } from '../../../../../service/quiz/quiz.service';
   styleUrls: ['./bonus-token.component.scss'],
 })
 export class BonusTokenComponent implements OnInit, OnDestroy {
-  public bonusToken = '## you\'ve been to fast ##';
-  public clipboardText = true;
-  public quizname: string;
-  public date = new Date().toLocaleDateString();
+  public static readonly TYPE = 'BonusTokenComponent';
 
   private readonly _destroy$ = new Subject();
 
-  constructor(private activeModal: NgbActiveModal, private attendeeService: AttendeeService, private quizService: QuizService) {
-    this.bonusToken = this.attendeeService.bonusToken;
-  }
+  public bonusToken;
+  public clipboardText = true;
+  public quizname: string;
+  public nickname: string;
+  public date = new Date().toLocaleDateString();
+
+  constructor(
+    private activeModal: NgbActiveModal,
+    private bonusTokenService: BonusTokenService,
+    private quizService: QuizService,
+    private attendeeService: AttendeeService,
+  ) {}
 
   public ngOnInit(): void {
     this.quizService.quizUpdateEmitter.pipe(filter(quiz => Boolean(quiz)), takeUntil(this._destroy$)).subscribe(quiz => {
       this.quizname = quiz.name;
     });
+    this.bonusTokenService.getBonusToken().subscribe(bonusToken => {
+      this.bonusToken = bonusToken;
+    }, () => {});
+    if (this.attendeeService.ownNick) {
+      this.nickname = this.attendeeService.ownNick;
+    }
   }
 
   public ngOnDestroy(): void {
@@ -52,9 +65,5 @@ export class BonusTokenComponent implements OnInit, OnDestroy {
 
   public close(): void {
     this.activeModal.close();
-  }
-
-  public abort(): void {
-    this.activeModal.dismiss();
   }
 }

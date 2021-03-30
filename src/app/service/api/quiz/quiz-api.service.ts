@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -6,12 +6,16 @@ import { DefaultSettings } from '../../../lib/default.settings';
 import { QuizEntity } from '../../../lib/entities/QuizEntity';
 import { StorageKey } from '../../../lib/enums/enums';
 import { IMessage } from '../../../lib/interfaces/communication/IMessage';
+import { IAnswerResult } from '../../../lib/interfaces/IAnswerResult';
 
 @Injectable({
   providedIn: 'root',
 })
 export class QuizApiService {
   private _getFreeMemberGroupUrl: string;
+  private _getActiveQuizzesUrl: string;
+  private _getCanUseBonusTokenUrl: string;
+  private _getExportFileUrl: string;
 
   get getFreeMemberGroupUrl(): string {
     return this._getFreeMemberGroupUrl;
@@ -73,6 +77,7 @@ export class QuizApiService {
   private _postResetQuizUrl: string;
   private _postStopQuizUrl: string;
   private _getQuizStartTimeUrl: string;
+  private _getAnswerResultUrl: string;
 
   constructor(private http: HttpClient) {
     this.loadUrls();
@@ -98,8 +103,8 @@ export class QuizApiService {
       { headers: { authorization: sessionStorage.getItem(StorageKey.PrivateKey) } });
   }
 
-  public deleteQuiz(quiz: QuizEntity): Observable<IMessage> {
-    return this.http.delete<IMessage>(`${this._deleteQuizUrl}/${encodeURIComponent(quiz.name)}`,
+  public deleteQuiz(quiz: QuizEntity | string): Observable<IMessage> {
+    return this.http.delete<IMessage>(`${this._deleteQuizUrl}/${encodeURIComponent(typeof quiz === 'string' ? quiz : quiz.name)}`,
       { headers: { authorization: sessionStorage.getItem(StorageKey.PrivateKey) } });
   }
 
@@ -130,12 +135,12 @@ export class QuizApiService {
   }
 
   public getQuizStatus(quizName): Observable<IMessage> {
-    return this.http.get<IMessage>(`${this._getQuizStatusUrl}${quizName ? '/' + quizName : ''}`,
+    return this.http.get<IMessage>(`${this._getQuizStatusUrl}/${encodeURIComponent(quizName ? quizName : '')}`,
       { headers: { authorization: sessionStorage.getItem(StorageKey.PrivateKey) } });
   }
 
   public getFullQuizStatusData(quizName): Observable<IMessage> {
-    return this.http.get<IMessage>(`${this._getFullQuizStatusDataUrl}${quizName ? '/' + quizName : ''}`,
+    return this.http.get<IMessage>(`${this._getFullQuizStatusDataUrl}/${encodeURIComponent(quizName ? quizName : '')}`,
       { headers: { authorization: sessionStorage.getItem(StorageKey.PrivateKey) } });
   }
 
@@ -195,12 +200,46 @@ export class QuizApiService {
   }
 
   public initQuizInstance(name: string): Observable<IMessage> {
-    return this.http.post<IMessage>(this._initQuizInstanceUrl, { name }, {
+    return this.http.post<IMessage>(this._initQuizInstanceUrl, {
+      name,
+      readingConfirmationEnabled: environment.readingConfirmationEnabled,
+      confidenceSliderEnabled: environment.confidenceSliderEnabled,
+      theme: environment.forceQuizTheme ? environment.defaultTheme : null,
+    }, {
       headers: {
         'X-Access-Token': sessionStorage.getItem(StorageKey.LoginToken),
         authorization: sessionStorage.getItem(StorageKey.PrivateKey),
       },
     });
+  }
+
+  public getActiveQuizzes(): Observable<Array<string>> {
+    return this.http.get<Array<string>>(this._getActiveQuizzesUrl);
+  }
+
+  public getCanUseBonusToken(): Observable<boolean> {
+    return this.http.get<boolean>(this._getCanUseBonusTokenUrl, { headers: { authorization: sessionStorage.getItem(StorageKey.QuizToken) } });
+  }
+
+  public getAnswerResult(): Observable<IAnswerResult> {
+    return this.http.get<IAnswerResult>(this._getAnswerResultUrl,
+      { headers: { authorization: sessionStorage.getItem(StorageKey.QuizToken) } },
+    );
+  }
+
+  public getExportFile(quizName: string, theme: string, langCode: string): Observable<HttpEvent<ArrayBuffer>> {
+    const encodedQuizname = encodeURIComponent(quizName);
+    const encodedPrivateKey = encodeURIComponent(sessionStorage.getItem(StorageKey.PrivateKey));
+    const encodedTheme = encodeURIComponent(theme);
+    const encodedLang = encodeURIComponent(langCode);
+
+    return this.http.get<ArrayBuffer>(`${this._getExportFileUrl}/${encodedQuizname}/${encodedPrivateKey}/${encodedTheme}/${encodedLang}`,
+      {
+        reportProgress: true,
+        observe: 'events',
+        responseType: 'arraybuffer' as 'json'
+      },
+    );
   }
 
   private loadUrls(): void {
@@ -227,5 +266,9 @@ export class QuizApiService {
     this._getOwnPublicQuizAmountUrl = `${DefaultSettings.httpApiEndpoint}/quiz/public/amount/own`;
     this._deleteActiveQuizUrl = `${DefaultSettings.httpApiEndpoint}/quiz/active`;
     this._initQuizInstanceUrl = `${DefaultSettings.httpApiEndpoint}/quiz/public/init`;
+    this._getActiveQuizzesUrl = `${DefaultSettings.httpApiEndpoint}/quiz/active`;
+    this._getCanUseBonusTokenUrl = `${DefaultSettings.httpApiEndpoint}/quiz/bonus-token`;
+    this._getAnswerResultUrl = `${DefaultSettings.httpApiEndpoint}/quiz/answer-result`;
+    this._getExportFileUrl = `${DefaultSettings.httpApiEndpoint}/quiz/export`;
   }
 }

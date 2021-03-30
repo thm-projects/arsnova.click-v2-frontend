@@ -1,4 +1,3 @@
-import { CloudData } from 'angular-tag-cloud-module';
 import { QuizState } from '../enums/QuizState';
 import { QuizVisibility } from '../enums/QuizVisibility';
 import { getQuestionForType } from '../QuizValidator';
@@ -8,12 +7,12 @@ import { SessionConfigurationEntity } from './session-configuration/SessionConfi
 
 export class QuizEntity {
   public name: string;
+  public origin?: string;
   public currentQuestionIndex: number;
   public questionList: Array<AbstractQuestionEntity>;
   public sessionConfig: SessionConfigurationEntity;
   public state: QuizState;
   public expiry: Date;
-  public tags: Array<string>;
   public currentStartTimestamp: number;
   public memberGroups: Array<MemberGroupEntity>;
   public visibility: QuizVisibility;
@@ -21,9 +20,10 @@ export class QuizEntity {
 
   constructor(props) {
     this.name = props.name;
+    this.origin = props.origin;
     this.currentQuestionIndex = props.currentQuestionIndex;
     this.questionList = (props.questionList || []).map(question => getQuestionForType(question.TYPE, question));
-    this.sessionConfig = props.sessionConfig;
+    this.sessionConfig = new SessionConfigurationEntity(props.sessionConfig);
     this.state = props.state;
     this.expiry = props.expiry;
     this.currentStartTimestamp = props.currentStartTimestamp;
@@ -53,7 +53,7 @@ export class QuizEntity {
         questionListValid = false;
       }
     });
-    return questionListValid;
+    return questionListValid && this.sessionConfig.nicks.memberGroups.length !== 1;
   }
 
   public equals(questionGroup: QuizEntity): boolean {

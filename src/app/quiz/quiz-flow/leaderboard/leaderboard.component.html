@@ -10,42 +10,61 @@
   </ng-container>
 </h4>
 
-<ng-container *ngIf="quizService.quiz?.sessionConfig?.nicks.memberGroups.length > 1;else attendeeView">
-  <ng-container *ngFor="let group of memberGroupResults">
-    <div class="row">
-      <div class="col-12 col-sm-6">
-        <div class="bg-secondary text-secondary-inverted rounded p-2 my-2">
-          <h6 class="text-center mb-0">{{'component.leaderboard.team-result.name' | translate:{TEAM_NAME: group.name} }}</h6>
-          <hr/>
-          <p>{{'component.leaderboard.team-result.overall-response-time' | translate:{RESPONSE_TIME: formatResponseTime(group.responseTime)} }}</p>
-          <p>{{'component.leaderboard.team-result.score' | translate:{SCORE: group.score} }}</p>
+<ng-container *ngIf="quizService.quiz?.sessionConfig?.nicks.memberGroups.length;else attendeeView">
+  <ng-container *ngFor="let group of memberGroupResults; let isLast = last">
+
+    <div [class.mb-5]="!isLast" class="d-flex align-items-center flex-wrap" *ngIf="getPercentForGroup(group) as percent;">
+      <p class="mx-2 text-right w-100">{{'component.leaderboard.team-result.score' | translate:{SCORE: group.score} }}</p>
+
+      <div [innerHTML]="parseNickname(group._id)" [title]="group._id"></div>
+
+      <div class="progress rounded ml-2 flex-grow-1">
+
+        <div *ngIf="group.score && percent"
+             [attr.aria-valuenow]="percent"
+             [style.background-color]="getTeam(group).color"
+             [style.box-shadow]="'0 0 .25rem ' + getTeam(group).color"
+             class="progress-bar overflow-visible text-left rounded"
+             [style.width.%]="sanitizeStyle(percent)"
+             aria-valuemax="100"
+             aria-valuemin="0"
+             role="progressbar">
+        </div>
+
+        <div *ngIf="!group.score"
+             class="w-100 d-flex align-items-center justify-content-center">
+          <fa-icon [icon]="'spinner'"
+                   [spin]="true"></fa-icon>
         </div>
       </div>
+
     </div>
   </ng-container>
 </ng-container>
 
 <ng-template #attendeeView>
-  <div *ngFor="let attendee of leaderBoardCorrect; let i = index"
-       [class.col-12]="!i"
-       [class.col-sm-6]="!!i">
-    <div [class.own-nick]="attendeeService.isOwnNick(attendee.name)"
-         class="bg-secondary text-secondary-inverted rounded p-2 my-2">
-      <fa-icon *ngIf="!i"
-               [icon]="'trophy'"
-               class="mr-2"></fa-icon>
-      <span *ngIf="i">{{i + 1}}.&nbsp;</span>
-      <span><span [innerHTML]="parseNickname(attendee.name)"
-                  class="d-inline-flex"></span>&nbsp;-&nbsp;</span>
-      <span>{{'component.leaderboard.team-result.score' | translate:{SCORE: attendee.score} }}</span>
+  <div class="form-row">
+    <div *ngFor="let attendee of leaderBoardCorrect; let i = index"
+         [class.col-12]="!i"
+         [class.col-sm-6]="!!i">
+      <div [class.own-nick]="attendeeService.isOwnNick(attendee.name)"
+           class="bg-secondary text-secondary-inverted rounded p-2 my-2">
+        <fa-icon *ngIf="!i"
+                 [icon]="'trophy'"
+                 class="mr-2"></fa-icon>
+        <span *ngIf="i">{{i + 1}}.&nbsp;</span>
+        <span><span [innerHTML]="parseNickname(attendee.name)"
+                    class="d-inline-flex"></span>&nbsp;|&nbsp;</span>
+        <span>{{'component.leaderboard.team-result.score' | translate:{SCORE: attendee.score} }}</span>
+      </div>
     </div>
-  </div>
 
-  <div class="col-12">
-    <h5 *ngIf="hasOwnResponse()"
-        class="mb-0 mt-5 text-center">
-      <span>{{'component.leaderboard.own-rank.own-data' | translate:{INDEX: ownResponse.index + 1, SCORE: ownResponse.element?.score} }}</span>
-      <span *ngIf="ownResponse.closestOpponent">{{'component.leaderboard.own-rank.closest-opponent' | translate:{NAME: ownResponse.closestOpponent?.name, SCORE: ownResponse.closestOpponent?.score} }}</span>
-    </h5>
+    <div class="col-12">
+      <h5 *ngIf="!quizService.isOwner && hasOwnResponse()"
+          class="mb-0 mt-5 text-center">
+        <span>{{'component.leaderboard.own-rank.own-data' | translate:{INDEX: ownResponse.index + 1, SCORE: ownResponse.element?.score} }}</span>
+        <span *ngIf="ownResponse.closestOpponent">{{'component.leaderboard.own-rank.closest-opponent' | translate:{NAME: ownResponse.closestOpponent?.name, SCORE: ownResponse.closestOpponent?.score} }}</span>
+      </h5>
+    </div>
   </div>
 </ng-template>

@@ -3,6 +3,22 @@
     <fa-icon [icon]="'users'"></fa-icon>
     <span class="ml-2">{{attendeeService.getActiveMembers().length}}</span>
   </h3>
+
+
+  <div *ngIf="quizService.isOwner">
+    <ng-container *ngIf="countdown && quizService.quiz?.sessionConfig?.music.enabled.countdownRunning">
+      <app-audio-player [config]="countdownRunningMusicConfig"></app-audio-player>
+    </ng-container>
+
+    <ng-container *ngIf="quizService.quiz?.sessionConfig?.music.enabled.countdownEnd">
+      <app-audio-player #countdownEndAudioComp [config]="countdownEndMusicConfig"></app-audio-player>
+    </ng-container>
+
+    <ng-container *ngIf="countdown">
+      <app-gamification-animation [countdownValue]="countdown"></app-gamification-animation>
+    </ng-container>
+  </div>
+
   <h3 *ngIf="countdown > 0"
       class="mb-0">
     <span class="mr-2">{{countdown}}</span>
@@ -14,6 +30,7 @@
   <div *ngIf="visibleQuestions.length > 1 || showStartQuizButton || showStopCountdownButton || showStopQuizButton"
        class="my-3 overflow-auto btn-header">
     <div class="btn-group">
+
       <button (click)="startQuiz()"
               *ngIf="showStartQuizButton && !(showStopCountdownButton || showStopQuizButton)"
               [class.w-100]="quizService.getVisibleQuestions().length"
@@ -33,7 +50,7 @@
 
         <span *ngIf="!quizService.quiz?.sessionConfig.readingConfirmationEnabled"
               class="mr-1">
-          {{'component.liveResults.start_round' | translate}}
+          {{'component.liveResults.start_question' | translate}}
         </span>
 
         <fa-icon *ngIf="!isStarting"
@@ -70,17 +87,24 @@
   </div>
 
   <div class="question">
-    <h5 *ngIf="quizService.quiz && visibleQuestions.length > 1 && quizService.quiz.questionList.length">
+    <h5 *ngIf="quizService.quiz?.questionList.length">
       <span class="mr-1">{{'component.liveResults.question_number' | translate}}&nbsp;{{selectedQuestionIndex + 1}} / {{quizService.quiz.questionList.length}}</span>
       <fa-icon *ngIf="isLoadingQuestionData"
                [icon]="'spinner'"
                [spin]="true"></fa-icon>
+
+      <fa-icon *ngIf="environment.enableBonusToken && quizService?.currentQuestion()?.requiredForToken"
+               [icon]="['fas', 'key']"
+               class="text-warning ml-sm-2"
+               [ngbTooltip]="'component.quiz_summary.required-for-token.label' | translate"></fa-icon>
     </h5>
 
-    <app-voting-question *ngIf="questionText && quizService?.currentQuestion()?.questionText && !!countdown"
-                         [questionText]="questionText"></app-voting-question>
+    <app-voting-question *ngIf="questionText && quizService?.currentQuestion()?.questionText && (countdown || this.quizService.readingConfirmationRequested)"
+                         [questionText]="questionText"
+                         [answers]="quizService?.currentQuestion()?.displayAnswerText === false ? answers : null"
+                         [tags]="quizService?.currentQuestion()?.tags"></app-voting-question>
 
-    <div *ngIf="showLeaderBoardButton(selectedQuestionIndex) || showQuestionButton(selectedQuestionIndex)"
+    <div *ngIf="showLeaderBoardButton(selectedQuestionIndex) || showQuestionButton(selectedQuestionIndex)"
          class="d-flex">
       <button (click)="hasTriggeredNavigation = true"
               *ngIf="showLeaderBoardButton(selectedQuestionIndex)"
@@ -114,32 +138,10 @@
     <app-confidence-rate *ngIf="showConfidenceRate(selectedQuestionIndex)"
                          [data]="getConfidenceData(selectedQuestionIndex)"></app-confidence-rate>
 
-    <app-progress-bar *ngIf="showResponseProgress()"
+    <app-progress-bar *ngIf="showResponseProgress"
                       [data]="answers"
                       [hideProgressbarCssStyle]="hideProgressbarStyle"
                       [questionIndex]="selectedQuestionIndex"
                       [question]="quizService.quiz.questionList[selectedQuestionIndex]"></app-progress-bar>
   </div>
-</ng-container>
-
-<ng-container *ngIf="quizService.isOwner">
-  <ng-container *ngIf="countdown && quizService.quiz && quizService.quiz.sessionConfig?.music.enabled.countdownRunning">
-    <app-audio-player [autostart]="true"
-                      [original_volume]="quizService.quiz.sessionConfig.music.volumeConfig.useGlobalVolume ? toString(quizService.quiz.sessionConfig.music.volumeConfig.global) : toString(quizService.quiz.sessionConfig.music.volumeConfig.countdownRunning)"
-                      [src]="quizService.quiz.sessionConfig.music.titleConfig.countdownRunning"
-                      [target]="'countdownRunning'"></app-audio-player>
-  </ng-container>
-
-  <ng-container *ngIf="playCountdownEndSound">
-    <app-audio-player
-      [autostart]="true"
-      [loop]="false"
-      [original_volume]="quizService.quiz.sessionConfig.music.volumeConfig.useGlobalVolume ? toString(quizService.quiz.sessionConfig.music.volumeConfig.global) : toString(quizService.quiz.sessionConfig.music.volumeConfig.countdownEnd)"
-      [src]="quizService.quiz.sessionConfig.music.titleConfig.countdownEnd"
-      [target]="'countdownEnd'"></app-audio-player>
-  </ng-container>
-
-  <ng-container *ngIf="countdown">
-    <app-gamification-animation [countdownValue]="countdown"></app-gamification-animation>
-  </ng-container>
 </ng-container>

@@ -1,14 +1,13 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtHelperService, JwtModule } from '@auth0/angular-jwt';
-import { TranslateService } from '@ngx-translate/core';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { Observable, of } from 'rxjs';
 import { QuizMock } from '../../../_mocks/_fixtures/quiz.mock';
 import { QuizAdminFilterPipeMock } from '../../../_mocks/_pipes/QuizAdminFilterPipeMock';
-import { TranslateServiceMock } from '../../../_mocks/_services/TranslateServiceMock';
 import { QuizState } from '../../lib/enums/QuizState';
 import { jwtOptionsFactory } from '../../lib/jwt.factory';
 import { AdminApiService } from '../../service/api/admin/admin-api.service';
@@ -23,6 +22,7 @@ import { SettingsService } from '../../service/settings/settings.service';
 import { SharedService } from '../../service/shared/shared.service';
 import { StorageService } from '../../service/storage/storage.service';
 import { StorageServiceMock } from '../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../service/themes/themes.mock.service';
 import { ThemesService } from '../../service/themes/themes.service';
 import { TrackingMockService } from '../../service/tracking/tracking.mock.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
@@ -37,7 +37,7 @@ describe('QuizAdminComponent', () => {
   let component: QuizAdminComponent;
   let fixture: ComponentFixture<QuizAdminComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, SharedModule, RouterTestingModule, HttpClientTestingModule, JwtModule.forRoot({
@@ -49,10 +49,7 @@ describe('QuizAdminComponent', () => {
         }),
       ],
       providers: [
-        RxStompService, {
-          provide: TranslateService,
-          useClass: TranslateServiceMock,
-        }, I18nService, {
+        RxStompService, I18nService, {
           provide: StorageService,
           useClass: StorageServiceMock,
         }, HeaderLabelService, ThemesService, {
@@ -61,6 +58,9 @@ describe('QuizAdminComponent', () => {
         }, {
           provide: TrackingService,
           useClass: TrackingMockService,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, SettingsService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
@@ -83,6 +83,9 @@ describe('QuizAdminComponent', () => {
         }, {
           provide: TwitterService,
           useClass: TwitterServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {}
         },
       ],
       declarations: [

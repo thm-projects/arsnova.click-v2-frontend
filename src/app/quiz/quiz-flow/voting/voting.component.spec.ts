@@ -1,14 +1,15 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faHourglass, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faKey } from '@fortawesome/free-solid-svg-icons/faKey';
 import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { SimpleMQ } from 'ng2-simple-mq';
-import { TranslatePipeMock } from '../../../../_mocks/_pipes/TranslatePipeMock';
 import { jwtOptionsFactory } from '../../../lib/jwt.factory';
 import { ServerUnavailableModalComponent } from '../../../modals/server-unavailable-modal/server-unavailable-modal.component';
 import { MemberApiService } from '../../../service/api/member/member-api.service';
@@ -26,8 +27,10 @@ import { QuizMockService } from '../../../service/quiz/quiz-mock.service';
 import { QuizService } from '../../../service/quiz/quiz.service';
 import { StorageService } from '../../../service/storage/storage.service';
 import { StorageServiceMock } from '../../../service/storage/storage.service.mock';
+import { ThemesMockService } from '../../../service/themes/themes.mock.service';
+import { ThemesService } from '../../../service/themes/themes.service';
 import { I18nTestingModule } from '../../../shared/testing/i18n-testing/i18n-testing.module';
-import { VotingQuestionComponent } from './voting-question/voting-question.component';
+import { VotingQuestionComponent } from '../../../shared/voting-question/voting-question.component';
 
 import { VotingComponent } from './voting.component';
 
@@ -35,7 +38,7 @@ describe('VotingComponent', () => {
   let component: VotingComponent;
   let fixture: ComponentFixture<VotingComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         I18nTestingModule, RouterTestingModule, FontAwesomeModule, HttpClientTestingModule, NgbModalModule, JwtModule.forRoot({
@@ -59,29 +62,36 @@ describe('VotingComponent', () => {
         }, {
           provide: AttendeeService,
           useClass: AttendeeMockService,
+        }, {
+          provide: ThemesService,
+          useClass: ThemesMockService
         }, FooterBarService, {
           provide: ConnectionService,
           useClass: ConnectionMockService,
-        }, MemberApiService, QuizApiService, SimpleMQ, QuestionTextService, HeaderLabelService,
+        }, MemberApiService, QuizApiService, SimpleMQ, QuestionTextService, HeaderLabelService, {
+          provide: HotkeysService,
+          useValue: {}
+        },
       ],
-      declarations: [VotingComponent, VotingQuestionComponent, ServerUnavailableModalComponent, TranslatePipeMock],
+      declarations: [VotingComponent, VotingQuestionComponent, ServerUnavailableModalComponent],
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const library: FaIconLibrary = TestBed.inject(FaIconLibrary);
     library.addIcons(faHourglass);
     library.addIcons(faSpinner);
+    library.addIcons(faKey);
     fixture = TestBed.createComponent(VotingComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
 
-  it('should be created', async(() => {
+  it('should be created', waitForAsync(() => {
     expect(component).toBeTruthy();
   }));
 
-  it('should contain a TYPE reference', async(() => {
+  it('should contain a TYPE reference', waitForAsync(() => {
     expect(VotingComponent.TYPE).toEqual('VotingComponent');
   }));
 

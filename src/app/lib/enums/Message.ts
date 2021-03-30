@@ -4,6 +4,10 @@ export enum StatusProtocol {
 }
 
 export enum MessageProtocol {
+  UpdateBadgeAmount            = 'UpdateBadgeAmount', //
+  PendingPoolQuestion          = 'PendingPoolQuestion', //
+  PoolQuestionApproved         = 'PoolQuestionApproved', //
+  RequestStatistics            = 'RequestStatistics', //
   Countdown                    = 'Countdown', //
   Updated                      = 'Updated', //
   UpdatedResponse              = 'UpdatedResponse', //
@@ -17,7 +21,6 @@ export enum MessageProtocol {
   Inactive                     = 'Inactive', //
   AllPlayers                   = 'AllPlayers', //
   UnknownGroup                 = 'UnknownGroup', //
-  CasLoginRequired             = 'CasLoginRequired', //
   Opened                       = 'Opened', //
   Authenticate                 = 'Authenticate', //
   AuthenticateStatic           = 'AuthenticateStatic', //

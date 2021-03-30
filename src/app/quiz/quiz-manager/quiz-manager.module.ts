@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { MarkdownModule } from 'ngx-markdown';
@@ -16,6 +16,7 @@ import { QuizManagerDetailsModule } from './details/quiz-manager-details.module'
 import { TagsComponent } from './details/tags/tags.component';
 import { MemberGroupManagerComponent } from './member-group-manager/member-group-manager.component';
 import { NicknameManagerComponent } from './nickname-manager/nickname-manager.component';
+import { QuestionCardComponent } from './quiz-manager/question-card/question-card.component';
 import { QuizManagerComponent } from './quiz-manager/quiz-manager.component';
 import { QuizTypeSelectModalComponent } from './quiz-manager/quiz-type-select-modal/quiz-type-select-modal.component';
 import { SoundManagerComponent } from './sound-manager/sound-manager.component';
@@ -84,9 +85,15 @@ const quizManagerRoutes: Routes = [
     PipesModule,
     MarkdownModule.forChild(),
     InfiniteScrollModule,
+    ReactiveFormsModule,
   ],
   declarations: [
-    QuizManagerComponent, NicknameManagerComponent, SoundManagerComponent, MemberGroupManagerComponent, QuizTypeSelectModalComponent,
+    QuizManagerComponent,
+    NicknameManagerComponent,
+    SoundManagerComponent,
+    MemberGroupManagerComponent,
+    QuizTypeSelectModalComponent,
+    QuestionCardComponent,
   ],
 })
 export class QuizManagerModule {

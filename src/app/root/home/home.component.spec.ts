@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Pipe, PipeTransform, PLATFORM_ID, SecurityContext } from '@angular/core';
-import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -11,9 +11,9 @@ import { faTwitter } from '@fortawesome/free-brands-svg-icons';
 import { faEdit, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { HotkeysService } from 'angular2-hotkeys';
 import { SimpleMQ } from 'ng2-simple-mq';
 import { LanguageFilterPipeMock } from '../../../_mocks/_pipes/LanguageFilterPipeMock';
-import { TranslatePipeMock } from '../../../_mocks/_pipes/TranslatePipeMock';
 import { jwtOptionsFactory } from '../../lib/jwt.factory';
 import { AttendeeMockService } from '../../service/attendee/attendee.mock.service';
 import { AttendeeService } from '../../service/attendee/attendee.service';
@@ -24,7 +24,6 @@ import { FileUploadService } from '../../service/file-upload/file-upload.service
 import { FooterBarService } from '../../service/footer-bar/footer-bar.service';
 import { HeaderLabelService } from '../../service/header-label/header-label.service';
 import { I18nService } from '../../service/i18n/i18n.service';
-import { CasLoginService } from '../../service/login/cas-login.service';
 import { QuizMockService } from '../../service/quiz/quiz-mock.service';
 import { QuizService } from '../../service/quiz/quiz.service';
 import { SettingsMockService } from '../../service/settings/settings.mock.service';
@@ -90,7 +89,7 @@ describe('HomeComponent', () => {
         }, I18nService, {
           provide: AttendeeService,
           useClass: AttendeeMockService,
-        }, CasLoginService, UserService, {
+        }, UserService, {
           provide: TrackingService,
           useClass: TrackingMockService,
         }, {
@@ -99,9 +98,12 @@ describe('HomeComponent', () => {
         }, {
           provide: TwitterService,
           useClass: TwitterServiceMock,
+        }, {
+          provide: HotkeysService,
+          useValue: {}
         },
       ],
-      declarations: [HomeComponent, TranslatePipeMock, SearchFilterPipeMock, TwitterCardsComponent, LanguageFilterPipeMock],
+      declarations: [HomeComponent, SearchFilterPipeMock, TwitterCardsComponent, LanguageFilterPipeMock],
     }).compileComponents();
   });
 
@@ -146,7 +148,7 @@ describe('HomeComponent', () => {
 
   describe('#autoJoinToSession', () => {
 
-    it('should join the session by click', async(inject([Router], (router: Router) => {
+    it('should join the session by click', waitForAsync(inject([Router], (router: Router) => {
       spyOn(component, 'selectQuizByList').and.callThrough();
       spyOn(router, 'navigate').and.callFake(() => new Promise<boolean>(resolve => {resolve(); }));
 

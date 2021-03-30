@@ -1,5 +1,6 @@
+import { isPlatformBrowser } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID, SecurityContext } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { SimpleMQ } from 'ng2-simple-mq';
@@ -10,7 +11,8 @@ import { StorageKey } from '../../../lib/enums/enums';
 import { MessageProtocol } from '../../../lib/enums/Message';
 import { QuizState } from '../../../lib/enums/QuizState';
 import { IHasTriggeredNavigation } from '../../../lib/interfaces/IHasTriggeredNavigation';
-import { ILeaderBoardItem } from '../../../lib/interfaces/ILeaderboard';
+import { ILeaderBoardItem, ILeaderboardMemberGroupItem } from '../../../lib/interfaces/ILeaderboard';
+import { IMemberGroupBase } from '../../../lib/interfaces/users/IMemberGroupBase';
 import { ServerUnavailableModalComponent } from '../../../modals/server-unavailable-modal/server-unavailable-modal.component';
 import { LeaderboardApiService } from '../../../service/api/leaderboard/leaderboard-api.service';
 import { AttendeeService } from '../../../service/attendee/attendee.service';
@@ -27,44 +29,37 @@ import { QuizService } from '../../../service/quiz/quiz.service';
   styleUrls: ['./leaderboard.component.scss'],
 })
 export class LeaderboardComponent implements OnInit, OnDestroy, IHasTriggeredNavigation {
-  public static TYPE = 'LeaderboardComponent';
-  public isLoadingData = true;
-  public hasTriggeredNavigation: boolean;
-
-  private _questionIndex: number;
 
   get questionIndex(): number {
     return this._questionIndex;
   }
 
-  private _leaderBoardCorrect: Array<ILeaderBoardItem> = [];
-
   get leaderBoardCorrect(): Array<ILeaderBoardItem> {
     return this._leaderBoardCorrect;
   }
 
-  private _memberGroupResults: Array<ILeaderBoardItem>;
-
-  get memberGroupResults(): Array<ILeaderBoardItem> {
+  get memberGroupResults(): Array<ILeaderboardMemberGroupItem> {
     return this._memberGroupResults;
   }
-
-  private _isGlobalRanking: boolean;
-
-  get isGlobalRanking(): boolean {
-    return this._isGlobalRanking;
-  }
-
-  private _ownResponse: { index: number, element: ILeaderBoardItem, closestOpponent: ILeaderBoardItem };
 
   get ownResponse(): { index: number; element: ILeaderBoardItem; closestOpponent: ILeaderBoardItem } {
     return this._ownResponse;
   }
+  public static readonly TYPE = 'LeaderboardComponent';
 
-  private readonly _destroy = new Subject();
+  private _questionIndex: number;
+  private _leaderBoardCorrect: Array<ILeaderBoardItem> = [];
+  private _memberGroupResults: Array<ILeaderboardMemberGroupItem>;
+  private _isGlobalRanking: boolean;
+  private _ownResponse: { index: number, element: ILeaderBoardItem, closestOpponent: ILeaderBoardItem };
   private _serverUnavailableModal: NgbModalRef;
   private _name: string;
+  private readonly _destroy = new Subject();
   private readonly _messageSubscriptions: Array<string> = [];
+
+  public isLoadingData = true;
+  public hasTriggeredNavigation: boolean;
+  public absolute: number;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -91,6 +86,10 @@ export class LeaderboardComponent implements OnInit, OnDestroy, IHasTriggeredNav
         return;
       }
 
+      if (this.hasTriggeredNavigation) {
+        return;
+      }
+
       if (this.quizService.quiz.state === QuizState.Inactive) {
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/']);
@@ -102,9 +101,11 @@ export class LeaderboardComponent implements OnInit, OnDestroy, IHasTriggeredNav
       this.addFooterElements();
     });
 
-    this.quizService.loadDataToPlay(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => {
-      this.handleMessages();
-    }).catch(() => this.hasTriggeredNavigation = true);
+    if (isPlatformBrowser(this.platformId)) {
+      this.quizService.loadDataToPlay(sessionStorage.getItem(StorageKey.CurrentQuizName)).then(() => {
+        this.handleMessages();
+      }).catch(() => this.hasTriggeredNavigation = true);
+    }
 
     this.connectionService.serverStatusEmitter.pipe(takeUntil(this._destroy)).subscribe(isConnected => {
       if (isConnected) {
@@ -138,7 +139,7 @@ export class LeaderboardComponent implements OnInit, OnDestroy, IHasTriggeredNav
   }
 
   public parseNickname(value: string): string {
-    if (value.match(/:[\w\+\-]+:/g)) {
+    if (value?.match(/:[\w\+\-]+:/g)) {
       return this.sanitizeHTML(this.customMarkdownService.parseGithubFlavoredMarkdown(value));
     }
     return value;
@@ -172,36 +173,53 @@ export class LeaderboardComponent implements OnInit, OnDestroy, IHasTriggeredNav
     return Object.keys(this._ownResponse || {}).length > 1;
   }
 
+  public sanitizeStyle(value: string | number): SafeStyle {
+    value = value.toString().replace(/\s/g, '');
+    return this.sanitizer.sanitize(SecurityContext.STYLE, `${value}`);
+  }
+
+  public getPercentForGroup(group: ILeaderboardMemberGroupItem): number {
+    return Math.round(group.score / this.absolute * 100);
+  }
+
+  public getTeam(group: ILeaderboardMemberGroupItem): IMemberGroupBase {
+    return this.quizService.quiz?.sessionConfig.nicks.memberGroups.find(value => value.name === group._id);
+  }
+
   private initData(): void {
 
     this.route.paramMap.pipe(map(params => parseInt(params.get('questionIndex'), 10)), distinctUntilChanged(), takeUntil(this._destroy))
-    .subscribe(questionIndex => {
-      this._questionIndex = questionIndex;
-      this._isGlobalRanking = isNaN(this._questionIndex);
-      if (this._isGlobalRanking) {
-        this.headerLabelService.headerLabel = 'component.leaderboard.global_header';
-        this._questionIndex = null;
-        if (!!questionIndex) {
-          this.hasTriggeredNavigation = true;
-          this.router.navigate(['/quiz', 'flow', 'leaderboard']);
+      .subscribe(questionIndex => {
+        if (this.hasTriggeredNavigation) {
           return;
         }
-      } else {
-        this.headerLabelService.headerLabel = 'component.leaderboard.header';
-      }
 
-      this.leaderboardApiService.getLeaderboardData(this._name, environment.leaderboardAmount, this.questionIndex).subscribe(lederboardData => {
-        this._leaderBoardCorrect = lederboardData.payload.correctResponses;
-        this._ownResponse = lederboardData.payload.ownResponse;
-        this._memberGroupResults = lederboardData.payload.memberGroupResults;
+        this._questionIndex = questionIndex;
+        this._isGlobalRanking = isNaN(this._questionIndex);
+        if (this._isGlobalRanking) {
+          this.headerLabelService.headerLabel = 'component.leaderboard.global_header';
+          this._questionIndex = null;
+          if (!!questionIndex) {
+            this.hasTriggeredNavigation = true;
+            this.router.navigate(['/quiz', 'flow', 'leaderboard']);
+            return;
+          }
+        } else {
+          this.headerLabelService.headerLabel = 'component.leaderboard.header';
+        }
 
-        this._memberGroupResults = this._memberGroupResults.filter(memberGroupResult => {
-          return memberGroupResult.correctQuestions.length > 0;
+        this.leaderboardApiService.getLeaderboardData(this._name, environment.leaderboardAmount, this.questionIndex).subscribe(lederboardData => {
+          this._leaderBoardCorrect = lederboardData.payload.correctResponses;
+          this._ownResponse = lederboardData.payload.ownResponse;
+          this._memberGroupResults = lederboardData.payload.memberGroupResults;
+
+          if (this._memberGroupResults) {
+            this.absolute = Math.max(...this._memberGroupResults.map(value => value.score));
+          }
+
+          this.isLoadingData = false;
         });
-
-        this.isLoadingData = false;
       });
-    });
   }
 
   private handleMessages(): void {
@@ -210,6 +228,10 @@ export class LeaderboardComponent implements OnInit, OnDestroy, IHasTriggeredNav
         this.quizService.quiz.currentQuestionIndex = payload.nextQuestionIndex;
         sessionStorage.removeItem(StorageKey.CurrentQuestionIndex);
       }), this.messageQueue.subscribe(MessageProtocol.Start, payload => {
+        if (this.hasTriggeredNavigation) {
+          return;
+        }
+
         this.hasTriggeredNavigation = true;
         this.router.navigate(['/quiz', 'flow', 'voting']);
       }), this.messageQueue.subscribe(MessageProtocol.UpdatedResponse, payload => {
@@ -241,6 +263,10 @@ export class LeaderboardComponent implements OnInit, OnDestroy, IHasTriggeredNav
     ];
 
     this.footerBarService.footerElemBack.onClickCallback = () => {
+      if (this.hasTriggeredNavigation) {
+        return;
+      }
+
       this.hasTriggeredNavigation = true;
       this.router.navigate(['/quiz', 'flow', 'results']);
     };

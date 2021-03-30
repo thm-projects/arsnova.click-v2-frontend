@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { async, TestBed } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { JWT_OPTIONS, JwtModule } from '@auth0/angular-jwt';
 import { TranslateService } from '@ngx-translate/core';
@@ -23,7 +23,7 @@ import { AttendeeService } from './attendee.service';
 describe('AttendeeService', () => {
   let memberMock: Attendee;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule, RouterTestingModule, JwtModule.forRoot({
@@ -69,8 +69,7 @@ describe('AttendeeService', () => {
 
   it('should get all member groups', () => {
     const service: AttendeeService = TestBed.inject(AttendeeService);
-
-    expect(service.getMemberGroups()).toContain('Default');
+    expect(service.getMemberGroups().length).toEqual(0);
   });
 
   it('should get all members of a group', () => {
@@ -87,8 +86,9 @@ describe('AttendeeService', () => {
 
     service.addMember(memberMock);
 
-    service.cleanUp();
-    expect(service.attendees.length).toEqual(0);
+    service.cleanUp().subscribe(() => {
+      expect(service.attendees.length).toEqual(0);
+    });
   });
 
   it('should add a member', () => {
@@ -165,14 +165,14 @@ describe('AttendeeService', () => {
     service.addMember(memberMock);
     service.ownNick = memberMock.name;
 
-    expect(service.hasReponse()).toEqual(false);
+    expect(service.hasResponse()).toEqual(false);
 
     service.modifyResponse({
       nickname: memberMock.name,
       questionIndex: 0,
       update: response,
     });
-    expect(service.hasReponse()).toEqual(true);
+    expect(service.hasResponse()).toEqual(true);
   });
 
   it('should check if a reading confirmation is set', () => {

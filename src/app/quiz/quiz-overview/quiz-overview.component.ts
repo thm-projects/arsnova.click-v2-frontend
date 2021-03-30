@@ -22,18 +22,19 @@ import { UserService } from '../../service/user/user.service';
   styleUrls: ['./quiz-overview.component.scss'],
 })
 export class QuizOverviewComponent implements OnInit {
-  public static TYPE = 'QuizOverviewComponent';
+  public static readonly TYPE = 'QuizOverviewComponent';
+
+  private _sessions: Array<QuizEntity> = [];
+  private _isSaving: Array<string> = [];
+
   public publicQuizAmount: number;
   public isStartingQuiz: QuizEntity;
   public isDeletingQuiz: QuizEntity;
-
-  private _sessions: Array<QuizEntity> = [];
+  public searchText: string;
 
   get sessions(): Array<QuizEntity> {
     return this._sessions;
   }
-
-  private _isSaving: Array<number> = [];
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -59,9 +60,11 @@ export class QuizOverviewComponent implements OnInit {
 
     headerLabelService.headerLabel = 'component.name_management.session_management';
 
-    this.quizApiService.getPublicQuizAmount().subscribe(val => {
-      this.publicQuizAmount = val;
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      this.quizApiService.getPublicQuizAmount().subscribe(val => {
+        this.publicQuizAmount = val;
+      });
+    }
   }
 
   public startQuiz(elem: QuizEntity): Promise<void> {
@@ -99,7 +102,7 @@ export class QuizOverviewComponent implements OnInit {
     });
   }
 
-  public editQuiz(index: number): void {
+  public editQuiz(quiz: QuizEntity): void {
     if (isPlatformServer(this.platformId)) {
       return;
     }
@@ -109,12 +112,12 @@ export class QuizOverviewComponent implements OnInit {
       label: `edit-quiz`,
     });
 
-    this.quizService.quiz = this.sessions[index];
+    this.quizService.quiz = quiz;
     this.quizService.isOwner = true;
     this.router.navigate(['/quiz', 'manager', 'overview']);
   }
 
-  public async exportQuiz(index: number, onClick?: (self: HTMLAnchorElement, event: MouseEvent) => void): Promise<void> {
+  public async exportQuiz(quiz: QuizEntity, onClick?: (self: HTMLAnchorElement, event: MouseEvent) => void): Promise<void> {
     if (isPlatformServer(this.platformId)) {
       return;
     }
@@ -122,8 +125,8 @@ export class QuizOverviewComponent implements OnInit {
     const a = document.createElement('a');
     const time = new Date();
     const type = 'text/json';
-    const sessionName = this.sessions[index].name;
-    const exportData = `${type};charset=utf-8,${encodeURIComponent(JSON.stringify(this.sessions[index]))}`;
+    const sessionName = quiz.name;
+    const exportData = `${type};charset=utf-8,${encodeURIComponent(JSON.stringify(quiz))}`;
     const timestring = time.getDate() + '_' + (time.getMonth() + 1) + '_' + time.getFullYear();
     const fileName = `${sessionName}-${timestring}.json`;
 
@@ -177,12 +180,12 @@ export class QuizOverviewComponent implements OnInit {
     this.loadData();
   }
 
-  public isSaved(index: number): boolean {
-    return this._isSaving.includes(index);
+  public isSaved(quiz: QuizEntity): boolean {
+    return this._isSaving.includes(quiz.name);
   }
 
-  public saveQuiz(index: number): void {
-    if (this.isSaved(index)) {
+  public saveQuiz(quiz: QuizEntity): void {
+    if (this.isSaved(quiz)) {
       return;
     }
 
@@ -198,16 +201,18 @@ export class QuizOverviewComponent implements OnInit {
         return;
       }
 
-      this.sessions[index].expiry = new Date(val.expiry);
+      const index = this.sessions.findIndex(v => v.name === quiz.name);
+
+      this.sessions[index].expiry = val.expiry ? new Date(val.expiry) : null;
       this.sessions[index].visibility = val.visibility;
       this.sessions[index].description = val.description;
-      this._isSaving.push(index);
+      this._isSaving.push(quiz.name);
 
       this.storageService.db.Quiz.put(this.sessions[index]);
       this.quizApiService.putSavedQuiz(this.sessions[index]).subscribe(() => {
-        this._isSaving.splice(this._isSaving.indexOf(index), 1);
+        this._isSaving.splice(this._isSaving.indexOf(quiz.name), 1);
       }, () => {
-        this._isSaving.splice(this._isSaving.indexOf(index), 1);
+        this._isSaving.splice(this._isSaving.indexOf(quiz.name), 1);
       });
     });
   }
@@ -218,6 +223,20 @@ export class QuizOverviewComponent implements OnInit {
 
   public isAuthorizedToModifyQuiz(): boolean {
     return !environment.requireLoginToCreateQuiz || this.userService.isAuthorizedFor(UserRole.QuizAdmin);
+  }
+
+  public getUniqueTags(elem: QuizEntity): Array<string> {
+    return this.arrayUnique(this.getTags(elem));
+  }
+
+  public getQuizLink(quizName: string): string {
+    return encodeURI(`${document.location.origin}/quiz/${quizName}`);
+  }
+
+  public copyQuizLink(inputElement: HTMLInputElement): void {
+    inputElement.select();
+    document.execCommand('copy');
+    inputElement.setSelectionRange(0, 0);
   }
 
   private loadData(): void {
@@ -231,9 +250,11 @@ export class QuizOverviewComponent implements OnInit {
     return [MessageProtocol.Editable, MessageProtocol.Unavailable].includes(quizStatusResponse.step);
   }
 
-  private async openLobby(session: QuizEntity): Promise<any> {
-    this.quizApiService.setQuiz(session).subscribe((updatedQuiz) => {
-      this.router.navigate(['/quiz', 'flow']);
-    });
+  private getTags(elem: QuizEntity): Array<string> {
+    return elem?.questionList?.reduce((previousValue, currentValue) => previousValue.concat(...(currentValue.tags || [])), []);
+  }
+
+  private arrayUnique<T>(value: Array<T>): Array<T> {
+    return value.filter((elem, index, array) => array.indexOf(elem) === index);
   }
 }

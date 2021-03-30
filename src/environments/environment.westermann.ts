@@ -5,19 +5,17 @@ import { IEnvironment } from '../app/lib/interfaces/IEnvironment';
 export const environment: IEnvironment = {
   production: true,
   title: Title.Westermann,
-  enableCasLogin: false,
-  version: 'VERSION',
-  ssrEndpoint: 'https://test01.ars.sbzo.de',
-  serverEndpoint: 'https://test01.ars.sbzo.de/',
-  httpApiEndpoint: 'https://test01.ars.sbzo.de/api/v1/',
-  httpLibEndpoint: 'https://test01.ars.sbzo.de/lib',
+  appName: 'Westermann Quiz',
+  version: '__VERSION__',
+  serverEndpoint: '/backend',
   stompConfig: {
-    endpoint: 'wss://test01.ars.sbzo.de/rabbitmq/ws',
+    endpoint: '/rabbitmq/ws',
     user: 'arsnova-click',
     password: 'K3BHZQMHsxh6XQ5a',
     vhost: '/',
   },
   leaderboardAmount: 5,
+  enableBonusToken: false,
   readingConfirmationEnabled: false,
   confidenceSliderEnabled: false,
   infoAboutTabEnabled: false,
@@ -26,6 +24,7 @@ export const environment: IEnvironment = {
   requireLoginToCreateQuiz: true,
   forceQuizTheme: true,
   loginMechanism: [LoginMechanism.UsernamePassword, LoginMechanism.Token],
+  showLoginButton: true,
   showJoinableQuizzes: false,
   showPublicQuizzes: false,
   persistQuizzes: false,
@@ -33,12 +32,9 @@ export const environment: IEnvironment = {
   defaultTheme: QuizTheme.WestermannBlue,
   darkModeCheckEnabled: false,
   enableTwitter: false,
+  enableQuizPool: false,
+  showInfoButtonsInFooter: true,
+  vapidPublicKey: 'BFy8kQxiV2p43Z8Xqs6isn7QRVDEvkqreDH3wH0QlDLDn8cZkbM41iOWwxUBsw_R0Y4Bv8AkI9sKj82P18q41z0',
+  markdownFilePostfix: 'westermann',
+  loginButtonLabelConfiguration: 'login',
 };
-
-export enum DEVICE_TYPES {
-  XS, SM, MD, LG, XLG
-}
-
-export enum LIVE_PREVIEW_ENVIRONMENT {
-  ANSWEROPTIONS, QUESTION
-}

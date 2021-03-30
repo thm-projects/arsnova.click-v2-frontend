@@ -1,10 +1,11 @@
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IconPathData, IconPrefix, IconProp } from '@fortawesome/fontawesome-svg-core';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { IFooterBarElement } from '../../lib/footerbar-element/interfaces';
 import { INamedType } from '../../lib/interfaces/interfaces';
 import { FileUploadService } from '../../service/file-upload/file-upload.service';
 import { FooterBarService } from '../../service/footer-bar/footer-bar.service';
+import { NotificationService } from '../../service/notification/notification.service';
 import { QuizService } from '../../service/quiz/quiz.service';
 import { TrackingService } from '../../service/tracking/tracking.service';
 
@@ -14,13 +15,12 @@ import { TrackingService } from '../../service/tracking/tracking.service';
   styleUrls: ['./footer-bar.component.scss'],
 })
 export class FooterBarComponent implements OnInit {
-  public static TYPE = 'FooterBarComponent';
-
-  public collapsedNavbar: boolean;
+  public static readonly TYPE = 'FooterBarComponent';
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     public footerBarService: FooterBarService,
+    public notificationService: NotificationService,
     private quizService: QuizService,
     private trackingService: TrackingService,
     private fileUploadService: FileUploadService,
@@ -85,7 +85,8 @@ export class FooterBarComponent implements OnInit {
 
   private detectCurrentRoute(): void {
     const currentComponent = this.fetchChildComponent(this.activatedRoute);
-    this.collapsedNavbar = [
+    this.footerBarService.collapsedNavbar = [
+      'LoginComponent',
       'QuizLobbyComponent',
       'QuizResultsComponent',
       'VotingComponent',

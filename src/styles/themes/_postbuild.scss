@@ -39,9 +39,18 @@
 @import "../checkbox";
 @import "loader";
 @import "keyframes";
+@import "standard-style-definitions";
 
 body {
-  font-family: $font;
+  font-family: $font-text;
+  @include transitionEffect();
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-header;
+}
+
+.card {
   @include transitionEffect();
 }
 
@@ -51,18 +60,36 @@ pre {
   border-radius: 10px;
 }
 
+code[class*="language-"], pre[class*="language-"] {
+  /* Overrides color value from node_modules/prism-themes/themes/prism-ghcolors.css */
+  color: $pre-color !important;
+}
+
 .progress {
   border: 1px solid $gray-200;
   overflow: visible;
 }
 
 .navbar-footer {
-  background-color: $bg-footer;
-  color: $footer-color;
   @include transitionEffect();
+  background-color: $bg-footer;
+
+  .footerElement {
+    color: $footer-color;
+    border-bottom: 1px solid transparent;
+
+    &:active,
+    &:focus,
+    &:hover {
+      color: $footer-color;
+      text-decoration: none;
+      border-bottom: 1px solid $footer-color;
+    }
+  }
 }
 
-#logo-image {
+#logo-image,
+#logo-image-xl {
   background-color: $logo-bg;
 
   @each $selector, $colorCode in $logo-fg {
@@ -70,6 +97,37 @@ pre {
       fill: $colorCode;
     }
   }
+}
+
+fa-icon {
+  &.cursor-pointer {
+    &:hover {
+      color: darken($secondary_text_color, 10)
+    }
+
+    &:active {
+      color: darken($secondary_text_color, 50)
+    }
+  }
+}
+
+.answer-result-correct {
+  background-color: $bg-answer-result-correct;
+  color: $fg-answer-result-correct;
+}
+
+.answer-result-partially-correct {
+  background-color: $bg-answer-result-partially-correct;
+  color: $fg-answer-result-partially-correct;
+}
+
+.answer-result-wrong {
+  background-color: $bg-answer-result-wrong;
+  color: $fg-answer-result-wrong;
+}
+
+.bg-body {
+  background: $body-bg;
 }
 
 #connection-indicator {
@@ -112,4 +170,45 @@ pre {
 *:-ms-input-placeholder {
   opacity: 1;
   color: $footer-color;
+}
+
+*::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: $secondary rgba($primary, 0.8);
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba($primary, 0.8);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: $secondary;
+  border-radius: 6px;
+  border: 3px solid rgba($primary, 0.8);
+}
+
+.statistics-icon-opacity {
+  opacity: $statistics-icon-opacity;
+}
+
+.twitter-ancor a {
+  color: $secondary_text_color;
+}
+
+@each $color, $value in $theme-colors {
+  .box-shadow-#{$color} {
+    box-shadow: 0 0 .25rem $value;
+    pointer-events: none;
+  }
+}
+
+blockquote {
+  padding: 0 1rem;
+  color: $color-markdown-blockquote;
+  border-left: .25rem solid $border-left-color-markdown-blockquote;
 }

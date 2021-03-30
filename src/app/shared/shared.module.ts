@@ -6,6 +6,10 @@ import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontaweso
 import { faTwitter } from '@fortawesome/free-brands-svg-icons';
 import {
   faAlignLeft,
+  faAngleDoubleDown,
+  faAngleDoubleUp,
+  faAngleDown,
+  faAngleUp,
   faAppleAlt,
   faArrowDown,
   faArrowsAlt,
@@ -21,6 +25,7 @@ import {
   faCheckSquare,
   faCloudUploadAlt,
   faCode,
+  faCogs,
   faCopy,
   faDownload,
   faEdit,
@@ -35,10 +40,16 @@ import {
   faInfoCircle,
   faItalic,
   faKey,
+  faKeyboard,
   faLanguage,
+  faListOl,
   faListUl,
   faLock,
+  faLongArrowAltLeft,
+  faLongArrowAltRight,
+  faMask,
   faMinus,
+  faMobileAlt,
   faMusic,
   faPaperPlane,
   faPause,
@@ -46,14 +57,17 @@ import {
   faPlus,
   faQrcode,
   faQuestion,
+  faQuoteRight,
   faSave,
   faSignInAlt,
   faSignOutAlt,
+  faSlash,
   faSlidersH,
   faSpinner,
   faSquare,
   faStop,
   faStrikethrough,
+  faTags,
   faThumbsUp,
   faTimes,
   faTrash,
@@ -62,10 +76,13 @@ import {
   faUndo,
   faUnlock,
   faUpload,
+  faUserFriends,
   faUsers,
+  faVolumeMute,
+  faVolumeUp,
   faWrench,
 } from '@fortawesome/free-solid-svg-icons';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAlertModule, NgbModalModule, NgbPopoverModule, NgbTooltipModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { TagCloudModule } from 'angular-tag-cloud-module';
@@ -73,26 +90,43 @@ import { environment } from '../../environments/environment';
 import { AudioPlayerComponent } from './audio-player/audio-player.component';
 import { GamificationAnimationComponent } from './gamification-animation/gamification-animation.component';
 import { NoDataErrorComponent } from './no-data-error/no-data-error.component';
+import { VotingQuestionComponent } from './voting-question/voting-question.component';
 import { WordCloudComponent } from './word-cloud/word-cloud.component';
 
 @NgModule({
   imports: [
-    FormsModule, CommonModule, FontAwesomeModule, NgbModule, RouterModule, AngularSvgIconModule, TranslateModule.forChild(), TagCloudModule
+    FormsModule,
+    CommonModule,
+    FontAwesomeModule,
+    NgbModalModule,
+    NgbPopoverModule,
+    NgbTooltipModule,
+    NgbTypeaheadModule,
+    NgbAlertModule,
+    RouterModule,
+    AngularSvgIconModule,
+    TranslateModule.forChild(),
+    TagCloudModule,
   ],
   exports: [
     FormsModule,
     CommonModule,
     FontAwesomeModule,
     TranslateModule,
-    NgbModule,
+    NgbModalModule,
+    NgbPopoverModule,
+    NgbTooltipModule,
+    NgbTypeaheadModule,
+    NgbAlertModule,
     RouterModule,
     AudioPlayerComponent,
     GamificationAnimationComponent,
     AngularSvgIconModule,
     NoDataErrorComponent,
-    WordCloudComponent
+    WordCloudComponent,
+    VotingQuestionComponent,
   ],
-  declarations: [AudioPlayerComponent, GamificationAnimationComponent, NoDataErrorComponent, WordCloudComponent],
+  declarations: [AudioPlayerComponent, GamificationAnimationComponent, NoDataErrorComponent, WordCloudComponent, VotingQuestionComponent],
   bootstrap: [],
 })
 export class SharedModule {
@@ -159,5 +193,22 @@ export class SharedModule {
     library.addIcons(faPlus);
     library.addIcons(faMinus);
     library.addIcons(faCloudUploadAlt);
+    library.addIcons(faCogs);
+    library.addIcons(faTags);
+    library.addIcons(faUserFriends);
+    library.addIcons(faMobileAlt);
+    library.addIcons(faAngleUp);
+    library.addIcons(faAngleDoubleUp);
+    library.addIcons(faAngleDown);
+    library.addIcons(faAngleDoubleDown);
+    library.addIcons(faVolumeUp);
+    library.addIcons(faVolumeMute);
+    library.addIcons(faKeyboard);
+    library.addIcons(faLongArrowAltLeft);
+    library.addIcons(faLongArrowAltRight);
+    library.addIcons(faListOl);
+    library.addIcons(faSlash);
+    library.addIcons(faQuoteRight);
+    library.addIcons(faMask);
   }
 }

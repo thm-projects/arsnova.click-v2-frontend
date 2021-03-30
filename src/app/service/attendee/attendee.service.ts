@@ -1,21 +1,27 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { ReplaySubject } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { Attendee } from '../../lib/attendee/attendee';
 import { MemberEntity } from '../../lib/entities/member/MemberEntity';
 import { StorageKey } from '../../lib/enums/enums';
 import { QuizState } from '../../lib/enums/QuizState';
 import { IMemberSerialized } from '../../lib/interfaces/entities/Member/IMemberSerialized';
+import { IMemberGroupBase } from '../../lib/interfaces/users/IMemberGroupBase';
 import { MemberApiService } from '../api/member/member-api.service';
 import { QuizService } from '../quiz/quiz.service';
 import { StorageService } from '../storage/storage.service';
-import { BonusTokenService } from '../user/bonus-token/bonus-token.service';
 
 @Injectable({ providedIn: 'root' })
 export class AttendeeService {
+  private _attendees: Array<MemberEntity> = [];
+  private _ownNick: string;
+  private _ownAttendee: MemberEntity;
   public readonly attendeeAmount = new ReplaySubject<number>(1);
 
-  private _attendees: Array<MemberEntity> = [];
+  get ownAttendee(): MemberEntity {
+    return this._ownAttendee;
+  }
 
   get attendees(): Array<MemberEntity> {
     return this._attendees;
@@ -24,8 +30,6 @@ export class AttendeeService {
   set attendees(value: Array<MemberEntity>) {
     this._attendees = value;
   }
-
-  private _ownNick: string;
 
   get ownNick(): string {
     return this._ownNick;
@@ -36,30 +40,18 @@ export class AttendeeService {
     sessionStorage.setItem(StorageKey.CurrentNickName, value);
   }
 
-  private _bonusToken: string;
-
-  get bonusToken(): string {
-    return this._bonusToken;
-  }
-
-  set bonusToken(value: string) {
-    this._bonusToken = value;
-    sessionStorage.setItem(StorageKey.CurrentBonusToken, value);
-  }
-
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private quizService: QuizService,
     private storageService: StorageService,
     private memberApiService: MemberApiService,
-    private bonusTokenService: BonusTokenService,
   ) {
     if (isPlatformBrowser(this.platformId)) {
       this.loadData();
     }
   }
 
-  public getMemberGroups(): Array<string> {
+  public getMemberGroups(): Array<IMemberGroupBase> {
 
     if (!this.quizService.quiz) {
       return [];
@@ -72,15 +64,19 @@ export class AttendeeService {
     return this._attendees.filter(attendee => attendee.groupName === groupName);
   }
 
-  public cleanUp(): void {
+  public cleanUp(): Observable<boolean> {
     this.attendees = [];
+    this.attendeeAmount.next(0);
     this.ownNick = null;
+
+    return new Observable(subscriber => subscriber.next(true));
   }
 
   public addMember(attendee: IMemberSerialized): void {
     console.log('AttendeeService: Adding member', attendee);
     if (!this.getMember(attendee.name)) {
       this._attendees.push(new Attendee(attendee));
+      this.attendeeAmount.next(this._attendees.length);
     }
   }
 
@@ -88,6 +84,7 @@ export class AttendeeService {
     const member = this.getMember(name);
     if (member) {
       this._attendees.splice(this._attendees.indexOf(member), 1);
+      this.attendeeAmount.next(this._attendees.length);
     }
   }
 
@@ -118,7 +115,7 @@ export class AttendeeService {
     });
   }
 
-  public hasReponse(): boolean {
+  public hasResponse(): boolean {
     if (!this.getMember(this.ownNick)) {
       return;
     }
@@ -153,6 +150,15 @@ export class AttendeeService {
     return response && !isNaN(response.confidence) && response.confidence > -1;
   }
 
+  public getConfidenceValue(): number {
+    if (!this.getMember(this.ownNick)) {
+      return;
+    }
+
+    const response = this.getMember(this.ownNick).responses[this.quizService.quiz.currentQuestionIndex];
+    return response?.confidence;
+  }
+
   public getActiveMembers(): Array<MemberEntity> {
     return this.attendees.filter((member) => member.isActive);
   }
@@ -163,22 +169,15 @@ export class AttendeeService {
 
   private restoreMembers(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this.memberApiService.getMembers(this.quizService.quiz.name).subscribe((data) => {
-        if (!data || !data.payload) {
-          return;
-        }
-
+      this.memberApiService.getMembers(this.quizService.quiz.name).pipe(
+        filter(data => Array.isArray(data?.payload?.members)),
+      ).subscribe((data) => {
         this._attendees = data.payload.members.map((attendee) => {
           return new Attendee(attendee);
         });
+        this._ownAttendee = this._attendees.find(attendee => this.isOwnNick(attendee.name));
 
         this.attendeeAmount.next(this._attendees.length);
-
-        if (!this.quizService.isOwner) {
-          this.bonusTokenService.getBonusToken().subscribe(nextResult => {
-            this.bonusToken = nextResult;
-          }, err => console.error('Observer got an error: ' + err));
-        }
         resolve();
       }, () => reject());
     });
@@ -186,11 +185,9 @@ export class AttendeeService {
 
   private loadData(): void {
     this._ownNick = sessionStorage.getItem(StorageKey.CurrentNickName);
-    this.quizService.quizUpdateEmitter.subscribe(quiz => {
-      if (typeof quiz?.state === 'undefined' || quiz.state === QuizState.Inactive) {
-        return;
-      }
-
+    this.quizService.quizUpdateEmitter.pipe(
+      filter(quiz => typeof quiz?.state !== 'undefined' && quiz.state !== QuizState.Inactive),
+    ).subscribe(quiz => {
       console.log('AttendeeService#loadData', 'quiz set', quiz);
       this.restoreMembers();
     });
